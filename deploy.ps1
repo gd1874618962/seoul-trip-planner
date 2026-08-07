@@ -47,14 +47,15 @@ $localBytes = [System.IO.File]::ReadAllBytes((Join-Path $dist 'index.html'))
 $sha = [System.Security.Cryptography.SHA256]::Create()
 $localHash = [BitConverter]::ToString($sha.ComputeHash($localBytes)).Replace('-', '')
 $url = 'https://gd1874618962.github.io/seoul-trip-planner/index.html'
-$client = New-Object System.Net.Http.HttpClient
-$client.Timeout = [TimeSpan]::FromSeconds(5)
+$client = New-Object System.Net.WebClient
+$client.Proxy = New-Object System.Net.WebProxy('http://127.0.0.1:7890')
+$client.Timeout = 5000
 $ok = $false
 $maxAttempts = 30
 for ($i = 1; $i -le $maxAttempts; $i++) {
   Start-Sleep -Seconds 10
   try {
-    $remoteBytes = $client.GetByteArrayAsync($url).GetAwaiter().GetResult()
+    $remoteBytes = $client.DownloadData($url)
     $remoteHash = [BitConverter]::ToString($sha.ComputeHash($remoteBytes)).Replace('-', '')
     Write-Host "[wait $i/$maxAttempts] http=200 size=$($remoteBytes.Length) hash=$remoteHash"
     if ($remoteHash -eq $localHash) {
