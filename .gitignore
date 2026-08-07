@@ -1,7 +1,6 @@
 node_modules/
 dist/
 deploy/
-shots/
 sync-state.json
 *.zip
 上传到GitHub/
