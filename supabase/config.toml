@@ -1,0 +1,4 @@
+project_id = "seoul-trip-planner"
+
+[functions.transport]
+verify_jwt = false
