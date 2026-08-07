@@ -68,7 +68,7 @@ for ($i = 1; $i -le $maxAttempts; $i++) {
 }
 $client.Dispose()
 if (-not $ok) {
-  Write-Host '部署可能仍在进行，请手动检查Pages状态。'
+  Write-Host 'Deployment may still be in progress. Please check Pages status manually.'
   Write-Host "URL: $url"
   Write-Host "local hash: $localHash"
 }
