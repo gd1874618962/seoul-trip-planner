@@ -399,6 +399,7 @@ export default function Timeline() {
         locationId: current.locationId,
         ...destination,
       },
+      { provider: 'naver' },
     )
     if (!plan) {
       setGenError((prev) => ({ ...prev, [index]: '暂无自动路线，请使用地图导航' }))

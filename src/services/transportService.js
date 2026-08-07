@@ -1,4 +1,5 @@
 import { buildTransportPlan } from '../utils/transportEngine.js'
+import { getSupabaseConfig, isCloudConfigured } from '../data/supabase.js'
 
 const routeCache = new Map()
 
@@ -6,9 +7,35 @@ function cacheKey(origin, destination) {
   return `${origin?.locationId || origin?.name || 'A'}|${destination?.locationId || destination?.name || 'B'}`
 }
 
-async function naverTransport() {
-  // 未来接入点：调用 Supabase Edge Function -> Naver Directions API
-  return null
+async function naverTransport(origin, destination) {
+  if (!isCloudConfigured()) return null
+  try {
+    const config = getSupabaseConfig()
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 8000)
+    const res = await fetch(`${config.url.replace(/\/$/, '')}/functions/v1/transport`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${config.anonKey}`,
+        apikey: config.anonKey,
+      },
+      body: JSON.stringify({
+        origin: { lat: origin.lat, lng: origin.lng },
+        destination: { lat: destination.lat, lng: destination.lng },
+      }),
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) return null
+    const data = await res.json()
+    if (data?.status === 'generated' && Array.isArray(data.options) && data.options.length) {
+      return { status: 'generated', options: data.options }
+    }
+    return null
+  } catch {
+    return null
+  }
 }
 
 function estimatedTransport(origin, destination) {
