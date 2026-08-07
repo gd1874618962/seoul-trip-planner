@@ -4,13 +4,13 @@ export function getSupabaseConfig() {
   try {
     const saved = JSON.parse(localStorage.getItem(CONFIG_KEY) || 'null')
     return {
-      url: saved?.url || import.meta.env.VITE_SUPABASE_URL || '',
-      anonKey: saved?.anonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+      url: String(saved?.url || import.meta.env.VITE_SUPABASE_URL || '').trim(),
+      anonKey: String(saved?.anonKey || import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim(),
     }
   } catch {
     return {
-      url: import.meta.env.VITE_SUPABASE_URL || '',
-      anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+      url: String(import.meta.env.VITE_SUPABASE_URL || '').trim(),
+      anonKey: String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim(),
     }
   }
 }
@@ -36,7 +36,7 @@ async function request(config, path, options = {}) {
     ...(options.headers || {}),
   }
   const res = await fetch(`${config.url.replace(/\/$/, '')}${path}`, { ...options, headers })
-  if (!res.ok) throw new Error(`supabase ${res.status}`)
+  if (!res.ok) throw new Error(`supabase ${res.status} ${path}`)
   return res.status === 204 ? null : res.json()
 }
 
