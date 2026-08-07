@@ -9,16 +9,36 @@ import {
   travelers,
   tripMeta,
 } from './trip'
+import {
+  fetchTripRow,
+  isCloudConfigured,
+  upsertRows,
+  upsertTripRow,
+} from './supabase'
 
 const TIMELINE_KEY = 'seoul-timeline-edits-v1'
 const REMINDER_KEY = 'seoul-reminder-edits-v1'
 const BUDGET_KEY = 'seoul-budget-v1'
 const LEDGER_KEY = 'seoul-ledger-v1'
 const TRIP_KEY = 'seoul-trip-edits-v1'
+const CLOUD_META_KEY = 'seoul-cloud-meta'
+const TRIP_ID = 'seoul-2026-0821'
 const STATE_URL = '/api/state'
 
 let remoteState = null
 let remoteEnabled = false
+let cloudTimer = null
+
+function readCloudMeta() {
+  try {
+    const raw = localStorage.getItem(CLOUD_META_KEY)
+    return raw ? JSON.parse(raw) : { updatedAt: '', createdAt: '' }
+  } catch {
+    return { updatedAt: '', createdAt: '' }
+  }
+}
+
+let cloudMeta = readCloudMeta()
 
 function read(key) {
   try {
@@ -31,11 +51,7 @@ function read(key) {
 }
 
 function write(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value || {}))
-  } catch {
-    /* ignore */
-  }
+  writeLocal(key, value)
   if (remoteEnabled) {
     const next = { ...(remoteState || {}), [key]: value || {} }
     remoteState = next
@@ -44,6 +60,14 @@ function write(key, value) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(next),
     }).catch(() => {})
+  }
+}
+
+function writeLocal(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value || {}))
+  } catch {
+    /* ignore */
   }
 }
 
@@ -83,12 +107,174 @@ export async function pollRemote() {
   return false
 }
 
+function scheduleCloudPush() {
+  if (!isCloudConfigured()) return
+  if (cloudTimer) clearTimeout(cloudTimer)
+  cloudTimer = setTimeout(() => {
+    pushAllToCloud().catch(() => {})
+  }, 1500)
+}
+
+export async function pushAllToCloud() {
+  if (!isCloudConfigured()) return false
+  const meta = getTripMeta()
+  const hotelsList = getHotels()
+  const travelersList = getTravelers()
+  const flightsData = getFlights()
+  const daysList = getDays()
+  const ledgerState = getLedgerState()
+  const budgetState = getBudgetState()
+  const updatedAt = new Date().toISOString()
+  const createdAt = cloudMeta.createdAt || updatedAt
+
+  const data = {
+    [TIMELINE_KEY]: getTimelineOverrides(),
+    [REMINDER_KEY]: getReminderOverrides(),
+    [BUDGET_KEY]: budgetState,
+    [LEDGER_KEY]: ledgerState,
+    [TRIP_KEY]: getTripEdits(),
+  }
+
+  cloudMeta = { createdAt, updatedAt }
+  writeLocal(CLOUD_META_KEY, cloudMeta)
+
+  await upsertTripRow({
+    id: TRIP_ID,
+    title: meta.title,
+    start_date: '2026-08-21',
+    end_date: '2026-08-24',
+    budget: meta.budgetPerPerson,
+    data,
+    updated_at: updatedAt,
+  })
+  await upsertRows(
+    'trip_members',
+    travelersList.map((t, i) => ({
+      id: t.id || `traveler-${i + 1}`,
+      trip_id: TRIP_ID,
+      name: t.name || '',
+      avatar: t.avatar || '',
+    })),
+  )
+  await upsertRows(
+    'hotels',
+    hotelsList.map((h, i) => ({
+      id: h.locationId || `hotel-${i}`,
+      trip_id: TRIP_ID,
+      name: h.name || '',
+      address: h.address || '',
+      location_id: h.locationId || '',
+      check_in: h.checkInDate || '',
+      check_out: h.checkOutDate || '',
+      note: h.note || '',
+    })),
+  )
+  const allFlights = [
+    ...(flightsData.outbound || []).map((f) => ({ ...f, type: 'outbound' })),
+    ...(flightsData.return || []).map((f) => ({ ...f, type: 'return' })),
+  ]
+  await upsertRows(
+    'flights',
+    allFlights.map((f, i) => ({
+      id: `flight-${i}`,
+      trip_id: TRIP_ID,
+      type: f.type,
+      flight_no: f.flight || '',
+      date: f.date || '',
+      time: f.note || '',
+    })),
+  )
+  await upsertRows(
+    'events',
+    daysList.flatMap((day) =>
+      day.entries.map((entry) => ({
+        id: entry.id || `evt-${day.id}-${day.entries.indexOf(entry)}`,
+        trip_id: TRIP_ID,
+        date: day.date,
+        time: entry.time || '',
+        title: entry.title || '',
+        location_id:
+          entry.locationId || (entry.pointIds && entry.pointIds.length ? `loc-${entry.pointIds[0]}` : null) || null,
+        restaurant_id: entry.restaurantId ? String(entry.restaurantId) : null,
+      })),
+    ),
+  )
+  await upsertRows(
+    'expenses',
+    (ledgerState.entries || []).map((entry) => ({
+      id: entry.id || `exp-${Date.now()}`,
+      trip_id: TRIP_ID,
+      payer: '',
+      amount_krw: '',
+      amount_rmb: entry.amount || 0,
+      category: entry.category || '',
+    })),
+  )
+  return true
+}
+
+function applyCloudData(data) {
+  if (!data || typeof data !== 'object') return
+  const keys = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY]
+  keys.forEach((key) => {
+    if (data[key] && typeof data[key] === 'object') writeLocal(key, data[key])
+  })
+  if (remoteEnabled) {
+    remoteState = { ...(remoteState || {}), ...data }
+  }
+}
+
+export async function initCloudSync() {
+  if (!isCloudConfigured()) return false
+  try {
+    const row = await fetchTripRow(TRIP_ID)
+    if (!row) return true
+    const remoteTime = Date.parse(row.updated_at || '')
+    const localTime = Date.parse(cloudMeta.updatedAt || '')
+    if (remoteTime > localTime) {
+      applyCloudData(row.data)
+      cloudMeta = { createdAt: row.created_at || cloudMeta.createdAt, updatedAt: row.updated_at }
+      writeLocal(CLOUD_META_KEY, cloudMeta)
+      return true
+    }
+    if (localTime > remoteTime) {
+      await pushAllToCloud()
+    }
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function pollCloud() {
+  if (!isCloudConfigured()) return false
+  try {
+    const row = await fetchTripRow(TRIP_ID)
+    if (!row) return false
+    const remoteTime = Date.parse(row.updated_at || '')
+    const localTime = Date.parse(cloudMeta.updatedAt || '')
+    if (remoteTime > localTime) {
+      applyCloudData(row.data)
+      cloudMeta = { createdAt: row.created_at || cloudMeta.createdAt, updatedAt: row.updated_at }
+      writeLocal(CLOUD_META_KEY, cloudMeta)
+      return true
+    }
+    if (localTime > remoteTime) {
+      await pushAllToCloud()
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
 export function getTimelineOverrides() {
   return read(TIMELINE_KEY) || {}
 }
 
 export function saveTimelineOverrides(value) {
   write(TIMELINE_KEY, value || {})
+  scheduleCloudPush()
 }
 
 export function getDays(overrides = getTimelineOverrides()) {
@@ -110,6 +296,7 @@ export function getTripEdits() {
 
 export function saveTripEdits(value) {
   write(TRIP_KEY, value || {})
+  scheduleCloudPush()
 }
 
 function getHotelMap() {
@@ -155,6 +342,7 @@ export function getReminderOverrides() {
 
 export function saveReminderOverrides(value) {
   write(REMINDER_KEY, value || {})
+  scheduleCloudPush()
 }
 
 export function getReminders(overrides = getReminderOverrides()) {
@@ -203,6 +391,7 @@ export function getBudgetState() {
 
 export function saveBudgetState(value) {
   write(BUDGET_KEY, value)
+  scheduleCloudPush()
 }
 
 export function getLedgerState() {
@@ -212,6 +401,7 @@ export function getLedgerState() {
 
 export function saveLedgerState(value) {
   write(LEDGER_KEY, value)
+  scheduleCloudPush()
 }
 
 const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY]

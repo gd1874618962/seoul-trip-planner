@@ -9,7 +9,7 @@ import Budget from './pages/Budget'
 import Reminders from './pages/Reminders'
 import Ledger from './pages/Ledger'
 import EditTrip from './pages/EditTrip'
-import { pollRemote } from './data/store'
+import { pollCloud, pollRemote } from './data/store'
 
 export const tabs = [
   { id: 'home', label: '首页', icon: Home },
@@ -27,8 +27,8 @@ export default function App() {
 
   useEffect(() => {
     const timer = setInterval(async () => {
-      const changed = await pollRemote()
-      if (changed) setTick((v) => v + 1)
+      const results = await Promise.all([pollRemote(), pollCloud()])
+      if (results.some(Boolean)) setTick((v) => v + 1)
     }, 5000)
     return () => clearInterval(timer)
   }, [])

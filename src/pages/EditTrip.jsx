@@ -10,10 +10,16 @@ import {
   Users,
 } from 'lucide-react'
 import {
+  getSupabaseConfig,
+  saveSupabaseConfig,
+  testCloudConnection,
+} from '../data/supabase'
+import {
   getFlights,
   getHotels,
   getTravelers,
   getTripMeta,
+  pushAllToCloud,
   saveTripEdits,
 } from '../data/store'
 import PageHeader from '../components/PageHeader'
@@ -43,6 +49,8 @@ export default function EditTrip({ onNavigate }) {
   const [flightData, setFlightData] = useState(() => getFlights())
   const [hotelData, setHotelData] = useState(() => getHotels())
   const [travelerData, setTravelerData] = useState(() => getTravelers())
+  const [cloudConfig, setCloudConfig] = useState(() => getSupabaseConfig())
+  const [cloudStatus, setCloudStatus] = useState('未连接')
 
   const patchMeta = (field, value) => setMeta({ ...meta, [field]: value })
 
@@ -83,6 +91,18 @@ export default function EditTrip({ onNavigate }) {
     if (window.confirm('确定恢复默认基础资料吗？')) {
       saveTripEdits({})
       onNavigate('home')
+    }
+  }
+
+  const connectCloud = async () => {
+    saveSupabaseConfig(cloudConfig)
+    setCloudStatus('连接中...')
+    const result = await testCloudConnection()
+    if (result.ok) {
+      setCloudStatus('已连接')
+      pushAllToCloud().catch(() => {})
+    } else {
+      setCloudStatus(`连接失败：${result.reason}`)
     }
   }
 
@@ -225,6 +245,39 @@ export default function EditTrip({ onNavigate }) {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-4 px-4">
+        <div className="rounded-lg border border-blue/15 bg-gradient-to-br from-mist via-white to-cream p-4 shadow-card">
+          <h2 className="text-[15px] font-black text-ink">云同步（Supabase）</h2>
+          <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate">
+            填写 Supabase 项目地址和 anon key 后，修改会自动上传；其他设备刷新后同步。
+          </p>
+          <div className="mt-3 space-y-2">
+            <Field label="Project URL" value={cloudConfig.url} placeholder="https://xxxx.supabase.co" onChange={(v) => setCloudConfig({ ...cloudConfig, url: v })} />
+            <label className="block min-w-0">
+              <span className="mb-1 block text-[10px] font-bold text-slate">Anon Key</span>
+              <input
+                type="password"
+                className={inputCls}
+                value={cloudConfig.anonKey}
+                placeholder="eyJhbGciOi..."
+                onChange={(e) => setCloudConfig({ ...cloudConfig, anonKey: e.target.value })}
+              />
+            </label>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={connectCloud}
+              className="inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-xs font-bold text-white active:opacity-90"
+            >
+              <Check size={14} />
+              保存并连接
+            </button>
+            <span className="text-[11px] font-bold text-slate">{cloudStatus}</span>
           </div>
         </div>
       </section>
