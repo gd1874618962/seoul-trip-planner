@@ -1,4 +1,13 @@
-import { budget as defaultBudget, days, reminders, restaurants, tripMeta } from './trip'
+import {
+  budget as defaultBudget,
+  days,
+  flights,
+  hotels,
+  points,
+  reminders,
+  restaurants,
+  tripMeta,
+} from './trip'
 
 const TIMELINE_KEY = 'seoul-timeline-edits-v1'
 const REMINDER_KEY = 'seoul-reminder-edits-v1'
@@ -83,8 +92,26 @@ export function saveTimelineOverrides(value) {
 export function getDays(overrides = getTimelineOverrides()) {
   return days.map((d) => ({
     ...d,
-    entries: overrides[d.id] ? [...overrides[d.id]] : [...d.entries],
+    entries: (overrides[d.id] ? [...overrides[d.id]] : [...d.entries]).map((entry, index) =>
+      entry.id ? entry : { ...entry, id: `evt-${d.id}-${index}` },
+    ),
   }))
+}
+
+export function getTripMeta() {
+  return tripMeta
+}
+
+export function getFlights() {
+  return flights
+}
+
+export function getHotels() {
+  return hotels
+}
+
+export function getPoints() {
+  return points
 }
 
 export function getReminderOverrides() {
@@ -195,9 +222,8 @@ export function getRestaurants() {
     for (const entry of entries) {
       if (!entry.restaurantId) continue
       const original = restaurants.find((r) => r.id === entry.restaurantId)
-      const cleanName = entry.title.replace(NAME_PREFIX, '').trim()
       edits[entry.restaurantId] = {
-        name: cleanName || original?.name,
+        name: original?.name,
         priceRange: entry.cost && entry.cost !== '—' ? entry.cost : undefined,
         note: entry.note || undefined,
         recommend: entry.recommend || undefined,

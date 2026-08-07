@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ExternalLink, MapPin } from 'lucide-react'
-import { points } from '../data/trip'
+import { getPoints } from '../data/store'
 import TripMap, { dayColors } from '../components/TripMap'
 import PageHeader from '../components/PageHeader'
 
@@ -14,6 +14,7 @@ const filters = [
 
 export default function MapPage() {
   const [filter, setFilter] = useState('all')
+  const points = getPoints()
   const filtered = filter === 'all' ? points : points.filter((p) => p.day === filter)
 
   return (

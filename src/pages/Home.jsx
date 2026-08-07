@@ -10,8 +10,16 @@ import {
   Upload,
   Wallet,
 } from 'lucide-react'
-import { flights, heroImage, hotels, tripMeta } from '../data/trip'
-import { exportAllState, getBudgetState, getDays, importAllState } from '../data/store'
+import { heroImage } from '../data/trip'
+import {
+  exportAllState,
+  getBudgetState,
+  getDays,
+  getFlights,
+  getHotels,
+  getTripMeta,
+  importAllState,
+} from '../data/store'
 
 function SectionTitle({ title, sub, action }) {
   return (
@@ -28,6 +36,9 @@ function SectionTitle({ title, sub, action }) {
 export default function HomePage({ onNavigate }) {
   const fileRef = useRef(null)
   const days = getDays()
+  const tripMeta = getTripMeta()
+  const flights = getFlights()
+  const hotels = getHotels()
   const budgetState = getBudgetState()
   const totalSpent = budgetState.spent.reduce((sum, item) => sum + Number(item.amount || 0), 0)
   const remaining = budgetState.perPerson - totalSpent

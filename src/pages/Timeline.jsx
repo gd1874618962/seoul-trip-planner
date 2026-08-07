@@ -26,8 +26,7 @@ import {
   UtensilsCrossed,
   Wallet,
 } from 'lucide-react'
-import { days } from '../data/trip'
-import { getTimelineOverrides, saveTimelineOverrides } from '../data/store'
+import { getDays, getTimelineOverrides, saveTimelineOverrides } from '../data/store'
 import PageHeader from '../components/PageHeader'
 
 const typeMeta = {
@@ -128,6 +127,7 @@ export default function Timeline() {
   const [activeDay, setActiveDay] = useState(1)
   const [editing, setEditing] = useState(false)
   const [overrides, setOverrides] = useState(() => getTimelineOverrides())
+  const days = getDays()
   const baseDay = days.find((d) => d.id === activeDay)
   const entries = overrides[activeDay] ? [...overrides[activeDay]] : [...baseDay.entries]
 
@@ -158,7 +158,16 @@ export default function Timeline() {
   const addEntry = () => {
     setEntries([
       ...entries,
-      { time: '新时间', title: '新地点', type: '自定义', address: '', transport: '', cost: '', note: '' },
+      {
+        id: `evt-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        time: '新时间',
+        title: '新地点',
+        type: '自定义',
+        address: '',
+        transport: '',
+        cost: '',
+        note: '',
+      },
     ])
   }
 
@@ -253,7 +262,7 @@ export default function Timeline() {
           <div className="absolute bottom-2 left-[52px] top-2 w-px bg-line" />
           <div className="space-y-3">
             {entries.map((entry, index) => (
-              <div key={`${activeDay}-${index}`} className="relative flex gap-3">
+              <div key={entry.id || `${activeDay}-${index}`} className="relative flex gap-3">
                 <div className="w-[52px] shrink-0 pt-3 text-right">
                   <span className="text-[11px] font-black leading-tight text-ink">{entry.time}</span>
                 </div>

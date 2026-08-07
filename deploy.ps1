@@ -43,19 +43,33 @@ if ($commitExit -eq 0) {
 Pop-Location
 
 Write-Host 'Waiting for Pages deployment'
-$localHash = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $dist 'index.html')).Hash
+$localBytes = [System.IO.File]::ReadAllBytes((Join-Path $dist 'index.html'))
+$sha = [System.Security.Cryptography.SHA256]::Create()
+$localHash = [BitConverter]::ToString($sha.ComputeHash($localBytes)).Replace('-', '')
 $url = 'https://gd1874618962.github.io/seoul-trip-planner/index.html'
+$client = New-Object System.Net.Http.HttpClient
+$client.Timeout = [TimeSpan]::FromSeconds(5)
 $ok = $false
-for ($i = 0; $i -lt 30; $i++) {
+$maxAttempts = 30
+for ($i = 1; $i -le $maxAttempts; $i++) {
   Start-Sleep -Seconds 10
   try {
-    $resp = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 20
-    $tmp = Join-Path $env:TEMP ('pages-' + [guid]::NewGuid().ToString() + '.html')
-    [System.IO.File]::WriteAllText($tmp, $resp.Content, [System.Text.Encoding]::UTF8)
-    $remoteHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $tmp).Hash
-    Remove-Item -LiteralPath $tmp -Force
-    if ($remoteHash -eq $localHash) { $ok = $true; break }
-  } catch {}
+    $remoteBytes = $client.GetByteArrayAsync($url).GetAwaiter().GetResult()
+    $remoteHash = [BitConverter]::ToString($sha.ComputeHash($remoteBytes)).Replace('-', '')
+    Write-Host "[wait $i/$maxAttempts] http=200 size=$($remoteBytes.Length) hash=$remoteHash"
+    if ($remoteHash -eq $localHash) {
+      $ok = $true
+      Write-Host "DEPLOY_OK $url"
+      break
+    }
+  } catch {
+    Write-Host "[wait $i/$maxAttempts] request timeout or failed: $($_.Exception.Message)"
+  }
 }
-if ($ok) { Write-Host "DEPLOY_OK $url" } else { Write-Host "DEPLOY_PENDING $url" }
+$client.Dispose()
+if (-not $ok) {
+  Write-Host '部署可能仍在进行，请手动检查Pages状态。'
+  Write-Host "URL: $url"
+  Write-Host "local hash: $localHash"
+}
 Pop-Location

@@ -28,7 +28,9 @@ export default function Ledger() {
   const [form, setForm] = useState(blankForm)
   const entries = Array.isArray(state.entries) ? state.entries : []
   const sorted = [...entries].sort(
-    (a, b) => (b.date || '').localeCompare(a.date || '') || (b.id || 0) - (a.id || 0),
+    (a, b) =>
+      (b.date || '').localeCompare(a.date || '') ||
+      String(b.id || '').localeCompare(String(a.id || '')),
   )
   const expenseTotal = entries
     .filter((e) => e.type !== 'income')
@@ -59,7 +61,15 @@ export default function Ledger() {
     const record = { ...form, amount }
     const next = form.id
       ? { entries: entries.map((x) => (x.id === form.id ? record : x)) }
-      : { entries: [...entries, { ...record, id: Date.now() }] }
+      : {
+          entries: [
+            ...entries,
+            {
+              ...record,
+              id: `exp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+            },
+          ],
+        }
     persist(next)
     setForm(blankForm)
   }
