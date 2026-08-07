@@ -1,4 +1,4 @@
-import { buildTransportPlan } from '../utils/transportEngine'
+import { buildTransportPlan } from '../utils/transportEngine.js'
 
 const routeCache = new Map()
 
