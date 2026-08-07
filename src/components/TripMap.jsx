@@ -54,6 +54,16 @@ export default function TripMap({ items }) {
     }))
     .filter((group) => group.route.length > 1)
 
+  const transportRoutes = []
+  getDays().forEach((day) => {
+    day.entries.forEach((entry) => {
+      const t = entry.transport
+      if (t?.origin?.lat != null && t?.destination?.lat != null) {
+        transportRoutes.push([t.origin, t.destination])
+      }
+    })
+  })
+
   if (getNaverClientId()) {
     return (
       <NaverMap
@@ -74,6 +84,16 @@ export default function TripMap({ items }) {
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FitBounds items={items} />
+        {transportRoutes.map(([a, b], i) => (
+          <Polyline
+            key={`transport-${i}`}
+            positions={[
+              [a.lat, a.lng],
+              [b.lat, b.lng],
+            ]}
+            pathOptions={{ color: '#D97B5F', weight: 2, opacity: 0.75, dashArray: '2 6' }}
+          />
+        ))}
         {byDay.map(({ day, route }) => (
           <Polyline
             key={day}

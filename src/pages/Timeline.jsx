@@ -27,8 +27,9 @@ import {
   UtensilsCrossed,
   Wallet,
 } from 'lucide-react'
-import { getDays, getTimelineOverrides, saveTimelineOverrides } from '../data/store'
+import { getDays, getPoints, getTimelineOverrides, saveTimelineOverrides } from '../data/store'
 import PageHeader from '../components/PageHeader'
+import { buildTransportPlan } from '../utils/transportEngine'
 
 const typeMeta = {
   抵达: { icon: Plane, color: 'bg-mist text-blue' },
@@ -59,6 +60,40 @@ function TransportIcon({ mode }) {
   const meta = transportMeta[mode] || { icon: Bus, color: 'text-sage' }
   const Icon = meta.icon
   return <Icon size={12} className={meta.color} />
+}
+
+function TransportCard({ transport }) {
+  if (!transport?.options?.length) return null
+  return (
+    <div className="mt-2.5 space-y-2">
+      <p className="text-[10px] font-bold text-slate">
+        交通攻略{transport.status === 'estimated' ? '（估算，接入 API 后为真实线路）' : ''}
+      </p>
+      {transport.options.map((opt, i) => (
+        <div key={`${opt.type}-${i}`} className="rounded-md border border-blue/10 bg-mist/40 p-2.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-black text-ink">
+              {opt.type === 'subway' ? '🚇 地铁' : opt.type === 'taxi' ? '🚕 打车' : '🚶 步行'}
+            </span>
+            <span className="text-[10px] font-bold text-slate">
+              {opt.duration} · {opt.costKRW}
+            </span>
+          </div>
+          {opt.steps && opt.steps.length > 0 && (
+            <div className="mt-1.5 space-y-0.5">
+              {opt.steps.map((step, j) => (
+                <p key={j} className="text-[10px] font-medium leading-relaxed text-slate">
+                  {step.mode === 'subway'
+                    ? `${step.line || '地铁'}：${step.from} → ${step.to}`
+                    : `🚶 ${step.description}`}
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function IconForType({ type }) {
@@ -291,9 +326,11 @@ export default function Timeline() {
   const [activeDay, setActiveDay] = useState(1)
   const [editing, setEditing] = useState(false)
   const [overrides, setOverrides] = useState(() => getTimelineOverrides())
+  const [genError, setGenError] = useState({})
   const overridesRef = useRef(overrides)
   const persistTimer = useRef(null)
   const days = getDays()
+  const pointMap = Object.fromEntries(getPoints().map((p) => [p.locationId, p]))
   const baseDay = days.find((d) => d.id === activeDay)
   const entries = overrides[activeDay] ? [...overrides[activeDay]] : [...baseDay.entries]
 
@@ -334,6 +371,40 @@ export default function Timeline() {
   const patchEntryFields = (index, fields) => {
     const next = entries.map((entry, i) => (i === index ? { ...entry, ...fields } : entry))
     setEntries(next)
+  }
+
+  const getCoords = (entry) => {
+    if (entry.lat != null && entry.lng != null) return { lat: Number(entry.lat), lng: Number(entry.lng) }
+    const point = entry.locationId ? pointMap[entry.locationId] : null
+    return point ? { lat: Number(point.lat), lng: Number(point.lng) } : null
+  }
+
+  const generateTransport = (index) => {
+    const current = entries[index]
+    const previous = entries[index - 1]
+    const origin = previous ? getCoords(previous) : null
+    const destination = getCoords(current)
+    if (!origin || !destination) {
+      setGenError((prev) => ({ ...prev, [index]: '暂无自动路线，请使用地图导航' }))
+      return
+    }
+    const plan = buildTransportPlan(
+      { name: previous?.title || '出发地', ...origin },
+      { name: current.title, ...destination },
+    )
+    if (!plan) {
+      setGenError((prev) => ({ ...prev, [index]: '暂无自动路线，请使用地图导航' }))
+      return
+    }
+    setGenError((prev) => ({ ...prev, [index]: '' }))
+    patchEntryFields(index, {
+      transport: {
+        status: 'estimated',
+        origin: { name: previous?.title || '出发地', ...origin },
+        destination: { name: current.title, ...destination },
+        options: plan.options,
+      },
+    })
   }
 
   const removeEntry = (index) => {
@@ -643,6 +714,19 @@ export default function Timeline() {
                             </span>
                           ))}
                         </div>
+                      )}
+                      <TransportCard transport={entry.transport} />
+                      {!entry.transport?.options?.length && (
+                        <button
+                          type="button"
+                          onClick={() => generateTransport(index)}
+                          className="mt-2.5 inline-flex items-center gap-1 rounded-md bg-blue/10 px-2.5 py-1.5 text-[10px] font-bold text-blue active:bg-mist"
+                        >
+                          生成交通攻略
+                        </button>
+                      )}
+                      {genError[index] && (
+                        <p className="mt-1.5 text-[10px] font-bold text-coral">{genError[index]}</p>
                       )}
                       {entry.note && (
                         <p className="mt-2.5 border-t border-line/70 pt-2 text-[11px] font-medium leading-relaxed text-slate">
