@@ -8,6 +8,7 @@ import Restaurants from './pages/Restaurants'
 import Budget from './pages/Budget'
 import Reminders from './pages/Reminders'
 import Ledger from './pages/Ledger'
+import EditTrip from './pages/EditTrip'
 import { pollRemote } from './data/store'
 
 export const tabs = [
@@ -48,6 +49,7 @@ export default function App() {
           {page === 'budget' && <Budget />}
           {page === 'reminders' && <Reminders />}
           {page === 'ledger' && <Ledger />}
+          {page === 'editTrip' && <EditTrip onNavigate={navigate} />}
         </main>
         <BottomNav current={page} onNavigate={navigate} />
       </div>

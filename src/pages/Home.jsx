@@ -5,6 +5,7 @@ import {
   ChevronRight,
   Download,
   MapPin,
+  Pencil,
   Plane,
   Ticket,
   Upload,
@@ -120,6 +121,14 @@ export default function HomePage({ onNavigate }) {
             </div>
           ))}
         </div>
+        <button
+          type="button"
+          onClick={() => onNavigate('editTrip')}
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue/20 bg-mist/60 py-2.5 text-xs font-bold text-blue active:bg-mist"
+        >
+          <Pencil size={14} />
+          编辑基础资料（航班/酒店/成员）
+        </button>
       </section>
 
       <section className="mt-6 px-4">

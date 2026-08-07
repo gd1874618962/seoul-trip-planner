@@ -6,6 +6,7 @@ import {
   points,
   reminders,
   restaurants,
+  travelers,
   tripMeta,
 } from './trip'
 
@@ -13,6 +14,7 @@ const TIMELINE_KEY = 'seoul-timeline-edits-v1'
 const REMINDER_KEY = 'seoul-reminder-edits-v1'
 const BUDGET_KEY = 'seoul-budget-v1'
 const LEDGER_KEY = 'seoul-ledger-v1'
+const TRIP_KEY = 'seoul-trip-edits-v1'
 const STATE_URL = '/api/state'
 
 let remoteState = null
@@ -90,28 +92,61 @@ export function saveTimelineOverrides(value) {
 }
 
 export function getDays(overrides = getTimelineOverrides()) {
+  const hotelMap = getHotelMap()
   return days.map((d) => ({
     ...d,
-    entries: (overrides[d.id] ? [...overrides[d.id]] : [...d.entries]).map((entry, index) =>
-      entry.id ? entry : { ...entry, id: `evt-${d.id}-${index}` },
-    ),
+    entries: (overrides[d.id] ? [...overrides[d.id]] : [...d.entries]).map((entry, index) => {
+      const normalized = entry.id ? entry : { ...entry, id: `evt-${d.id}-${index}` }
+      const hotel = normalized.locationId ? hotelMap[normalized.locationId] : null
+      if (!hotel) return normalized
+      return { ...normalized, address: hotel.address || normalized.address }
+    }),
   }))
 }
 
+export function getTripEdits() {
+  return read(TRIP_KEY) || {}
+}
+
+export function saveTripEdits(value) {
+  write(TRIP_KEY, value || {})
+}
+
+function getHotelMap() {
+  const map = {}
+  getHotels().forEach((hotel) => {
+    if (hotel.locationId) map[hotel.locationId] = hotel
+  })
+  return map
+}
+
 export function getTripMeta() {
-  return tripMeta
+  return { ...tripMeta, ...(getTripEdits().meta || {}) }
 }
 
 export function getFlights() {
+  const saved = getTripEdits().flights
+  if (saved && Array.isArray(saved.outbound) && Array.isArray(saved.return)) return saved
   return flights
 }
 
 export function getHotels() {
-  return hotels
+  const saved = getTripEdits().hotels
+  return Array.isArray(saved) ? saved : hotels
+}
+
+export function getTravelers() {
+  const saved = getTripEdits().travelers
+  return Array.isArray(saved) ? saved : travelers
 }
 
 export function getPoints() {
-  return points
+  const hotelMap = getHotelMap()
+  return points.map((point) => {
+    const hotel = point.locationId ? hotelMap[point.locationId] : null
+    if (!hotel) return point
+    return { ...point, name: hotel.name || point.name, address: hotel.address || point.address }
+  })
 }
 
 export function getReminderOverrides() {
@@ -139,6 +174,12 @@ export function getReminders(overrides = getReminderOverrides()) {
       seen.add(group.id)
     }
   })
+  const airport = ordered.find((group) => group.id === 'airport')
+  if (airport && airport.items.length) {
+    const hotelsList = getHotels()
+    const hotel = hotelsList[1] || hotelsList[0]
+    if (hotel) airport.items[0] = `8.24 约 03:00 从 ${hotel.name}（${hotel.address}）出发`
+  }
   return ordered
 }
 
@@ -173,7 +214,7 @@ export function saveLedgerState(value) {
   write(LEDGER_KEY, value)
 }
 
-const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY]
+const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY]
 
 export function exportAllState() {
   const data = { version: 1, savedAt: new Date().toISOString(), data: {} }

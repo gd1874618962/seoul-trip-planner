@@ -57,6 +57,12 @@ export const hotels = [
     price: '360 RMB / 2人',
     perPerson: '人均 180 RMB',
     features: ['睡觉', '洗澡', '安全', '行李寄存'],
+    locationId: 'loc-1',
+    checkInDate: '2026-08-21',
+    checkOutDate: '2026-08-22',
+    checkInTime: '12:00 后',
+    checkOutTime: '10:00',
+    note: '女生专属民宿，可寄存行李',
   },
   {
     night: '8.22 - 8.23',
@@ -67,6 +73,27 @@ export const hotels = [
     price: '已含在演出 + 住宿预算',
     perPerson: '演唱会接驳车',
     features: ['近金浦机场', 'Hyundai Premium Outlet', '演唱会接驳车'],
+    locationId: 'loc-12',
+    checkInDate: '2026-08-22',
+    checkOutDate: '2026-08-24',
+    checkInTime: '15:00 后',
+    checkOutTime: '03:00',
+    note: '演唱会住宿，提供接驳车',
+  },
+]
+
+export const travelers = [
+  {
+    id: 'traveler-1',
+    name: '成员 1',
+    avatar: '',
+    note: '27 岁',
+  },
+  {
+    id: 'traveler-2',
+    name: '成员 2',
+    avatar: '',
+    note: '',
   },
 ]
 
