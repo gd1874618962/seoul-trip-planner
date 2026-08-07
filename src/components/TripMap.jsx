@@ -89,10 +89,10 @@ export default function TripMap({ items }) {
           >
             <Popup>
               <div className="min-w-[160px] text-[13px]">
-                <p className="font-bold text-ink">{p.name}</p>
-                <p className="mt-0.5 text-[11px] text-slate">{p.address}</p>
+                <p className="font-bold text-ink">{p.displayName || p.name}</p>
+                <p className="mt-0.5 text-[11px] text-slate">{p.officialAddress || p.address}</p>
                 <a
-                  href={`https://map.naver.com/p/search/${encodeURIComponent(p.naver)}`}
+                  href={`https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`}
                   target="_blank"
                   rel="noreferrer"
                   className="mt-2 inline-flex rounded-md bg-blue px-2.5 py-1 text-[11px] font-bold text-white"

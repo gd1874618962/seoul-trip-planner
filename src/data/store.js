@@ -63,6 +63,24 @@ export function getTripId() {
   return getTripMeta().tripId || 'seoul-2026'
 }
 
+const TRANSPORT_RULES = {
+  walk: { minutes: 15, cost: '免费' },
+  transit: { minutes: 25, cost: '约 1,450 KRW' },
+  taxi: { minutes: 20, cost: '约 15,000 KRW' },
+  other: { minutes: 20, cost: '—' },
+}
+
+function parseStartMinutes(text) {
+  const m = String(text || '').match(/^(\d{1,2}):(\d{2})/)
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null
+}
+
+function fmtMinutes(minutes) {
+  const h = Math.floor(minutes / 60) % 24
+  const m = Math.round(minutes % 60)
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+}
+
 function read(key) {
   try {
     if (remoteEnabled && remoteState && remoteState[key] !== undefined) return remoteState[key]
@@ -345,16 +363,32 @@ export function saveTimelineOverrides(value) {
 
 export function getDays(overrides = getTimelineOverrides()) {
   const hotelMap = getHotelMap()
-  return days.map((d) => ({
-    ...d,
-    tripId: getTripId(),
-    entries: (overrides[d.id] ? [...overrides[d.id]] : [...d.entries]).map((entry, index) => {
+  return days.map((d) => {
+    const raw = overrides[d.id] ? [...overrides[d.id]] : [...d.entries]
+    const entries = raw.map((entry, index) => {
       const normalized = entry.id ? entry : { ...entry, id: `evt-${d.id}-${index}` }
       const hotel = normalized.locationId ? hotelMap[normalized.locationId] : null
-      if (!hotel) return normalized
-      return { ...normalized, address: hotel.address || normalized.address }
-    }),
-  }))
+      const withHotel = hotel ? { ...normalized, address: hotel.address || normalized.address } : normalized
+      const enriched = { ...withHotel, status: withHotel.status || 'planned' }
+      if (enriched.transportMode && !enriched.transportEta) {
+        const rule = TRANSPORT_RULES[enriched.transportMode]
+        if (rule) {
+          enriched.transportEta = `约 ${rule.minutes} 分钟`
+          if (!enriched.transportCostEstimate) enriched.transportCostEstimate = rule.cost
+        }
+      }
+      return enriched
+    })
+    entries.forEach((entry, index) => {
+      if (index === 0) return
+      const start = parseStartMinutes(entry.time)
+      const rule = TRANSPORT_RULES[entries[index - 1].transportMode]
+      if (start != null && rule && start - rule.minutes >= 0) {
+        entry.suggestedDeparture = fmtMinutes(start - rule.minutes)
+      }
+    })
+    return { ...d, tripId: getTripId(), entries }
+  })
 }
 
 export function getTripEdits() {
@@ -405,7 +439,13 @@ export function getPoints() {
     const base = hotel
       ? { ...point, name: hotel.name || point.name, address: hotel.address || point.address }
       : point
-    return { tripId, ...base }
+    return {
+      tripId,
+      ...base,
+      displayName: base.displayName || base.name,
+      officialAddress: base.officialAddress || base.address,
+      coordinates: { lat: base.lat, lng: base.lng },
+    }
   })
 }
 

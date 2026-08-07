@@ -436,8 +436,10 @@ export default function Timeline() {
             <h2 className="mt-1 font-display text-xl font-bold leading-snug text-ink">{baseDay.theme}</h2>
           </div>
           <div className="shrink-0 text-center">
-            <p className="text-[10px] font-bold text-slate">节点</p>
-            <p className="text-sm font-black text-blue">{entries.length}</p>
+            <p className="text-[10px] font-bold text-slate">已完成</p>
+            <p className="text-sm font-black text-blue">
+              {entries.filter((e) => e.status === 'completed').length}/{entries.length}
+            </p>
           </div>
         </div>
       </div>
@@ -457,7 +459,7 @@ export default function Timeline() {
                 <div
                   className={`mb-1 flex-1 rounded-lg border bg-white p-3.5 shadow-card ${
                     entry.isBackup ? 'border-dashed border-sand bg-cream/60' : 'border-line'
-                  }`}
+                  } ${entry.status === 'completed' ? 'opacity-70' : ''}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -469,6 +471,23 @@ export default function Timeline() {
                     </span>
                     {editing && (
                       <span className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            patchEntry(
+                              index,
+                              'status',
+                              entry.status === 'completed' ? 'planned' : 'completed',
+                            )
+                          }
+                          className={`flex h-7 items-center gap-1 rounded-md border px-2 text-[10px] font-bold active:bg-cream ${
+                            entry.status === 'completed'
+                              ? 'border-sage/40 bg-mist text-sage'
+                              : 'border-line bg-white text-slate'
+                          }`}
+                        >
+                          {entry.status === 'completed' ? '已完成' : '标记完成'}
+                        </button>
                         <button
                           type="button"
                           onClick={() => move(index, -1)}
@@ -571,7 +590,13 @@ export default function Timeline() {
                     </div>
                   ) : (
                     <>
-                      <h3 className="mt-2 text-[15px] font-black leading-snug text-ink">{entry.title}</h3>
+                      <h3
+                        className={`mt-2 text-[15px] font-black leading-snug ${
+                          entry.status === 'completed' ? 'text-slate/60 line-through' : 'text-ink'
+                        }`}
+                      >
+                        {entry.title}
+                      </h3>
                       {entry.address && (
                         <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate">{entry.address}</p>
                       )}
@@ -581,6 +606,23 @@ export default function Timeline() {
                             <TransportIcon mode={entry.transportMode} />
                             {entry.transport}
                             {entry.transportCost ? <span className="text-slate/70"> · {entry.transportCost}</span> : null}
+                          </span>
+                        )}
+                        {entry.transportEta && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
+                            <Clock size={12} className="text-blue" />
+                            {entry.transportEta}
+                          </span>
+                        )}
+                        {entry.transportCostEstimate && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
+                            <Wallet size={12} className="text-gold" />
+                            {entry.transportCostEstimate}
+                          </span>
+                        )}
+                        {entry.suggestedDeparture && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sage">
+                            建议出发 {entry.suggestedDeparture}
                           </span>
                         )}
                         {entry.cost && entry.cost !== '—' && (

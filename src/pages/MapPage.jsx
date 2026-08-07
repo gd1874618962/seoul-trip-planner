@@ -107,18 +107,18 @@ export default function MapPage() {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-black text-ink">{p.name}</p>
+                  <p className="truncate text-sm font-black text-ink">{p.displayName}</p>
                   <span className="shrink-0 rounded-md bg-cream px-1.5 py-0.5 text-[9px] font-bold text-gold">
                     DAY {p.day}
                   </span>
                 </div>
                 <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] font-medium text-slate">
                   <MapPin size={11} className="shrink-0" />
-                  {p.address}
+                  {p.officialAddress}
                 </p>
               </div>
               <a
-                href={`https://map.naver.com/p/search/${encodeURIComponent(p.naver)}`}
+                href={`https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex shrink-0 items-center gap-1 rounded-md bg-blue px-2.5 py-1.5 text-[11px] font-bold text-white"
