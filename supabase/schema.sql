@@ -64,8 +64,19 @@ create table if not exists expenses (
   payer text,
   amount_krw text,
   amount_rmb numeric,
-  category text
+  category text,
+  merchant text,
+  participants jsonb,
+  note text,
+  exchange_rate numeric,
+  updated_at timestamptz default now()
 );
+
+alter table expenses add column if not exists merchant text;
+alter table expenses add column if not exists participants jsonb;
+alter table expenses add column if not exists note text;
+alter table expenses add column if not exists exchange_rate numeric;
+alter table expenses add column if not exists updated_at timestamptz default now();
 
 create index if not exists idx_trip_members_trip on trip_members(trip_id);
 create index if not exists idx_hotels_trip on hotels(trip_id);
@@ -73,6 +84,11 @@ create index if not exists idx_locations_trip on locations(trip_id);
 create index if not exists idx_flights_trip on flights(trip_id);
 create index if not exists idx_events_trip on events(trip_id);
 create index if not exists idx_expenses_trip on expenses(trip_id);
+
+-- API 权限：显式授权 anon / authenticated 访问，避免依赖“自动显示新表格”
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to anon, authenticated;
+alter default privileges in schema public grant select, insert, update, delete on tables to anon, authenticated;
 
 -- Row Level Security: enable if you use Supabase Auth.
 alter table trips enable row level security;

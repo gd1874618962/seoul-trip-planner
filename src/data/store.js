@@ -236,17 +236,22 @@ export async function pushAllToCloud() {
         })),
       ),
     )
-    await upsertRows(
-      'expenses',
-      (ledgerState.entries || []).map((entry) => ({
-        id: entry.id || `exp-${Date.now()}`,
-        trip_id: tripId,
-        payer: '',
-        amount_krw: '',
-        amount_rmb: entry.amount || 0,
-        category: entry.category || '',
-      })),
-    )
+  await upsertRows(
+    'expenses',
+    (ledgerState.entries || []).map((entry) => ({
+      id: entry.id || `exp-${Date.now()}`,
+      trip_id: tripId,
+      payer: entry.payer || '',
+      amount_krw: entry.amountKRW != null ? entry.amountKRW : '',
+      amount_rmb: entry.amountRMB != null ? entry.amountRMB : entry.amount || 0,
+      category: entry.category || '',
+      merchant: entry.merchant || '',
+      participants: entry.participants || [],
+      note: entry.note || '',
+      exchange_rate: entry.exchangeRate || ledgerState.exchangeRate || 187.5,
+      updated_at: entry.updatedAt || updatedAt,
+    })),
+  )
     setSyncStatus('success')
     return true
   } catch (error) {
@@ -460,9 +465,30 @@ export function saveBudgetState(value) {
   scheduleCloudPush()
 }
 
+function normalizeExpense(entry, index) {
+  const now = new Date().toISOString()
+  return {
+    id: entry.id || `exp-${Date.now().toString(36)}-${index}`,
+    tripId: entry.tripId || getTripId(),
+    date: entry.date || '',
+    merchant: entry.merchant || entry.note || '',
+    category: entry.category || '其他',
+    amountKRW: entry.amountKRW != null ? entry.amountKRW : '',
+    amountRMB: entry.amountRMB != null ? entry.amountRMB : entry.amount || 0,
+    exchangeRate: entry.exchangeRate || 0,
+    payer: entry.payer || '',
+    participants: Array.isArray(entry.participants) ? entry.participants : [],
+    note: entry.note || '',
+    type: entry.type || 'expense',
+    createdAt: entry.createdAt || now,
+    updatedAt: entry.updatedAt || now,
+  }
+}
+
 export function getLedgerState() {
   const saved = read(LEDGER_KEY)
-  return saved && Array.isArray(saved.entries) ? saved : { entries: [] }
+  const entries = Array.isArray(saved?.entries) ? saved.entries.map(normalizeExpense) : []
+  return { exchangeRate: Number(saved?.exchangeRate) || 187.5, entries }
 }
 
 export function saveLedgerState(value) {
