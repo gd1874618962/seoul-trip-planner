@@ -22,7 +22,6 @@ const BUDGET_KEY = 'seoul-budget-v1'
 const LEDGER_KEY = 'seoul-ledger-v1'
 const TRIP_KEY = 'seoul-trip-edits-v1'
 const CLOUD_META_KEY = 'seoul-cloud-meta'
-const TRIP_ID = 'seoul-2026-0821'
 const STATE_URL = '/api/state'
 
 let remoteState = null
@@ -39,6 +38,29 @@ function readCloudMeta() {
 }
 
 let cloudMeta = readCloudMeta()
+
+let syncStatus = 'offline'
+let syncError = ''
+const syncListeners = new Set()
+
+function setSyncStatus(status, error = '') {
+  syncStatus = status
+  syncError = error
+  syncListeners.forEach((cb) => cb({ status, error }))
+}
+
+export function getSyncStatus() {
+  return { status: syncStatus, error: syncError }
+}
+
+export function onSyncStatus(cb) {
+  syncListeners.add(cb)
+  return () => syncListeners.delete(cb)
+}
+
+export function getTripId() {
+  return getTripMeta().tripId || 'seoul-2026'
+}
 
 function read(key) {
   try {
@@ -117,100 +139,120 @@ function scheduleCloudPush() {
 
 export async function pushAllToCloud() {
   if (!isCloudConfigured()) return false
-  const meta = getTripMeta()
-  const hotelsList = getHotels()
-  const travelersList = getTravelers()
-  const flightsData = getFlights()
-  const daysList = getDays()
-  const ledgerState = getLedgerState()
-  const budgetState = getBudgetState()
-  const updatedAt = new Date().toISOString()
-  const createdAt = cloudMeta.createdAt || updatedAt
+  const tripId = getTripId()
+  setSyncStatus('syncing')
+  try {
+    const meta = getTripMeta()
+    const hotelsList = getHotels()
+    const travelersList = getTravelers()
+    const flightsData = getFlights()
+    const daysList = getDays()
+    const pointsList = getPoints()
+    const ledgerState = getLedgerState()
+    const budgetState = getBudgetState()
+    const updatedAt = new Date().toISOString()
+    const createdAt = cloudMeta.createdAt || updatedAt
 
-  const data = {
-    [TIMELINE_KEY]: getTimelineOverrides(),
-    [REMINDER_KEY]: getReminderOverrides(),
-    [BUDGET_KEY]: budgetState,
-    [LEDGER_KEY]: ledgerState,
-    [TRIP_KEY]: getTripEdits(),
-  }
+    const data = {
+      [TIMELINE_KEY]: getTimelineOverrides(),
+      [REMINDER_KEY]: getReminderOverrides(),
+      [BUDGET_KEY]: budgetState,
+      [LEDGER_KEY]: ledgerState,
+      [TRIP_KEY]: getTripEdits(),
+    }
 
-  cloudMeta = { createdAt, updatedAt }
-  writeLocal(CLOUD_META_KEY, cloudMeta)
+    cloudMeta = { createdAt, updatedAt }
+    writeLocal(CLOUD_META_KEY, cloudMeta)
 
-  await upsertTripRow({
-    id: TRIP_ID,
-    title: meta.title,
-    start_date: '2026-08-21',
-    end_date: '2026-08-24',
-    budget: meta.budgetPerPerson,
-    data,
-    updated_at: updatedAt,
-  })
-  await upsertRows(
-    'trip_members',
-    travelersList.map((t, i) => ({
-      id: t.id || `traveler-${i + 1}`,
-      trip_id: TRIP_ID,
-      name: t.name || '',
-      avatar: t.avatar || '',
-    })),
-  )
-  await upsertRows(
-    'hotels',
-    hotelsList.map((h, i) => ({
-      id: h.locationId || `hotel-${i}`,
-      trip_id: TRIP_ID,
-      name: h.name || '',
-      address: h.address || '',
-      location_id: h.locationId || '',
-      check_in: h.checkInDate || '',
-      check_out: h.checkOutDate || '',
-      note: h.note || '',
-    })),
-  )
-  const allFlights = [
-    ...(flightsData.outbound || []).map((f) => ({ ...f, type: 'outbound' })),
-    ...(flightsData.return || []).map((f) => ({ ...f, type: 'return' })),
-  ]
-  await upsertRows(
-    'flights',
-    allFlights.map((f, i) => ({
-      id: `flight-${i}`,
-      trip_id: TRIP_ID,
-      type: f.type,
-      flight_no: f.flight || '',
-      date: f.date || '',
-      time: f.note || '',
-    })),
-  )
-  await upsertRows(
-    'events',
-    daysList.flatMap((day) =>
-      day.entries.map((entry) => ({
-        id: entry.id || `evt-${day.id}-${day.entries.indexOf(entry)}`,
-        trip_id: TRIP_ID,
-        date: day.date,
-        time: entry.time || '',
-        title: entry.title || '',
-        location_id:
-          entry.locationId || (entry.pointIds && entry.pointIds.length ? `loc-${entry.pointIds[0]}` : null) || null,
-        restaurant_id: entry.restaurantId ? String(entry.restaurantId) : null,
+    await upsertTripRow({
+      id: tripId,
+      title: meta.title,
+      start_date: '2026-08-21',
+      end_date: '2026-08-24',
+      budget: meta.budgetPerPerson,
+      data,
+      updated_at: updatedAt,
+    })
+    await upsertRows(
+      'trip_members',
+      travelersList.map((t, i) => ({
+        id: t.id || `traveler-${i + 1}`,
+        trip_id: tripId,
+        name: t.name || '',
+        avatar: t.avatar || '',
       })),
-    ),
-  )
-  await upsertRows(
-    'expenses',
-    (ledgerState.entries || []).map((entry) => ({
-      id: entry.id || `exp-${Date.now()}`,
-      trip_id: TRIP_ID,
-      payer: '',
-      amount_krw: '',
-      amount_rmb: entry.amount || 0,
-      category: entry.category || '',
-    })),
-  )
-  return true
+    )
+    await upsertRows(
+      'hotels',
+      hotelsList.map((h, i) => ({
+        id: h.locationId || `hotel-${i}`,
+        trip_id: tripId,
+        name: h.name || '',
+        address: h.address || '',
+        location_id: h.locationId || '',
+        check_in: h.checkInDate || '',
+        check_out: h.checkOutDate || '',
+        note: h.note || '',
+      })),
+    )
+    await upsertRows(
+      'locations',
+      pointsList.map((point) => ({
+        id: point.locationId || `loc-${point.id}`,
+        trip_id: tripId,
+        name: point.name || '',
+        address: point.address || '',
+        lat: point.lat || 0,
+        lng: point.lng || 0,
+      })),
+    )
+    const allFlights = [
+      ...(flightsData.outbound || []).map((f) => ({ ...f, type: 'outbound' })),
+      ...(flightsData.return || []).map((f) => ({ ...f, type: 'return' })),
+    ]
+    await upsertRows(
+      'flights',
+      allFlights.map((f, i) => ({
+        id: `flight-${i}`,
+        trip_id: tripId,
+        type: f.type,
+        flight_no: f.flight || '',
+        date: f.date || '',
+        time: f.note || '',
+      })),
+    )
+    await upsertRows(
+      'events',
+      daysList.flatMap((day) =>
+        day.entries.map((entry) => ({
+          id: entry.id || `evt-${day.id}-${day.entries.indexOf(entry)}`,
+          trip_id: tripId,
+          date: day.date,
+          time: entry.time || '',
+          title: entry.title || '',
+          location_id:
+            entry.locationId || (entry.pointIds && entry.pointIds.length ? `loc-${entry.pointIds[0]}` : null) || null,
+          restaurant_id: entry.restaurantId ? String(entry.restaurantId) : null,
+        })),
+      ),
+    )
+    await upsertRows(
+      'expenses',
+      (ledgerState.entries || []).map((entry) => ({
+        id: entry.id || `exp-${Date.now()}`,
+        trip_id: tripId,
+        payer: '',
+        amount_krw: '',
+        amount_rmb: entry.amount || 0,
+        category: entry.category || '',
+      })),
+    )
+    setSyncStatus('success')
+    return true
+  } catch (error) {
+    setSyncStatus('error', '云同步失败，当前使用本地缓存')
+    return false
+  }
 }
 
 function applyCloudData(data) {
@@ -225,31 +267,46 @@ function applyCloudData(data) {
 }
 
 export async function initCloudSync() {
-  if (!isCloudConfigured()) return false
+  if (!isCloudConfigured()) {
+    setSyncStatus('offline')
+    return false
+  }
+  const tripId = getTripId()
+  setSyncStatus('syncing')
   try {
-    const row = await fetchTripRow(TRIP_ID)
-    if (!row) return true
+    const row = await fetchTripRow(tripId)
+    if (!row) {
+      setSyncStatus('success')
+      return true
+    }
     const remoteTime = Date.parse(row.updated_at || '')
     const localTime = Date.parse(cloudMeta.updatedAt || '')
     if (remoteTime > localTime) {
       applyCloudData(row.data)
       cloudMeta = { createdAt: row.created_at || cloudMeta.createdAt, updatedAt: row.updated_at }
       writeLocal(CLOUD_META_KEY, cloudMeta)
+      setSyncStatus('success')
       return true
     }
     if (localTime > remoteTime) {
       await pushAllToCloud()
     }
+    setSyncStatus('success')
     return true
-  } catch {
+  } catch (error) {
+    setSyncStatus('error', '云同步失败，当前使用本地缓存')
     return false
   }
 }
 
 export async function pollCloud() {
-  if (!isCloudConfigured()) return false
+  if (!isCloudConfigured()) {
+    setSyncStatus('offline')
+    return false
+  }
+  const tripId = getTripId()
   try {
-    const row = await fetchTripRow(TRIP_ID)
+    const row = await fetchTripRow(tripId)
     if (!row) return false
     const remoteTime = Date.parse(row.updated_at || '')
     const localTime = Date.parse(cloudMeta.updatedAt || '')
@@ -257,13 +314,15 @@ export async function pollCloud() {
       applyCloudData(row.data)
       cloudMeta = { createdAt: row.created_at || cloudMeta.createdAt, updatedAt: row.updated_at }
       writeLocal(CLOUD_META_KEY, cloudMeta)
+      setSyncStatus('success')
       return true
     }
     if (localTime > remoteTime) {
       await pushAllToCloud()
     }
     return false
-  } catch {
+  } catch (error) {
+    setSyncStatus('error', '云同步失败，当前使用本地缓存')
     return false
   }
 }
@@ -281,6 +340,7 @@ export function getDays(overrides = getTimelineOverrides()) {
   const hotelMap = getHotelMap()
   return days.map((d) => ({
     ...d,
+    tripId: getTripId(),
     entries: (overrides[d.id] ? [...overrides[d.id]] : [...d.entries]).map((entry, index) => {
       const normalized = entry.id ? entry : { ...entry, id: `evt-${d.id}-${index}` }
       const hotel = normalized.locationId ? hotelMap[normalized.locationId] : null
@@ -308,31 +368,37 @@ function getHotelMap() {
 }
 
 export function getTripMeta() {
-  return { ...tripMeta, ...(getTripEdits().meta || {}) }
+  return { tripId: 'seoul-2026', ...tripMeta, ...(getTripEdits().meta || {}) }
 }
 
 export function getFlights() {
+  const tripId = getTripId()
   const saved = getTripEdits().flights
-  if (saved && Array.isArray(saved.outbound) && Array.isArray(saved.return)) return saved
-  return flights
+  if (saved && Array.isArray(saved.outbound) && Array.isArray(saved.return)) return { ...saved, tripId }
+  return { ...flights, tripId }
 }
 
 export function getHotels() {
+  const tripId = getTripId()
   const saved = getTripEdits().hotels
-  return Array.isArray(saved) ? saved : hotels
+  return (Array.isArray(saved) ? saved : hotels).map((hotel) => ({ tripId, ...hotel }))
 }
 
 export function getTravelers() {
+  const tripId = getTripId()
   const saved = getTripEdits().travelers
-  return Array.isArray(saved) ? saved : travelers
+  return (Array.isArray(saved) ? saved : travelers).map((traveler) => ({ tripId, ...traveler }))
 }
 
 export function getPoints() {
+  const tripId = getTripId()
   const hotelMap = getHotelMap()
   return points.map((point) => {
     const hotel = point.locationId ? hotelMap[point.locationId] : null
-    if (!hotel) return point
-    return { ...point, name: hotel.name || point.name, address: hotel.address || point.address }
+    const base = hotel
+      ? { ...point, name: hotel.name || point.name, address: hotel.address || point.address }
+      : point
+    return { tripId, ...base }
   })
 }
 
@@ -407,7 +473,7 @@ export function saveLedgerState(value) {
 const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY]
 
 export function exportAllState() {
-  const data = { version: 1, savedAt: new Date().toISOString(), data: {} }
+  const data = { version: 1, tripId: getTripId(), savedAt: new Date().toISOString(), data: {} }
   DATA_KEYS.forEach((key) => {
     const value = read(key)
     if (value && Object.keys(value).length) data.data[key] = value

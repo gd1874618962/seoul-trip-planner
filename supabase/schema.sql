@@ -30,6 +30,15 @@ create table if not exists hotels (
   note text
 );
 
+create table if not exists locations (
+  id text primary key,
+  trip_id text references trips(id) on delete cascade,
+  name text,
+  address text,
+  lat numeric,
+  lng numeric
+);
+
 create table if not exists flights (
   id text primary key,
   trip_id text references trips(id) on delete cascade,
@@ -60,6 +69,7 @@ create table if not exists expenses (
 
 create index if not exists idx_trip_members_trip on trip_members(trip_id);
 create index if not exists idx_hotels_trip on hotels(trip_id);
+create index if not exists idx_locations_trip on locations(trip_id);
 create index if not exists idx_flights_trip on flights(trip_id);
 create index if not exists idx_events_trip on events(trip_id);
 create index if not exists idx_expenses_trip on expenses(trip_id);
@@ -68,6 +78,7 @@ create index if not exists idx_expenses_trip on expenses(trip_id);
 alter table trips enable row level security;
 alter table trip_members enable row level security;
 alter table hotels enable row level security;
+alter table locations enable row level security;
 alter table flights enable row level security;
 alter table events enable row level security;
 alter table expenses enable row level security;
@@ -93,6 +104,13 @@ drop policy if exists "public write hotels" on hotels;
 create policy "public write hotels" on hotels for insert with check (true);
 drop policy if exists "public update hotels" on hotels;
 create policy "public update hotels" on hotels for update using (true);
+
+drop policy if exists "public read locations" on locations;
+create policy "public read locations" on locations for select using (true);
+drop policy if exists "public write locations" on locations;
+create policy "public write locations" on locations for insert with check (true);
+drop policy if exists "public update locations" on locations;
+create policy "public update locations" on locations for update using (true);
 
 drop policy if exists "public read flights" on flights;
 create policy "public read flights" on flights for select using (true);

@@ -1,15 +1,20 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
+  AlertTriangle,
   BellRing,
   CalendarDays,
+  CheckCircle2,
   ChevronRight,
+  Cloud,
   Download,
   MapPin,
   Pencil,
   Plane,
+  RefreshCw,
   Ticket,
   Upload,
   Wallet,
+  WifiOff,
 } from 'lucide-react'
 import { heroImage } from '../data/trip'
 import {
@@ -18,8 +23,10 @@ import {
   getDays,
   getFlights,
   getHotels,
+  getSyncStatus,
   getTripMeta,
   importAllState,
+  onSyncStatus,
 } from '../data/store'
 
 function SectionTitle({ title, sub, action }) {
@@ -36,6 +43,7 @@ function SectionTitle({ title, sub, action }) {
 
 export default function HomePage({ onNavigate }) {
   const fileRef = useRef(null)
+  const [sync, setSync] = useState(() => getSyncStatus())
   const days = getDays()
   const tripMeta = getTripMeta()
   const flights = getFlights()
@@ -80,6 +88,17 @@ export default function HomePage({ onNavigate }) {
     }
     reader.readAsText(file)
   }
+
+  useEffect(() => onSyncStatus((next) => setSync(next)), [])
+
+  const syncMeta = {
+    idle: { icon: Cloud, label: '待同步', cls: 'text-slate' },
+    syncing: { icon: RefreshCw, label: '正在同步', cls: 'text-blue' },
+    success: { icon: CheckCircle2, label: '已同步', cls: 'text-sage' },
+    error: { icon: AlertTriangle, label: '同步失败', cls: 'text-coral' },
+    offline: { icon: WifiOff, label: '离线模式', cls: 'text-slate' },
+  }
+  const SyncIcon = syncMeta[sync.status]?.icon || Cloud
 
   return (
     <div>
@@ -129,6 +148,13 @@ export default function HomePage({ onNavigate }) {
           <Pencil size={14} />
           编辑基础资料（航班/酒店/成员）
         </button>
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-line bg-white/95 px-3 py-2 shadow-card">
+          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold ${syncMeta[sync.status]?.cls || 'text-slate'}`}>
+            <SyncIcon size={13} />
+            {syncMeta[sync.status]?.label || '待同步'}
+          </span>
+          {sync.error && <span className="text-[10px] font-medium leading-tight text-coral">{sync.error}</span>}
+        </div>
       </section>
 
       <section className="mt-6 px-4">

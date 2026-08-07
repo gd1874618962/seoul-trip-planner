@@ -8,12 +8,15 @@ Phase 2.3 Supabase 云同步说明。
 
 | 表 | 主要字段 |
 | --- | --- |
-| trips | id, title, start_date, end_date, budget, data(jsonb), created_at, updated_at |
+| trips | id(tripId), title, start_date, end_date, budget, data(jsonb), created_at, updated_at |
 | trip_members | id, trip_id, name, avatar |
 | hotels | id, trip_id, name, address, location_id, check_in, check_out, note |
+| locations | id, trip_id, name, address, lat, lng |
 | flights | id, trip_id, type, flight_no, date, time |
 | events | id, trip_id, date, time, title, location_id, restaurant_id |
 | expenses | id, trip_id, payer, amount_krw, amount_rmb, category |
+
+所有子表通过 `trip_id` 关联 `trips.id`；`tripId` 默认 `seoul-2026`，可在编辑中心修改。
 
 ## 2. 同步策略
 

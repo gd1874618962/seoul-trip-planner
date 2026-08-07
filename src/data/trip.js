@@ -3,6 +3,7 @@ const assetBase = import.meta.env.BASE_URL
 export const heroImage = `${assetBase}images/seoul-hero.jpg`
 
 export const tripMeta = {
+  tripId: 'seoul-2026',
   title: 'SEOUL TRIP PLANNER 2026',
   subtitle: '首尔 8.21 - 8.24 旅行执行攻略',
   dates: '2026.08.21 - 08.24',

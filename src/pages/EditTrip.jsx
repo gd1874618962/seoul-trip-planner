@@ -126,6 +126,7 @@ export default function EditTrip({ onNavigate }) {
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
           <h2 className="text-[15px] font-black text-ink">基本信息</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
+            <Field label="旅行ID" value={meta.tripId || 'seoul-2026'} placeholder="seoul-2026" onChange={(v) => patchMeta('tripId', v)} />
             <Field label="旅行名称" value={meta.title} placeholder="Seoul Trip Planner 2026" onChange={(v) => patchMeta('title', v)} />
             <Field label="日期" value={meta.dates} placeholder="2026.08.21 - 08.24" onChange={(v) => patchMeta('dates', v)} />
             <Field label="天数" value={meta.duration} placeholder="4天3晚" onChange={(v) => patchMeta('duration', v)} />
