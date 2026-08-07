@@ -447,6 +447,7 @@ export const restaurants = [
     priceRange: '约 100 RMB/人',
     recommend: ['감자탕', '米饭', '面条'],
     image: `${assetBase}images/food-gamjatang.jpg`,
+    photos: [`${assetBase}images/food-gamjatang.jpg`],
     note: '土豆脊骨汤，热汤配饭，午间补充体力',
   },
   {
@@ -460,6 +461,7 @@ export const restaurants = [
     priceRange: '约 120 RMB/人',
     recommend: ['无骨鸡爪', '拳头饭'],
     image: `${assetBase}images/food-dakbal.jpg`,
+    photos: [`${assetBase}images/food-dakbal.jpg`],
     note: '弘大辣鸡爪，夜宵氛围，适合两人分享',
   },
   {
@@ -473,6 +475,7 @@ export const restaurants = [
     priceRange: '150-200 RMB/人',
     recommend: ['간장게장', '게살비빔밥'],
     image: `${assetBase}images/food-gejang.jpg`,
+    photos: [`${assetBase}images/food-gejang.jpg`],
     note: '酱蟹配蟹黄拌饭，弘大午餐首选',
   },
   {
@@ -486,6 +489,7 @@ export const restaurants = [
     priceRange: '200-250 RMB/人',
     recommend: ['돼지갈비', '烤肉', '冷面'],
     image: `${assetBase}images/food-bbq.jpg`,
+    photos: [`${assetBase}images/food-bbq.jpg`],
     note: '炭火猪排 + 冷面，演唱会前好好吃一顿',
   },
 ]

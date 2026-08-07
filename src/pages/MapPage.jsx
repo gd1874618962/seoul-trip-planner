@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ExternalLink, MapPin } from 'lucide-react'
-import { getPoints } from '../data/store'
+import { getDays, getPoints } from '../data/store'
 import TripMap, { dayColors } from '../components/TripMap'
 import PageHeader from '../components/PageHeader'
 
@@ -14,7 +14,22 @@ const filters = [
 
 export default function MapPage() {
   const [filter, setFilter] = useState('all')
-  const points = getPoints()
+  const customPoints = getDays().flatMap((d) =>
+    d.entries
+      .filter((e) => e.lat && e.lng)
+      .map((e) => ({
+        id: `evt-${e.id}`,
+        locationId: e.locationId || `custom-${e.id}`,
+        day: d.id,
+        name: e.title,
+        category: e.type || '自定义',
+        address: e.address || '',
+        lat: e.lat,
+        lng: e.lng,
+        naver: e.address || e.title,
+      })),
+  )
+  const points = [...getPoints(), ...customPoints]
   const filtered = filter === 'all' ? points : points.filter((p) => p.day === filter)
 
   return (

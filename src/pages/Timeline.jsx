@@ -18,6 +18,7 @@ import {
   Plane,
   Plus,
   RotateCcw,
+  Search,
   ShoppingBag,
   Sparkles,
   Star,
@@ -82,6 +83,75 @@ function Field({ label, value, onChange, textarea }) {
         <input className={cls} value={value} onChange={(e) => onChange(e.target.value)} />
       )}
     </label>
+  )
+}
+
+function LocationSearch({ onPick }) {
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  const search = async () => {
+    if (!query.trim()) return
+    setBusy(true)
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(query)}`,
+      )
+      const data = await res.json()
+      setResults(Array.isArray(data) ? data : [])
+      setOpen(true)
+    } catch {
+      setResults([])
+      setOpen(false)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="rounded-md border border-blue/15 bg-mist/50 p-2">
+      <div className="flex gap-1.5">
+        <input
+          className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-1.5 text-xs text-ink outline-none focus:border-blue"
+          placeholder="输入地点搜索（在线地图）"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={search}
+          className="inline-flex shrink-0 items-center gap-1 rounded-md bg-blue px-2.5 py-1.5 text-[11px] font-bold text-white active:opacity-90"
+        >
+          <Search size={12} />
+          {busy ? '搜索中' : '搜索'}
+        </button>
+      </div>
+      {open && results.length > 0 && (
+        <div className="mt-1.5 max-h-40 space-y-1 overflow-y-auto">
+          {results.map((item) => (
+            <button
+              key={item.place_id}
+              type="button"
+              onClick={() => {
+                onPick({
+                  address: item.display_name,
+                  lat: Number(item.lat),
+                  lng: Number(item.lon),
+                  locationId: `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+                })
+                setOpen(false)
+                setResults([])
+              }}
+              className="block w-full rounded-md bg-white px-2 py-1.5 text-left text-[10px] font-medium leading-relaxed text-slate active:bg-mist"
+            >
+              {item.display_name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -321,6 +391,14 @@ export default function Timeline() {
                         <Field label="标题" value={entry.title} onChange={(v) => patchEntry(index, 'title', v)} />
                       </div>
                       <Field label="地址" value={entry.address || ''} onChange={(v) => patchEntry(index, 'address', v)} />
+                      <LocationSearch
+                        onPick={(picked) => {
+                          patchEntry(index, 'address', picked.address)
+                          patchEntry(index, 'lat', picked.lat)
+                          patchEntry(index, 'lng', picked.lng)
+                          patchEntry(index, 'locationId', picked.locationId)
+                        }}
+                      />
                       <div>
                         <span className="mb-1 block text-[10px] font-bold text-slate">交通方式</span>
                         <div className="grid grid-cols-4 gap-1.5">

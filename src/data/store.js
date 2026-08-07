@@ -21,6 +21,7 @@ const REMINDER_KEY = 'seoul-reminder-edits-v1'
 const BUDGET_KEY = 'seoul-budget-v1'
 const LEDGER_KEY = 'seoul-ledger-v1'
 const TRIP_KEY = 'seoul-trip-edits-v1'
+const RESTAURANT_KEY = 'seoul-restaurant-edits-v1'
 const CLOUD_META_KEY = 'seoul-cloud-meta'
 const STATE_URL = '/api/state'
 
@@ -159,6 +160,7 @@ export async function pushAllToCloud() {
       [BUDGET_KEY]: budgetState,
       [LEDGER_KEY]: ledgerState,
       [TRIP_KEY]: getTripEdits(),
+      [RESTAURANT_KEY]: getRestaurantEdits(),
     }
 
     cloudMeta = { createdAt, updatedAt }
@@ -496,7 +498,7 @@ export function saveLedgerState(value) {
   scheduleCloudPush()
 }
 
-const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY]
+const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY, RESTAURANT_KEY]
 
 export function exportAllState() {
   const data = { version: 1, tripId: getTripId(), savedAt: new Date().toISOString(), data: {} }
@@ -537,8 +539,18 @@ export function importAllState(json) {
 
 const NAME_PREFIX = /^(早餐|午餐|晚餐)\s*[·•|:：-]\s*/
 
+export function getRestaurantEdits() {
+  return read(RESTAURANT_KEY) || {}
+}
+
+export function saveRestaurantEdits(value) {
+  write(RESTAURANT_KEY, value || {})
+  scheduleCloudPush()
+}
+
 export function getRestaurants() {
   const overrides = getTimelineOverrides()
+  const directEdits = getRestaurantEdits()
   const edits = {}
   for (const day of days) {
     const entries = overrides[day.id] || day.entries
@@ -551,13 +563,17 @@ export function getRestaurants() {
         note: entry.note || undefined,
         recommend: entry.recommend || undefined,
       }
+      const direct = directEdits[entry.restaurantId]
+      if (direct) {
+        edits[entry.restaurantId] = { ...(edits[entry.restaurantId] || {}), ...direct }
+      }
     }
   }
   return restaurants.map((r) => {
     const edit = edits[r.id]
     if (!edit) return r
     const merged = { ...r }
-    for (const key of ['name', 'priceRange', 'note', 'recommend']) {
+    for (const key of ['name', 'priceRange', 'note', 'recommend', 'photos']) {
       if (edit[key] !== undefined) merged[key] = edit[key]
     }
     return merged

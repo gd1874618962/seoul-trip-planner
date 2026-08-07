@@ -33,18 +33,23 @@ function FitBounds({ items }) {
 export default function TripMap({ items }) {
   const routeByDay = {}
   getDays().forEach((day) => {
-    const ids = []
+    const refs = []
     day.entries.forEach((entry) => {
-      if (Array.isArray(entry.pointIds)) ids.push(...entry.pointIds)
+      if (entry.locationId) refs.push(entry.locationId)
+      else if (Array.isArray(entry.pointIds)) entry.pointIds.forEach((id) => refs.push(`loc-${id}`))
     })
-    routeByDay[day.id] = ids
+    routeByDay[day.id] = refs
   })
   const byDay = Object.entries(routeByDay)
-    .map(([day, ids]) => ({
+    .map(([day, refs]) => ({
       day: Number(day),
-      route: ids
-        .map((id) => items.find((p) => p.id === id))
-        .filter((p, i, arr) => p && (i === 0 || arr[i - 1]?.id !== p.id)),
+      route: refs
+        .map(
+          (ref) =>
+            items.find((p) => p.locationId === ref) ||
+            items.find((p) => p.id === ref || p.id === Number(ref)),
+        )
+        .filter((p, i, arr) => p && (i === 0 || arr[i - 1]?.locationId !== p.locationId)),
     }))
     .filter((group) => group.route.length > 1)
 
@@ -67,7 +72,11 @@ export default function TripMap({ items }) {
           />
         ))}
         {items.map((p) => (
-          <Marker key={p.id} position={[p.lat, p.lng]} icon={makeIcon(p.id, p.day)}>
+          <Marker
+            key={p.id}
+            position={[p.lat, p.lng]}
+            icon={makeIcon(typeof p.id === 'number' ? p.id : '★', p.day)}
+          >
             <Popup>
               <div className="min-w-[160px] text-[13px]">
                 <p className="font-bold text-ink">{p.name}</p>
