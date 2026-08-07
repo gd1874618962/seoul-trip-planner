@@ -29,7 +29,7 @@ import {
 } from 'lucide-react'
 import { getDays, getPoints, getTimelineOverrides, saveTimelineOverrides } from '../data/store'
 import PageHeader from '../components/PageHeader'
-import { buildTransportPlan } from '../utils/transportEngine'
+import { generateTransportRoute } from '../services/transportService'
 
 const typeMeta = {
   抵达: { icon: Plane, color: 'bg-mist text-blue' },
@@ -379,7 +379,7 @@ export default function Timeline() {
     return point ? { lat: Number(point.lat), lng: Number(point.lng) } : null
   }
 
-  const generateTransport = (index) => {
+  const generateTransport = async (index) => {
     const current = entries[index]
     const previous = entries[index - 1]
     const origin = previous ? getCoords(previous) : null
@@ -388,9 +388,17 @@ export default function Timeline() {
       setGenError((prev) => ({ ...prev, [index]: '暂无自动路线，请使用地图导航' }))
       return
     }
-    const plan = buildTransportPlan(
-      { name: previous?.title || '出发地', ...origin },
-      { name: current.title, ...destination },
+    const plan = await generateTransportRoute(
+      {
+        name: previous?.title || '出发地',
+        locationId: previous.locationId,
+        ...origin,
+      },
+      {
+        name: current.title,
+        locationId: current.locationId,
+        ...destination,
+      },
     )
     if (!plan) {
       setGenError((prev) => ({ ...prev, [index]: '暂无自动路线，请使用地图导航' }))
@@ -400,6 +408,7 @@ export default function Timeline() {
     patchEntryFields(index, {
       transport: {
         status: 'estimated',
+        provider: plan.provider || 'estimated',
         origin: { name: previous?.title || '出发地', ...origin },
         destination: { name: current.title, ...destination },
         options: plan.options,
