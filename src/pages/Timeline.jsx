@@ -63,7 +63,7 @@ function TransportIcon({ mode }) {
 }
 
 function TransportCard({ transport }) {
-  if (!transport?.options?.length) return null
+  if (typeof transport !== 'object' || !transport?.options?.length) return null
   return (
     <div className="mt-2.5 space-y-2">
       <p className="text-[10px] font-bold text-slate">
@@ -629,7 +629,7 @@ export default function Timeline() {
                       <div className="grid grid-cols-2 gap-2">
                         <Field
                           label="交通说明"
-                          value={entry.transport || ''}
+                          value={typeof entry.transport === 'string' ? entry.transport : ''}
                           onChange={(v) => patchEntry(index, 'transport', v)}
                         />
                         <Field
@@ -672,7 +672,7 @@ export default function Timeline() {
                         <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate">{entry.address}</p>
                       )}
                       <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5">
-                        {entry.transport && entry.transport !== '—' && (
+                        {typeof entry.transport === 'string' && entry.transport !== '—' && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
                             <TransportIcon mode={entry.transportMode} />
                             {entry.transport}
@@ -716,7 +716,7 @@ export default function Timeline() {
                         </div>
                       )}
                       <TransportCard transport={entry.transport} />
-                      {!entry.transport?.options?.length && (
+                      {(typeof entry.transport !== 'object' || !entry.transport?.options?.length) && (
                         <button
                           type="button"
                           onClick={() => generateTransport(index)}
