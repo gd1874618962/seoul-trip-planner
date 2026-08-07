@@ -221,6 +221,11 @@ export default function Timeline() {
     setEntries(next)
   }
 
+  const patchEntryFields = (index, fields) => {
+    const next = entries.map((entry, i) => (i === index ? { ...entry, ...fields } : entry))
+    setEntries(next)
+  }
+
   const removeEntry = (index) => {
     setEntries(reflowEntries(entries.filter((_, i) => i !== index)))
   }
@@ -393,10 +398,12 @@ export default function Timeline() {
                       <Field label="地址" value={entry.address || ''} onChange={(v) => patchEntry(index, 'address', v)} />
                       <LocationSearch
                         onPick={(picked) => {
-                          patchEntry(index, 'address', picked.address)
-                          patchEntry(index, 'lat', picked.lat)
-                          patchEntry(index, 'lng', picked.lng)
-                          patchEntry(index, 'locationId', picked.locationId)
+                          patchEntryFields(index, {
+                            address: picked.address,
+                            lat: picked.lat,
+                            lng: picked.lng,
+                            locationId: picked.locationId,
+                          })
                         }}
                       />
                       <div>

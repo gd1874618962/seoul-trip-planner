@@ -64,15 +64,18 @@ function PhotoCarousel({ photos }) {
 
 export default function Restaurants() {
   const [editing, setEditing] = useState(false)
+  const [tick, setTick] = useState(0)
   const restaurants = getRestaurants()
   const edits = getRestaurantEdits()
 
   const patchPhotos = (id, photos) => {
     saveRestaurantEdits({ ...edits, [id]: { ...(edits[id] || {}), photos } })
+    setTick((v) => v + 1)
   }
 
   const patchRecommend = (id, recommend) => {
     saveRestaurantEdits({ ...edits, [id]: { ...(edits[id] || {}), recommend } })
+    setTick((v) => v + 1)
   }
 
   return (
