@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ArrowDown,
   ArrowUp,
@@ -91,23 +91,102 @@ function LocationSearch({ onPick }) {
   const [results, setResults] = useState([])
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [lat, setLat] = useState('')
+  const [lng, setLng] = useState('')
+
+  const sources = [
+    {
+      name: 'OpenStreetMap',
+      request: async (q) => {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(q)}`,
+        )
+        if (!res.ok) throw new Error(String(res.status))
+        return res.json()
+      },
+      map: (items) =>
+        items.map((item) => ({
+          key: item.place_id,
+          display_name: item.display_name,
+          lat: Number(item.lat),
+          lng: Number(item.lon),
+        })),
+    },
+    {
+      name: 'Photon',
+      request: async (q) => {
+        const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=5`)
+        if (!res.ok) throw new Error(String(res.status))
+        const data = await res.json()
+        return data.features || []
+      },
+      map: (items) =>
+        items.map((item) => {
+          const p = item.properties || {}
+          const name = p.name || ''
+          const city = p.city || p.state || ''
+          const country = p.country || ''
+          return {
+            key: `${p.osm_id || name}-${item.geometry.coordinates[0]}`,
+            display_name: [name, city, country].filter(Boolean).join(', '),
+            lat: item.geometry.coordinates[1],
+            lng: item.geometry.coordinates[0],
+          }
+        }),
+    },
+  ]
 
   const search = async () => {
-    if (!query.trim()) return
+    const q = query.trim()
+    if (!q) return
     setBusy(true)
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(query)}`,
-      )
-      const data = await res.json()
-      setResults(Array.isArray(data) ? data : [])
-      setOpen(true)
-    } catch {
-      setResults([])
-      setOpen(false)
-    } finally {
-      setBusy(false)
+    setError('')
+    setResults([])
+    setOpen(false)
+    for (const source of sources) {
+      try {
+        const mapped = source.map(await source.request(q)).filter((r) => r.display_name)
+        if (mapped.length) {
+          setResults(mapped)
+          setOpen(true)
+          setBusy(false)
+          return
+        }
+      } catch {
+        /* try next source */
+      }
     }
+    setBusy(false)
+    setError('地图服务无法访问，请手动输入经纬度')
+  }
+
+  const applyManual = () => {
+    const latNum = Number(lat)
+    const lngNum = Number(lng)
+    if (!latNum || !lngNum) {
+      setError('请填写正确的纬度和经度')
+      return
+    }
+    onPick({
+      address: query.trim() || '手动地点',
+      lat: latNum,
+      lng: lngNum,
+      locationId: `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    })
+    setOpen(false)
+    setResults([])
+  }
+
+  const pick = (item) => {
+    onPick({
+      address: item.display_name,
+      lat: item.lat,
+      lng: item.lng,
+      locationId: `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+    })
+    setOpen(false)
+    setResults([])
   }
 
   return (
@@ -132,18 +211,9 @@ function LocationSearch({ onPick }) {
         <div className="mt-1.5 max-h-40 space-y-1 overflow-y-auto">
           {results.map((item) => (
             <button
-              key={item.place_id}
+              key={item.key}
               type="button"
-              onClick={() => {
-                onPick({
-                  address: item.display_name,
-                  lat: Number(item.lat),
-                  lng: Number(item.lon),
-                  locationId: `custom-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
-                })
-                setOpen(false)
-                setResults([])
-              }}
+              onClick={() => pick(item)}
               className="block w-full rounded-md bg-white px-2 py-1.5 text-left text-[10px] font-medium leading-relaxed text-slate active:bg-mist"
             >
               {item.display_name}
@@ -151,6 +221,30 @@ function LocationSearch({ onPick }) {
           ))}
         </div>
       )}
+      {error && <p className="mt-1.5 text-[10px] font-bold text-coral">{error}</p>}
+      <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+        <input
+          className="rounded-md border border-line bg-white px-2 py-1.5 text-[10px] text-ink outline-none focus:border-blue"
+          placeholder="纬度（如 37.5512）"
+          inputMode="decimal"
+          value={lat}
+          onChange={(e) => setLat(e.target.value)}
+        />
+        <input
+          className="rounded-md border border-line bg-white px-2 py-1.5 text-[10px] text-ink outline-none focus:border-blue"
+          placeholder="经度（如 126.9882）"
+          inputMode="decimal"
+          value={lng}
+          onChange={(e) => setLng(e.target.value)}
+        />
+      </div>
+      <button
+        type="button"
+        onClick={applyManual}
+        className="mt-1.5 w-full rounded-md bg-cream px-2 py-1.5 text-[10px] font-bold text-gold active:bg-sand"
+      >
+        手动定位到该坐标
+      </button>
     </div>
   )
 }
@@ -197,13 +291,29 @@ export default function Timeline() {
   const [activeDay, setActiveDay] = useState(1)
   const [editing, setEditing] = useState(false)
   const [overrides, setOverrides] = useState(() => getTimelineOverrides())
+  const overridesRef = useRef(overrides)
+  const persistTimer = useRef(null)
   const days = getDays()
   const baseDay = days.find((d) => d.id === activeDay)
   const entries = overrides[activeDay] ? [...overrides[activeDay]] : [...baseDay.entries]
 
+  useEffect(
+    () => () => {
+      if (persistTimer.current) {
+        clearTimeout(persistTimer.current)
+        saveTimelineOverrides(overridesRef.current)
+      }
+    },
+    [],
+  )
+
   const persist = (next) => {
     setOverrides(next)
-    saveTimelineOverrides(next)
+    overridesRef.current = next
+    if (persistTimer.current) clearTimeout(persistTimer.current)
+    persistTimer.current = setTimeout(() => {
+      saveTimelineOverrides(overridesRef.current)
+    }, 300)
   }
 
   const setEntries = (nextEntries) => persist({ ...overrides, [activeDay]: nextEntries })
