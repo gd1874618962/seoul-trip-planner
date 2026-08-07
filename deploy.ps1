@@ -49,7 +49,6 @@ $localHash = [BitConverter]::ToString($sha.ComputeHash($localBytes)).Replace('-'
 $url = 'https://gd1874618962.github.io/seoul-trip-planner/index.html'
 $client = New-Object System.Net.WebClient
 $client.Proxy = New-Object System.Net.WebProxy('http://127.0.0.1:7890')
-$client.Timeout = 5000
 $ok = $false
 $maxAttempts = 30
 for ($i = 1; $i -le $maxAttempts; $i++) {
