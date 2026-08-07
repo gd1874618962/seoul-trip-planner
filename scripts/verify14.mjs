@@ -19,8 +19,9 @@ const nav = page.locator('nav button')
 // open editor
 await page.getByText('编辑基础资料（航班/酒店/成员）', { exact: true }).click()
 await page.waitForTimeout(500)
-const hotelAddress = page.locator('input[placeholder="酒店地址"]').first()
-await hotelAddress.fill('测试新地址 123 号')
+const hotelAddressInputs = page.locator('input[placeholder="酒店地址"]')
+await hotelAddressInputs.nth(0).fill('测试新地址 123 号')
+await hotelAddressInputs.nth(1).fill('测试新地址 123 号')
 await page.getByText('保存全部修改', { exact: true }).click()
 await page.waitForTimeout(700)
 
