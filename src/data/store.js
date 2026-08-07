@@ -279,8 +279,8 @@ export async function initCloudSync() {
       setSyncStatus('success')
       return true
     }
-    const remoteTime = Date.parse(row.updated_at || '')
-    const localTime = Date.parse(cloudMeta.updatedAt || '')
+    const remoteTime = Date.parse(row.updated_at || '') || 0
+    const localTime = Date.parse(cloudMeta.updatedAt || '') || 0
     if (remoteTime > localTime) {
       applyCloudData(row.data)
       cloudMeta = { createdAt: row.created_at || cloudMeta.createdAt, updatedAt: row.updated_at }
@@ -308,8 +308,8 @@ export async function pollCloud() {
   try {
     const row = await fetchTripRow(tripId)
     if (!row) return false
-    const remoteTime = Date.parse(row.updated_at || '')
-    const localTime = Date.parse(cloudMeta.updatedAt || '')
+    const remoteTime = Date.parse(row.updated_at || '') || 0
+    const localTime = Date.parse(cloudMeta.updatedAt || '') || 0
     if (remoteTime > localTime) {
       applyCloudData(row.data)
       cloudMeta = { createdAt: row.created_at || cloudMeta.createdAt, updatedAt: row.updated_at }
