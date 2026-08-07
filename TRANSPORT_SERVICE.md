@@ -53,26 +53,27 @@ async function naverTransport(origin, destination) {
 - 旧 event `transport` 为字符串：继续按旧样式显示
 - 生成结果写入 `transport` 对象：显示攻略卡片
 
-## 6. Phase 2.5.3 部署与配置
+## 6. Phase 2.5.3 部署与配置（Google 优先）
 
 Edge Function 代码已就绪：`supabase/functions/transport/index.ts`
 
 ### 需要你做的步骤
 
-1. **Naver Cloud 申请密钥**
-   - 打开 https://www.ncloud.com 注册
-   - Services → Maps（지도/Map）→ 创建 Application
-   - 复制 Client ID 和 Client Secret
+1. **Google Cloud 申请密钥（推荐）**
+   - 打开 https://console.cloud.google.com
+   - 新建项目 → 启用 **Directions API**
+   - 凭据 → 创建 API Key，并限制为“仅服务端使用”
+   - 复制 API Key
+
+   Naver 密钥可选（需要韩国实名认证，通常外国人无法申请）。
 
 2. **部署 Edge Function（两种方式任选）**
    - Supabase 控制台：Functions → 新建/部署 `transport`，上传 `supabase/functions/transport/index.ts`
    - 或 CLI：`supabase functions deploy transport`
 
 3. **配置 Secrets**
-   - 控制台 Functions → transport → Secrets，添加：
-     - `NAVER_CLIENT_ID`
-     - `NAVER_CLIENT_SECRET`
-   - 或 CLI：`supabase secrets set NAVER_CLIENT_ID=xxx NAVER_CLIENT_SECRET=xxx`
+   - CLI：`supabase secrets set GOOGLE_MAPS_API_KEY=xxx`
+   - Naver 可选：`NAVER_CLIENT_ID=xxx NAVER_CLIENT_SECRET=xxx`
 
 4. **验证**
-   - 网页里点“生成交通攻略”，如果函数和密钥正常，会返回真实地铁线路；失败自动回退估算
+   - 网页里点“生成交通攻略”，如果函数和密钥正常，会返回真实公共交通线路；失败自动回退估算

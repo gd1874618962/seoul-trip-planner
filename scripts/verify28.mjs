@@ -6,12 +6,14 @@ const destination = { locationId: 'loc-2', name: '明洞', lat: 37.5608, lng: 12
 
 const estimated = await generateTransportRoute(origin, destination, { provider: 'estimated' })
 const naverFallback = await generateTransportRoute(origin, destination, { provider: 'naver' })
+const googleFallback = await generateTransportRoute(origin, destination, { provider: 'google' })
 const cached = await generateTransportRoute(origin, destination, { provider: 'estimated' })
 
 const unit = {
   estimatedOptions: Array.isArray(estimated?.options) && estimated.options.length >= 2,
   estimatedProvider: estimated?.provider === 'estimated',
   naverFallbackProvider: naverFallback?.provider === 'estimated',
+  googleFallbackProvider: googleFallback?.provider === 'estimated',
   cacheHit: cached === estimated,
   cacheSize: getTransportCacheSize(),
 }
