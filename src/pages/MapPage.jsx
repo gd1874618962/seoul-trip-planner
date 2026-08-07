@@ -14,7 +14,9 @@ const filters = [
 
 export default function MapPage() {
   const [filter, setFilter] = useState('all')
-  const customPoints = getDays().flatMap((d) =>
+  const daysList = getDays()
+  const basePoints = getPoints()
+  const customPoints = daysList.flatMap((d) =>
     d.entries
       .filter((e) => e.lat && e.lng)
       .map((e) => ({
@@ -29,7 +31,30 @@ export default function MapPage() {
         naver: e.address || e.title,
       })),
   )
-  const points = [...getPoints(), ...customPoints]
+  const allPoints = [...basePoints, ...customPoints]
+  const ordered = []
+  const seen = new Set()
+  daysList.forEach((d) =>
+    d.entries.forEach((e) => {
+      const refs = []
+      if (e.locationId) refs.push(e.locationId)
+      else if (Array.isArray(e.pointIds)) e.pointIds.forEach((id) => refs.push(`loc-${id}`))
+      refs.forEach((ref) => {
+        const point = allPoints.find((p) => p.locationId === ref)
+        if (point && !seen.has(point.id)) {
+          seen.add(point.id)
+          ordered.push(point)
+        }
+      })
+    }),
+  )
+  allPoints.forEach((p) => {
+    if (!seen.has(p.id)) {
+      seen.add(p.id)
+      ordered.push(p)
+    }
+  })
+  const points = ordered.map((p, i) => ({ ...p, markerNo: i + 1 }))
   const filtered = filter === 'all' ? points : points.filter((p) => p.day === filter)
 
   return (
@@ -78,7 +103,7 @@ export default function MapPage() {
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black text-white"
                 style={{ backgroundColor: dayColors[p.day] }}
               >
-                {p.id}
+                {p.markerNo}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

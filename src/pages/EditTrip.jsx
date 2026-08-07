@@ -51,6 +51,13 @@ export default function EditTrip({ onNavigate }) {
   const [travelerData, setTravelerData] = useState(() => getTravelers())
   const [cloudConfig, setCloudConfig] = useState(() => getSupabaseConfig())
   const [cloudStatus, setCloudStatus] = useState('未连接')
+  const [naverId, setNaverId] = useState(() => {
+    try {
+      return localStorage.getItem('seoul-naver-client-id') || ''
+    } catch {
+      return ''
+    }
+  })
 
   const patchMeta = (field, value) => setMeta({ ...meta, [field]: value })
 
@@ -103,6 +110,15 @@ export default function EditTrip({ onNavigate }) {
       pushAllToCloud().catch(() => {})
     } else {
       setCloudStatus(`连接失败：${result.reason}`)
+    }
+  }
+
+  const patchNaverId = (value) => {
+    setNaverId(value)
+    try {
+      localStorage.setItem('seoul-naver-client-id', value)
+    } catch {
+      /* ignore */
     }
   }
 
@@ -266,6 +282,15 @@ export default function EditTrip({ onNavigate }) {
                 value={cloudConfig.anonKey}
                 placeholder="eyJhbGciOi..."
                 onChange={(e) => setCloudConfig({ ...cloudConfig, anonKey: e.target.value })}
+              />
+            </label>
+            <label className="block min-w-0">
+              <span className="mb-1 block text-[10px] font-bold text-slate">Naver Maps Client ID（可选，填了地图切换为 Naver）</span>
+              <input
+                className={inputCls}
+                value={naverId}
+                placeholder="从 Naver Cloud 获取"
+                onChange={(e) => patchNaverId(e.target.value)}
               />
             </label>
           </div>

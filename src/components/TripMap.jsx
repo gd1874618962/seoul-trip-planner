@@ -3,6 +3,7 @@ import L from 'leaflet'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getDays } from '../data/store'
+import NaverMap, { getNaverClientId } from './NaverMap'
 
 export const dayColors = {
   1: '#4B7B9C',
@@ -53,6 +54,15 @@ export default function TripMap({ items }) {
     }))
     .filter((group) => group.route.length > 1)
 
+  if (getNaverClientId()) {
+    return (
+      <NaverMap
+        items={items}
+        routes={byDay.map((group) => ({ ...group, color: dayColors[group.day] }))}
+      />
+    )
+  }
+
   return (
     <div className="overflow-hidden rounded-lg border border-line shadow-card">
       <MapContainer
@@ -75,7 +85,7 @@ export default function TripMap({ items }) {
           <Marker
             key={p.id}
             position={[p.lat, p.lng]}
-            icon={makeIcon(typeof p.id === 'number' ? p.id : '★', p.day)}
+            icon={makeIcon(p.markerNo || (typeof p.id === 'number' ? p.id : '★'), p.day)}
           >
             <Popup>
               <div className="min-w-[160px] text-[13px]">
