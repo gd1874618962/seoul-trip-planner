@@ -8,13 +8,13 @@ import {
   restaurants,
   travelers,
   tripMeta,
-} from './trip'
+} from './trip.js'
 import {
   fetchTripRow,
   isCloudConfigured,
   upsertRows,
   upsertTripRow,
-} from './supabase'
+} from './supabase.js'
 
 const TIMELINE_KEY = 'seoul-timeline-edits-v1'
 const REMINDER_KEY = 'seoul-reminder-edits-v1'
