@@ -5,6 +5,7 @@ import {
   MapPin,
   Pencil,
   Plus,
+  RefreshCw,
   Trash2,
   UtensilsCrossed,
   Wallet,
@@ -15,6 +16,7 @@ import {
   saveRestaurantEdits,
 } from '../data/store'
 import PageHeader from '../components/PageHeader'
+import { searchRestaurantImages } from '../services/imageService'
 
 function PhotoCarousel({ photos }) {
   const ref = useRef(null)
@@ -65,6 +67,7 @@ function PhotoCarousel({ photos }) {
 export default function Restaurants() {
   const [editing, setEditing] = useState(false)
   const [tick, setTick] = useState(0)
+  const [loadingId, setLoadingId] = useState(null)
   const restaurants = getRestaurants()
   const edits = getRestaurantEdits()
 
@@ -76,6 +79,19 @@ export default function Restaurants() {
   const patchRecommend = (id, recommend) => {
     saveRestaurantEdits({ ...edits, [id]: { ...(edits[id] || {}), recommend } })
     setTick((v) => v + 1)
+  }
+
+  const loadImages = async (restaurant) => {
+    setLoadingId(restaurant.id)
+    const urls = await searchRestaurantImages(
+      restaurant.imageQuery || `${restaurant.name} ${restaurant.ko || ''}`,
+    )
+    if (urls.length) {
+      patchPhotos(restaurant.id, urls)
+    } else {
+      window.alert('未找到可用图片，已保留现有图片')
+    }
+    setLoadingId(null)
   }
 
   return (
@@ -113,6 +129,15 @@ export default function Restaurants() {
             <article key={r.id} className="overflow-hidden rounded-lg border border-line bg-white shadow-card">
               <PhotoCarousel photos={photos} />
               <div className="p-4">
+                <button
+                  type="button"
+                  onClick={() => loadImages(r)}
+                  disabled={loadingId === r.id}
+                  className="mb-2 inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-[10px] font-bold text-blue active:opacity-90 disabled:opacity-50"
+                >
+                  <RefreshCw size={12} className={loadingId === r.id ? 'animate-spin' : ''} />
+                  {loadingId === r.id ? '搜索中...' : '搜索真实图片'}
+                </button>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h2 className="text-[17px] font-black leading-tight text-ink">{r.name}</h2>
