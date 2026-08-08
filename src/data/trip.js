@@ -149,6 +149,19 @@ export const days = [
         note: '设计买手店，适合拍照',
       },
       {
+        id: 'd1-e3b',
+        time: '18:30 - 19:30',
+        title: 'BIGBANG 20周年展（蚕室）',
+        type: '展览',
+        pointIds: [17],
+        locationId: 'loc-17',
+        address: 'Seoul Songpa-gu Olympic-ro 300',
+        transport: '地铁 2号线 蚕室站',
+        transportMode: 'transit',
+        cost: '视门票而定',
+        note: 'BIGBANG 20 周年展，建议提前确认入场时间',
+      },
+      {
         id: 'd1-e4',
         time: '备用',
         title: 'MUUT 汉南店',
@@ -515,6 +528,7 @@ export const points = [
   { id: 14, locationId: 'loc-14', day: 2, name: '을지로숯불고기 高村店', ko: '을지로숯불고기 고촌', category: '餐厅', address: '경기 김포시 고촌읍 인향로24번길145', lat: 37.6057, lng: 126.7028, naver: '을지로숯불고기 고촌점' },
   { id: 15, locationId: 'loc-15', day: 3, name: 'BIGBANG 演唱会 · 高阳', ko: '빅뱅 콘서트 고양', category: '演出', address: '高阳演唱会场地', lat: 37.6616, lng: 126.7448, naver: '고양종합운동장' },
   { id: 16, locationId: 'loc-16', day: 4, name: '仁川国际机场', ko: '인천국제공항', category: '机场', address: 'Incheon International Airport', lat: 37.4602, lng: 126.4407, naver: '인천국제공항' },
+  { id: 17, locationId: 'loc-17', day: 1, name: 'BIGBANG 20周年展', ko: '빅뱅 20주년 전시', category: '展览', address: 'Seoul Songpa-gu Olympic-ro 300', lat: 37.5125, lng: 127.1025, naver: '서울 송파구 올림픽로 300' },
 ]
 
 export const budget = {

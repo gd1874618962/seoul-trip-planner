@@ -364,7 +364,11 @@ export function saveTimelineOverrides(value) {
 export function getDays(overrides = getTimelineOverrides()) {
   const hotelMap = getHotelMap()
   return days.map((d) => {
-    const raw = overrides[d.id] ? [...overrides[d.id]] : [...d.entries]
+    const raw = overrides[d.id] ? [...overrides[d.id]] : []
+    const seen = new Set(raw.map((entry) => entry.id))
+    d.entries.forEach((defaultEntry) => {
+      if (!seen.has(defaultEntry.id)) raw.push({ ...defaultEntry })
+    })
     const entries = raw.map((entry, index) => {
       const normalized = entry.id ? entry : { ...entry, id: `evt-${d.id}-${index}` }
       const hotel = normalized.locationId ? hotelMap[normalized.locationId] : null
@@ -386,6 +390,14 @@ export function getDays(overrides = getTimelineOverrides()) {
       if (start != null && rule && start - rule.minutes >= 0) {
         entry.suggestedDeparture = fmtMinutes(start - rule.minutes)
       }
+    })
+    entries.sort((a, b) => {
+      const aStart = parseStartMinutes(a.time)
+      const bStart = parseStartMinutes(b.time)
+      if (aStart == null && bStart == null) return 0
+      if (aStart == null) return 1
+      if (bStart == null) return -1
+      return aStart - bStart
     })
     return { ...d, tripId: getTripId(), entries }
   })

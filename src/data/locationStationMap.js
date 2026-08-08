@@ -14,4 +14,5 @@ export const locationStationMap = {
   'loc-13': { station: { name: '김포공항역', line: '机场线 / 5号线', exit: '2号出口' }, walkingMinutes: 8 },
   'loc-15': { station: { name: '정발산역', line: '3号线', exit: '1号出口' }, walkingMinutes: 15 },
   'loc-16': { station: { name: '인천공항역', line: '机场线', exit: '地下1层' }, walkingMinutes: 3 },
+  'loc-17': { station: { name: '잠실역', line: '2号线 / 8号线', exit: '4号出口' }, walkingMinutes: 10 },
 }
