@@ -1,0 +1,17 @@
+export const locationStationMap = {
+  'loc-1': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '9号出口' }, walkingMinutes: 8 },
+  'loc-2': { station: { name: '을지로입구역', line: '2号线', exit: '5号出口' }, walkingMinutes: 5 },
+  'loc-3': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '3号出口' }, walkingMinutes: 10 },
+  'loc-4': { station: { name: '합정역', line: '2号线 / 6号线', exit: '4号出口' }, walkingMinutes: 7 },
+  'loc-5': { station: { name: '성수역', line: '2号线', exit: '3号出口' }, walkingMinutes: 5 },
+  'loc-6': { station: { name: '성수역', line: '2号线', exit: '4号出口' }, walkingMinutes: 8 },
+  'loc-7': { station: { name: '한강진역', line: '6号线', exit: '2号出口' }, walkingMinutes: 9 },
+  'loc-8': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '8号出口' }, walkingMinutes: 4 },
+  'loc-9': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '9号出口' }, walkingMinutes: 6 },
+  'loc-10': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '9号出口' }, walkingMinutes: 5 },
+  'loc-11': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '9号出口' }, walkingMinutes: 6 },
+  'loc-12': { station: { name: '김포공항역', line: '机场线 / 5号线', exit: '4号出口' }, walkingMinutes: 10 },
+  'loc-13': { station: { name: '김포공항역', line: '机场线 / 5号线', exit: '2号出口' }, walkingMinutes: 8 },
+  'loc-15': { station: { name: '정발산역', line: '3号线', exit: '1号出口' }, walkingMinutes: 15 },
+  'loc-16': { station: { name: '인천공항역', line: '机场线', exit: '地下1层' }, walkingMinutes: 3 },
+}

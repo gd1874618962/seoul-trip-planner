@@ -1,4 +1,5 @@
 import { seoulStations, seoulTransitRoutes } from '../data/seoulTransit.js'
+import { locationStationMap } from '../data/locationStationMap.js'
 
 export function haversineMeters(a, b) {
   const R = 6371000
@@ -16,20 +17,36 @@ function buildStaticSubway(origin, destination) {
   const b = seoulStations[destination?.locationId]
   if (!a || !b) return null
   if (a.name === b.name) return { sameStation: true }
+  const originStation = locationStationMap[origin?.locationId]
+  const destinationStation = locationStationMap[destination?.locationId]
+  const preWalk = originStation
+    ? {
+        mode: 'walk',
+        description: `步行${originStation.walkingMinutes}分钟到${originStation.station.name} ${originStation.station.exit}`,
+      }
+    : { mode: 'walk', description: '步行至附近地铁站' }
+  const postWalk = destinationStation
+    ? {
+        mode: 'walk',
+        description: `步行${destinationStation.walkingMinutes}分钟到达（${destinationStation.station.name} ${destinationStation.station.exit}）`,
+      }
+    : { mode: 'walk', description: '步行至目的地' }
   const direct =
     seoulTransitRoutes[`${origin.locationId}|${destination.locationId}`] ||
     seoulTransitRoutes[`${destination.locationId}|${origin.locationId}`]
   if (!direct) return null
   const steps = direct.transferAt
     ? [
+        preWalk,
         { mode: 'subway', line: direct.firstLine || direct.line, from: direct.from, to: direct.transferAt },
         { mode: 'walk', description: `换乘 ${direct.secondLine}` },
         { mode: 'subway', line: direct.secondLine, from: direct.transferAt, to: direct.to },
+        postWalk,
       ]
     : [
-        { mode: 'walk', description: `步行至 ${a.name}` },
+        preWalk,
         { mode: 'subway', line: direct.line, from: direct.from, to: direct.to },
-        { mode: 'walk', description: '步行至目的地' },
+        postWalk,
       ]
   return {
     type: 'subway',
