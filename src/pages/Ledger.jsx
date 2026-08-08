@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   CalendarDays,
+  Camera,
   Check,
   Pencil,
   Plus,
@@ -40,6 +41,9 @@ function blankForm(rate) {
 export default function Ledger() {
   const [state, setState] = useState(() => getLedgerState())
   const [form, setForm] = useState(() => blankForm(state.exchangeRate))
+  const [ocrBusy, setOcrBusy] = useState(false)
+  const [ocrError, setOcrError] = useState('')
+  const fileRef = useRef(null)
   const travelers = getTravelers()
   const rate = Number(state.exchangeRate) || 187.5
   const entries = Array.isArray(state.entries) ? state.entries : []
@@ -149,6 +153,51 @@ export default function Ledger() {
       .reduce((sum, e) => sum + Number(e.amountRMB || 0), 0)
     return { traveler: t, share, paid, diff: paid - share }
   })
+  const oweList = aa.filter((row) => row.diff < 0)
+  const receiveList = aa.filter((row) => row.diff > 0)
+  const oweTotal = oweList.reduce((sum, row) => sum + Math.abs(row.diff), 0)
+  const receiveTotal = receiveList.reduce((sum, row) => sum + row.diff, 0)
+  const settlement =
+    oweList.length === 1 && receiveList.length === 1
+      ? { from: oweList[0].traveler.name, to: receiveList[0].traveler.name, amount: Math.abs(oweList[0].diff) }
+      : null
+
+  const handleReceiptFile = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = async () => {
+      const dataUrl = reader.result
+      setOcrBusy(true)
+      setOcrError('')
+      try {
+        const mod = await import('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js')
+        const worker = await mod.createWorker('kor+eng', 1, { logger: () => {} })
+        const { data } = await worker.recognize(dataUrl)
+        const text = data.text || ''
+        const amountMatch = text.match(/([\d,]+)\s*(원|KRW|₩)/i)
+        const amountKRW = amountMatch ? amountMatch[1].replace(/,/g, '') : ''
+        const lines = text.split('\n').map((s) => s.trim()).filter(Boolean)
+        const merchant =
+          lines.find((l) => /식당|카페|마트|편의점|호텔|스타벅스|이마트|CU|GS25|올리브영/i.test(l)) ||
+          lines[0] ||
+          ''
+        setForm((prev) => ({
+          ...prev,
+          merchant: merchant.slice(0, 40),
+          amountKRW,
+          amountRMB: amountKRW ? Math.round(Number(amountKRW) / rate) : '',
+          note: text.slice(0, 120),
+        }))
+        await worker.terminate()
+      } catch {
+        setOcrError('小票识别失败，可手动填写')
+      }
+      setOcrBusy(false)
+      event.target.value = ''
+    }
+    reader.readAsDataURL(file)
+  }
 
   const catTotals = CATEGORIES.map((category) => ({
     category,
@@ -202,10 +251,15 @@ export default function Ledger() {
       {travelers.length > 0 && (
         <section className="mt-3 px-4">
           <div className="rounded-lg border border-blue/15 bg-gradient-to-br from-mist via-white to-cream p-4 shadow-card">
-            <h2 className="flex items-center gap-1.5 text-[14px] font-black text-ink">
-              <Users size={15} className="text-blue" />
-              AA 结算
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-1.5 text-[14px] font-black text-ink">
+                <Users size={15} className="text-blue" />
+                AA 结算
+              </h2>
+              <span className="text-[10px] font-bold text-slate">
+                应收 {Math.round(receiveTotal)} · 应付 {Math.round(oweTotal)}
+              </span>
+            </div>
             <div className="mt-2.5 space-y-2">
               {aa.map((row) => (
                 <div key={row.traveler.id} className="rounded-md border border-line bg-white p-2.5">
@@ -232,6 +286,11 @@ export default function Ledger() {
                 </div>
               ))}
             </div>
+            {settlement && (
+              <p className="mt-2.5 rounded-md bg-ink px-3 py-2 text-[12px] font-bold text-white">
+                {settlement.from} 需付 {settlement.to} {Math.round(settlement.amount)} RMB
+              </p>
+            )}
           </div>
         </section>
       )}
@@ -239,6 +298,26 @@ export default function Ledger() {
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
           <h2 className="text-[15px] font-black text-ink">{form.id ? '编辑这笔消费' : '记一笔'}</h2>
+          <div className="mt-2.5 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={ocrBusy}
+              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-2 text-[11px] font-bold text-blue active:opacity-90 disabled:opacity-50"
+            >
+              <Camera size={13} />
+              {ocrBusy ? '识别中...' : '上传小票识别（OCR）'}
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleReceiptFile}
+            />
+            {ocrError && <span className="text-[10px] font-bold text-coral">{ocrError}</span>}
+          </div>
           <form onSubmit={save} className="mt-3 space-y-2.5">
             <div className="grid grid-cols-2 gap-2">
               <label className="block min-w-0">
