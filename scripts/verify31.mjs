@@ -22,11 +22,15 @@ await page.waitForTimeout(300)
 await page.getByText('新增提醒块', { exact: true }).click()
 await page.waitForTimeout(500)
 const newBlockShown = (await page.getByText('新提醒块', { exact: true }).count()) > 0
+const titleInputs = await page.locator('input[value="新提醒块"]').count()
+const deleteButtons = await page.locator('button[aria-label="删除整个提醒块"]').count()
+const storedAfterAdd = await page.evaluate(() => localStorage.getItem('seoul-reminder-edits-v1'))
+const sectionCount = await page.locator('section').count()
+console.log(JSON.stringify({ newBlockShown, titleInputs, deleteButtons, sectionCount, storedAfterAdd, errors }, null, 2))
 
 // delete the new block
 const newSection = page
-  .locator('section')
-  .filter({ has: page.locator('input[value="新提醒块"]') })
+  .locator('xpath=//section[.//input[@value="新提醒块"]]')
   .last()
 await newSection.locator('button[aria-label="删除整个提醒块"]').click()
 await page.waitForTimeout(600)

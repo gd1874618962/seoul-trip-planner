@@ -467,6 +467,14 @@ export function getReminders(overrides = getReminderOverrides()) {
       ? { ...group, ...saved, items: Array.isArray(saved.items) ? saved.items : group.items }
       : group
   })
+  Object.entries(overrides).forEach(([id, saved]) => {
+    if (!saved || saved._deleted || byId[id]) return
+    byId[id] = {
+      id,
+      title: saved.title || '新提醒块',
+      items: Array.isArray(saved.items) ? saved.items : [],
+    }
+  })
   const order = Array.isArray(overrides.__order) && overrides.__order.length ? overrides.__order : reminders.map((g) => g.id)
   const seen = new Set()
   const ordered = order.map((id) => byId[id]).filter((g) => g && !seen.has(g.id) && seen.add(g.id))
