@@ -12,8 +12,10 @@ const fallbackPlan = buildTransportPlan(hannam, myeongdong)
 const sameStationPlan = buildTransportPlan(hongdae, { ...hongdae, locationId: 'loc-3' })
 
 const unit = {
-  staticLine: subway?.line === '2号线',
-  staticFromTo: subway?.from === '홍대입구' && subway?.to === '성수',
+  staticStatus: staticPlan?.status === 'static',
+  staticSubwayOption: subway?.type === 'subway' && Array.isArray(subway?.steps),
+  staticSubwayStep:
+    Array.isArray(subway?.steps) && subway.steps.some((s) => s.mode === 'subway'),
   fallbackHasOptions: Array.isArray(fallbackPlan?.options) && fallbackPlan.options.length >= 2,
   sameStationWalk: (sameStationPlan?.options || []).every((o) => o.type === 'walking'),
 }
