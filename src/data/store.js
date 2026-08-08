@@ -462,6 +462,7 @@ export function getReminders(overrides = getReminderOverrides()) {
   const byId = {}
   reminders.forEach((group) => {
     const saved = overrides[group.id]
+    if (saved?._deleted) return
     byId[group.id] = saved
       ? { ...group, ...saved, items: Array.isArray(saved.items) ? saved.items : group.items }
       : group
@@ -470,6 +471,7 @@ export function getReminders(overrides = getReminderOverrides()) {
   const seen = new Set()
   const ordered = order.map((id) => byId[id]).filter((g) => g && !seen.has(g.id) && seen.add(g.id))
   reminders.forEach((group) => {
+    if (overrides[group.id]?._deleted) return
     if (!seen.has(group.id)) {
       ordered.push(byId[group.id])
       seen.add(group.id)

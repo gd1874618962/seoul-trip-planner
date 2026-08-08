@@ -15,6 +15,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { getReminderOverrides, getReminders, saveReminderOverrides } from '../data/store'
+import { reminders as defaultReminders } from '../data/trip'
 import PageHeader from '../components/PageHeader'
 
 const iconMap = {
@@ -54,7 +55,17 @@ function useChecks(id, count) {
   return [checks, toggle]
 }
 
-function ReminderCard({ group, editing, onChange, onReset, onMoveUp, onMoveDown, isFirst, isLast }) {
+function ReminderCard({
+  group,
+  editing,
+  onChange,
+  onReset,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+}) {
   const Icon = iconMap[group.icon] || ClipboardList
   const [checks, toggle] = useChecks(group.id, group.items.length)
   const done = checks.filter(Boolean).length
@@ -91,6 +102,14 @@ function ReminderCard({ group, editing, onChange, onReset, onMoveUp, onMoveDown,
         </div>
         {editing && (
           <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={onDelete}
+              className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+              aria-label="删除整个提醒块"
+            >
+              <Trash2 size={14} />
+            </button>
             <button
               type="button"
               onClick={onMoveUp}
@@ -232,6 +251,33 @@ export default function Reminders() {
     persist({ ...overrides, __order: ids })
   }
 
+  const addGroup = () => {
+    const id = `reminder-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
+    const order = Array.isArray(overrides.__order)
+      ? overrides.__order
+      : groups.map((g) => g.id)
+    persist({
+      ...overrides,
+      [id]: { title: '新提醒块', items: ['新提醒内容'] },
+      __order: [...order, id],
+    })
+  }
+
+  const deleteGroup = (id) => {
+    const group = groups.find((g) => g.id === id)
+    if (!window.confirm(`确定删除“${group?.title || '这个提醒块'}”吗？`)) return
+    const next = { ...overrides }
+    if (defaultReminders.some((g) => g.id === id)) {
+      next[id] = { _deleted: true }
+    } else {
+      delete next[id]
+    }
+    if (Array.isArray(next.__order)) {
+      next.__order = next.__order.filter((gid) => gid !== id)
+    }
+    persist(next)
+  }
+
   const resetGroup = (id) => {
     if (!window.confirm(`确定恢复“${groups.find((g) => g.id === id)?.title}”为默认内容吗？`)) return
     const next = { ...overrides }
@@ -293,10 +339,21 @@ export default function Reminders() {
             onReset={() => resetGroup(group.id)}
             onMoveUp={() => moveGroup(index, -1)}
             onMoveDown={() => moveGroup(index, 1)}
+            onDelete={() => deleteGroup(group.id)}
             isFirst={index === 0}
             isLast={index === groups.length - 1}
           />
         ))}
+        {editing && (
+          <button
+            type="button"
+            onClick={addGroup}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue/40 bg-mist/50 py-3 text-xs font-bold text-blue active:bg-mist"
+          >
+            <Plus size={15} />
+            新增提醒块
+          </button>
+        )}
       </section>
     </div>
   )
