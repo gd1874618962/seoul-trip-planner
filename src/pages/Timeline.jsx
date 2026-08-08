@@ -399,7 +399,7 @@ export default function Timeline() {
         locationId: current.locationId,
         ...destination,
       },
-      { provider: 'google' },
+      { provider: 'estimated' },
     )
     if (!plan) {
       setGenError((prev) => ({ ...prev, [index]: '暂无自动路线，请使用地图导航' }))

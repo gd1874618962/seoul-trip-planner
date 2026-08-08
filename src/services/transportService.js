@@ -75,7 +75,7 @@ function estimatedTransport(origin, destination) {
 }
 
 export async function generateTransportRoute(origin, destination, options = {}) {
-  const provider = options.provider || 'google'
+  const provider = options.provider || 'estimated'
   const key = cacheKey(origin, destination)
   if (routeCache.has(key)) return routeCache.get(key)
 

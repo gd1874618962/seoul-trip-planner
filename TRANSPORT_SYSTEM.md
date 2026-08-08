@@ -43,6 +43,14 @@ event.transport = {
 3. 前端调用 Edge Function，把真实线路写入 `transport.options`
 4. 失败回退当前估算方案
 
+## 3.5 静态首尔地铁库（零成本方案，当前生效）
+
+- 数据：`src/data/seoulTransit.js`，覆盖本次行程主要节点（弘大/合井/明洞/圣水/金浦/仁川机场）
+- 匹配：按 `origin.locationId|destination.locationId` 查表，命中返回真实线路（如 2号线 홍대입구→성수）
+- 同站：同一片区自动改为步行方案
+- 未命中：回退规则估算 + Naver 网页导航
+- 离线可用、零费用、零风险；后续可手工扩充或接 Naver
+
 ## 4. 后续扩展
 
 - 真实线路/换乘/站名：接入 Naver 后替换 steps

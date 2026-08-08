@@ -9,6 +9,7 @@ import Budget from './pages/Budget'
 import Reminders from './pages/Reminders'
 import Ledger from './pages/Ledger'
 import EditTrip from './pages/EditTrip'
+import Today from './pages/Today'
 import { pollCloud, pollRemote } from './data/store'
 
 export const tabs = [
@@ -50,6 +51,7 @@ export default function App() {
           {page === 'reminders' && <Reminders />}
           {page === 'ledger' && <Ledger />}
           {page === 'editTrip' && <EditTrip onNavigate={navigate} />}
+          {page === 'today' && <Today onNavigate={navigate} />}
         </main>
         <BottomNav current={page} onNavigate={navigate} />
       </div>

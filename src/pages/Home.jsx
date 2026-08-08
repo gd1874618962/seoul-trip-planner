@@ -148,6 +148,14 @@ export default function HomePage({ onNavigate }) {
           <Pencil size={14} />
           编辑基础资料（航班/酒店/成员）
         </button>
+        <button
+          type="button"
+          onClick={() => onNavigate('today')}
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-coral/25 bg-cream/70 py-2.5 text-xs font-bold text-coral active:bg-cream"
+        >
+          <CalendarDays size={14} />
+          今日行程（当天执行视图）
+        </button>
         <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-line bg-white/95 px-3 py-2 shadow-card">
           <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold ${syncMeta[sync.status]?.cls || 'text-slate'}`}>
             <SyncIcon size={13} />

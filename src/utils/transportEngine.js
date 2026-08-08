@@ -1,3 +1,5 @@
+import { seoulStations, seoulTransitRoutes } from '../data/seoulTransit.js'
+
 export function haversineMeters(a, b) {
   const R = 6371000
   const toRad = (deg) => (deg * Math.PI) / 180
@@ -9,8 +11,51 @@ export function haversineMeters(a, b) {
   return Math.round(2 * R * Math.asin(Math.sqrt(s)))
 }
 
+function buildStaticSubway(origin, destination) {
+  const a = seoulStations[origin?.locationId]
+  const b = seoulStations[destination?.locationId]
+  if (!a || !b) return null
+  if (a.name === b.name) return { sameStation: true }
+  const direct =
+    seoulTransitRoutes[`${origin.locationId}|${destination.locationId}`] ||
+    seoulTransitRoutes[`${destination.locationId}|${origin.locationId}`]
+  if (!direct) return null
+  const steps = direct.transferAt
+    ? [
+        { mode: 'subway', line: direct.firstLine || direct.line, from: direct.from, to: direct.transferAt },
+        { mode: 'walk', description: `换乘 ${direct.secondLine}` },
+        { mode: 'subway', line: direct.secondLine, from: direct.transferAt, to: direct.to },
+      ]
+    : [
+        { mode: 'walk', description: `步行至 ${a.name}` },
+        { mode: 'subway', line: direct.line, from: direct.from, to: direct.to },
+        { mode: 'walk', description: '步行至目的地' },
+      ]
+  return {
+    type: 'subway',
+    duration: direct.duration,
+    costKRW: direct.costKRW,
+    steps,
+  }
+}
+
 export function buildTransportPlan(origin, destination) {
   if (!origin || !destination || origin.lat == null || destination.lat == null) return null
+  const staticSubway = buildStaticSubway(origin, destination)
+  if (staticSubway?.sameStation) {
+    return {
+      status: 'static',
+      options: [
+        {
+          type: 'walking',
+          duration: '约 15 分钟',
+          distanceM: 1200,
+          costKRW: '免费',
+          steps: [{ mode: 'walk', description: '同一片区，步行前往即可' }],
+        },
+      ],
+    }
+  }
   const distanceM = haversineMeters(origin, destination)
   const distanceKm = (distanceM / 1000).toFixed(1)
   const options = []
@@ -26,17 +71,21 @@ export function buildTransportPlan(origin, destination) {
     })
   }
 
-  const subwayMinutes = Math.max(15, Math.round(distanceM / 420) + 10)
-  options.push({
-    type: 'subway',
-    duration: `约 ${subwayMinutes} 分钟`,
-    costKRW: '约 1,450 KRW',
-    steps: [
-      { mode: 'walk', description: '步行至附近地铁站' },
-      { mode: 'subway', line: '地铁', from: '附近地铁站', to: '目的地附近地铁站' },
-      { mode: 'walk', description: '步行至目的地' },
-    ],
-  })
+  if (staticSubway) {
+    options.push(staticSubway)
+  } else {
+    const subwayMinutes = Math.max(15, Math.round(distanceM / 420) + 10)
+    options.push({
+      type: 'subway',
+      duration: `约 ${subwayMinutes} 分钟`,
+      costKRW: '约 1,450 KRW',
+      steps: [
+        { mode: 'walk', description: '步行至附近地铁站' },
+        { mode: 'subway', line: '地铁', from: '附近地铁站', to: '目的地附近地铁站' },
+        { mode: 'walk', description: '步行至目的地' },
+      ],
+    })
+  }
 
   const taxiMinutes = Math.max(10, Math.round(distanceM / 500) + 8)
   const taxiCost = Math.round((distanceM / 1000) * 800 + 3800)
@@ -47,5 +96,5 @@ export function buildTransportPlan(origin, destination) {
     steps: [],
   })
 
-  return { status: 'estimated', options }
+  return { status: staticSubway ? 'static' : 'estimated', options }
 }
