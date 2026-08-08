@@ -24,7 +24,10 @@ await page.waitForTimeout(500)
 const newBlockShown = (await page.getByText('新提醒块', { exact: true }).count()) > 0
 
 // delete the new block
-const newSection = page.locator('section', { hasText: '新提醒块' }).last()
+const newSection = page
+  .locator('section')
+  .filter({ has: page.locator('input[value="新提醒块"]') })
+  .last()
 await newSection.locator('button[aria-label="删除整个提醒块"]').click()
 await page.waitForTimeout(600)
 const newBlockGone = (await page.getByText('新提醒块', { exact: true }).count()) === 0
