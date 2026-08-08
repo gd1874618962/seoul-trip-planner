@@ -555,6 +555,12 @@ export function getLedgerState() {
   return { exchangeRate: Number(saved?.exchangeRate) || 187.5, entries }
 }
 
+export function getLedgerExpenseTotal() {
+  return getLedgerState().entries
+    .filter((entry) => entry.type !== 'income')
+    .reduce((sum, entry) => sum + Number(entry.amountRMB || 0), 0)
+}
+
 export function saveLedgerState(value) {
   write(LEDGER_KEY, value)
   scheduleCloudPush()

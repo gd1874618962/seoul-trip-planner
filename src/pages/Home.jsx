@@ -23,6 +23,7 @@ import {
   getDays,
   getFlights,
   getHotels,
+  getLedgerExpenseTotal,
   getSyncStatus,
   getTripMeta,
   importAllState,
@@ -50,7 +51,9 @@ export default function HomePage({ onNavigate }) {
   const hotels = getHotels()
   const budgetState = getBudgetState()
   const totalSpent = budgetState.spent.reduce((sum, item) => sum + Number(item.amount || 0), 0)
-  const remaining = budgetState.perPerson - totalSpent
+  const ledgerTotal = getLedgerExpenseTotal()
+  const spentTotal = totalSpent + ledgerTotal
+  const remaining = budgetState.perPerson - spentTotal
 
   const handleExport = () => {
     try {
@@ -128,7 +131,7 @@ export default function HomePage({ onNavigate }) {
         <div className="grid grid-cols-3 divide-x divide-line overflow-hidden rounded-lg border border-line bg-white p-3 shadow-card">
           {[
             { label: '总预算', value: String(budgetState.perPerson), unit: 'RMB/人' },
-            { label: '已消费', value: String(totalSpent), unit: 'RMB' },
+            { label: '已消费', value: String(spentTotal), unit: 'RMB' },
             { label: '剩余', value: String(remaining), unit: 'RMB' },
           ].map((item) => (
             <div key={item.label} className="px-2 text-center">

@@ -13,7 +13,12 @@ import {
   UtensilsCrossed,
   Wallet,
 } from 'lucide-react'
-import { getBudgetState, getDefaultBudgetState, saveBudgetState } from '../data/store'
+import {
+  getBudgetState,
+  getDefaultBudgetState,
+  getLedgerExpenseTotal,
+  saveBudgetState,
+} from '../data/store'
 import PageHeader from '../components/PageHeader'
 
 const iconMap = {
@@ -33,8 +38,10 @@ export default function Budget() {
   const [editing, setEditing] = useState(false)
 
   const totalSpent = state.spent.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+  const ledgerTotal = getLedgerExpenseTotal()
+  const spentTotal = totalSpent + ledgerTotal
   const plannedTotal = state.planned.reduce((sum, item) => sum + Number(item.amount || 0), 0)
-  const remaining = state.perPerson - totalSpent
+  const remaining = state.perPerson - spentTotal
   const buffer = remaining - plannedTotal
   const pct = Math.min(100, Math.round((totalSpent / state.perPerson) * 100))
   const maxPlanned = Math.max(1, ...state.planned.map((item) => Number(item.amount || 0)))
@@ -123,7 +130,7 @@ export default function Budget() {
                 <span className="text-xs font-bold text-slate"> RMB / 人</span>
               </p>
               <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate">
-                已消费 {totalSpent} + 计划 {plannedTotal}
+                已消费 {spentTotal}（含账本流水 {ledgerTotal}）+ 计划 {plannedTotal}
               </p>
               <p className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold ${buffer >= 0 ? 'bg-mist text-blue' : 'bg-cream text-coral'}`}>
                 计划外余量 {buffer} RMB
