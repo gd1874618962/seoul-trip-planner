@@ -338,7 +338,7 @@ export default function Timeline() {
   const days = getDays()
   const pointMap = Object.fromEntries(getPoints().map((p) => [p.locationId, p]))
   const baseDay = days.find((d) => d.id === activeDay)
-  const entries = overrides[activeDay] ? [...overrides[activeDay]] : [...baseDay.entries]
+  const entries = baseDay.entries
 
   useEffect(
     () => () => {

@@ -46,6 +46,7 @@ const report = {
   day3Kept: state.day3Len > 0,
   migrationDone: Boolean(state.migrationKey),
   musinsaVisible: body.includes('MUSINSA'),
+  bodySnippet: body.slice(0, 400),
   errors,
 }
 console.log(JSON.stringify(report, null, 2))
