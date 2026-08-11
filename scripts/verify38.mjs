@@ -10,6 +10,9 @@ const oldOverride = {
 }
 const versionedOverride = {
   ...oldOverride,
+  1: [
+    { id: 'evt-user-1', time: '12:30', title: '旧行程 明洞土豆脊骨汤（用户版本）' },
+  ],
   __itineraryVersion: { 1: version },
 }
 
