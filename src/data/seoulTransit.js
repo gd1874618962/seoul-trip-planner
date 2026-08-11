@@ -115,6 +115,20 @@ export const seoulTransitRoutes = {
     duration: '约 45 分钟',
     costKRW: '约 1,450 KRW',
   },
+  'loc-20|loc-5': {
+    line: '2号线',
+    from: '을지로입구',
+    to: '성수',
+    duration: '约 25 分钟',
+    costKRW: '约 1,500 KRW',
+  },
+  'loc-21|loc-4': {
+    line: '2号线',
+    from: '홍대입구',
+    to: '합정',
+    duration: '约 5 分钟',
+    costKRW: '约 1,400 KRW',
+  },
   'loc-12|loc-16': {
     line: '机场线',
     from: '김포공항',

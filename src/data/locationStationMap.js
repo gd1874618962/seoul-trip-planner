@@ -15,4 +15,9 @@ export const locationStationMap = {
   'loc-15': { station: { name: '정발산역', line: '3号线', exit: '1号出口' }, walkingMinutes: 15 },
   'loc-16': { station: { name: '인천공항역', line: '机场线', exit: '地下1层' }, walkingMinutes: 3 },
   'loc-17': { station: { name: '잠실역', line: '2号线 / 8号线', exit: '4号出口' }, walkingMinutes: 10 },
+  'loc-18': { station: { name: '성수역', line: '2号线', exit: '3号出口' }, walkingMinutes: 6 },
+  'loc-19': { station: { name: '성수역', line: '2号线', exit: '4号出口' }, walkingMinutes: 7 },
+  'loc-20': { station: { name: '을지로입구역', line: '2号线', exit: '5号出口' }, walkingMinutes: 6 },
+  'loc-21': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '9号出口' }, walkingMinutes: 5 },
+  'loc-22': { station: { name: '홍대입구역', line: '2号线 / 机场线', exit: '3号出口' }, walkingMinutes: 8 },
 }

@@ -70,6 +70,12 @@ const TRANSPORT_RULES = {
   other: { minutes: 20, cost: '—' },
 }
 
+const DEPRECATED_EVENT_IDS = new Set([
+  'd1-e1', 'd1-e2', 'd1-e3', 'd1-e3b', 'd1-e4', 'd1-e5', 'd1-e6',
+  'd2-e1', 'd2-e2', 'd2-e3', 'd2-e4', 'd2-e5', 'd2-e6', 'd2-e7', 'd2-e8', 'd2-e9', 'd2-e10',
+])
+const DEPRECATED_TITLE = /MUUT|Neo Teria|BIGBANG 20周年展/
+
 function parseStartMinutes(text) {
   const m = String(text || '').match(/^(\d{1,2}):(\d{2})/)
   return m ? Number(m[1]) * 60 + Number(m[2]) : null
@@ -364,7 +370,11 @@ export function saveTimelineOverrides(value) {
 export function getDays(overrides = getTimelineOverrides()) {
   const hotelMap = getHotelMap()
   return days.map((d) => {
-    const raw = overrides[d.id] ? [...overrides[d.id]] : []
+    const raw = overrides[d.id]
+      ? [...overrides[d.id]].filter(
+          (entry) => !DEPRECATED_EVENT_IDS.has(entry.id) && !DEPRECATED_TITLE.test(entry.title || ''),
+        )
+      : []
     const seen = new Set(raw.map((entry) => entry.id))
     d.entries.forEach((defaultEntry) => {
       if (!seen.has(defaultEntry.id)) raw.push({ ...defaultEntry })
