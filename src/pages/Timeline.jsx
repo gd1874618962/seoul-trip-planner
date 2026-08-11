@@ -27,7 +27,13 @@ import {
   UtensilsCrossed,
   Wallet,
 } from 'lucide-react'
-import { getDays, getPoints, getTimelineOverrides, saveTimelineOverrides } from '../data/store'
+import {
+  getDays,
+  getPoints,
+  getTimelineOverrides,
+  getTripMeta,
+  saveTimelineOverrides,
+} from '../data/store'
 import PageHeader from '../components/PageHeader'
 import { generateTransportRoute } from '../services/transportService'
 
@@ -345,8 +351,15 @@ export default function Timeline() {
   )
 
   const persist = (next) => {
-    setOverrides(next)
-    overridesRef.current = next
+    const versioned = {
+      ...next,
+      __itineraryVersion: {
+        ...(next.__itineraryVersion || {}),
+        [activeDay]: getTripMeta().itineraryVersion,
+      },
+    }
+    setOverrides(versioned)
+    overridesRef.current = versioned
     if (persistTimer.current) clearTimeout(persistTimer.current)
     persistTimer.current = setTimeout(() => {
       saveTimelineOverrides(overridesRef.current)

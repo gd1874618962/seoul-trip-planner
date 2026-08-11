@@ -370,11 +370,16 @@ export function saveTimelineOverrides(value) {
 export function getDays(overrides = getTimelineOverrides()) {
   const hotelMap = getHotelMap()
   return days.map((d) => {
-    const raw = overrides[d.id]
-      ? [...overrides[d.id]].filter(
-          (entry) => !DEPRECATED_EVENT_IDS.has(entry.id) && !DEPRECATED_TITLE.test(entry.title || ''),
-        )
-      : []
+    const currentVersion = getTripMeta().itineraryVersion
+    const storedVersion = overrides.__itineraryVersion?.[d.id]
+    const staleDay = (d.id === 1 || d.id === 2) && storedVersion !== currentVersion
+    const raw = staleDay
+      ? []
+      : overrides[d.id]
+        ? [...overrides[d.id]].filter(
+            (entry) => !DEPRECATED_EVENT_IDS.has(entry.id) && !DEPRECATED_TITLE.test(entry.title || ''),
+          )
+        : []
     const seen = new Set(raw.map((entry) => entry.id))
     d.entries.forEach((defaultEntry) => {
       if (!seen.has(defaultEntry.id)) raw.push({ ...defaultEntry })
