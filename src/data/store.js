@@ -420,6 +420,12 @@ export function getDays(overrides = getTimelineOverrides()) {
       const hotel = normalized.locationId ? hotelMap[normalized.locationId] : null
       const withHotel = hotel ? { ...normalized, address: hotel.address || normalized.address } : normalized
       const enriched = { ...withHotel, status: withHotel.status || 'planned' }
+      if (enriched.duration && !enriched.transportEta) {
+        enriched.transportEta = enriched.duration
+      }
+      if (enriched.costKRW != null && enriched.costKRW > 0 && !enriched.transportCostEstimate) {
+        enriched.transportCostEstimate = `约 ${enriched.costKRW.toLocaleString()} KRW`
+      }
       if (enriched.transportMode && !enriched.transportEta) {
         const rule = TRANSPORT_RULES[enriched.transportMode]
         if (rule) {

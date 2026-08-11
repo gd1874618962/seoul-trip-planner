@@ -46,6 +46,7 @@ const report = {
   day3Kept: state.day3Len > 0,
   migrationDone: Boolean(state.migrationKey),
   musinsaVisible: body.includes('MUSINSA'),
+  explicitDurationShown: body.includes('55分钟'),
   bodySnippet: body.slice(0, 400),
   errors,
 }
