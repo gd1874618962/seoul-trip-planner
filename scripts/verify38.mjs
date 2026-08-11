@@ -23,6 +23,12 @@ const unit = {
     !staleDay1.entries.some((e) => /BIGBANG 20/.test(e.title || '')),
   versionedKeepsEdits: currentDay1.entries.some((e) => /旧行程/.test(e.title || '')),
   day2Defaults: getDays({}).find((d) => d.id === 2).entries.some((e) => /PIX/.test(e.title || '')),
+  locationFilter: (() => {
+    const fake = {
+      1: [{ id: 'evt-custom-1', time: '18:30', title: '自定义展', locationId: 'loc-17', pointIds: [17] }],
+    }
+    return !getDays(fake)[0].entries.some((e) => e.locationId === 'loc-17')
+  })(),
 }
 
 console.log(JSON.stringify({ unit }, null, 2))

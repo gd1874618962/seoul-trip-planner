@@ -74,7 +74,19 @@ const DEPRECATED_EVENT_IDS = new Set([
   'd1-e1', 'd1-e2', 'd1-e3', 'd1-e3b', 'd1-e4', 'd1-e5', 'd1-e6',
   'd2-e1', 'd2-e2', 'd2-e3', 'd2-e4', 'd2-e5', 'd2-e6', 'd2-e7', 'd2-e8', 'd2-e9', 'd2-e10',
 ])
-const DEPRECATED_TITLE = /MUUT|Neo Teria|BIGBANG 20周年展/
+const DEPRECATED_TITLE = /MUUT|Neo Teria|BIGBANG 20|BIGBANG 展|BIGBANG展览|빅뱅 20/
+
+function isDeprecatedEntry(entry) {
+  const ids = entry.pointIds || []
+  return (
+    DEPRECATED_EVENT_IDS.has(entry.id) ||
+    DEPRECATED_TITLE.test(entry.title || '') ||
+    entry.locationId === 'loc-7' ||
+    entry.locationId === 'loc-17' ||
+    ids.includes(7) ||
+    ids.includes(17)
+  )
+}
 
 function parseStartMinutes(text) {
   const m = String(text || '').match(/^(\d{1,2}):(\d{2})/)
@@ -377,7 +389,7 @@ export function getDays(overrides = getTimelineOverrides()) {
       ? []
       : overrides[d.id]
         ? [...overrides[d.id]].filter(
-            (entry) => !DEPRECATED_EVENT_IDS.has(entry.id) && !DEPRECATED_TITLE.test(entry.title || ''),
+            (entry) => !isDeprecatedEntry(entry),
           )
         : []
     const seen = new Set(raw.map((entry) => entry.id))
