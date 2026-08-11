@@ -23,6 +23,7 @@ const LEDGER_KEY = 'seoul-ledger-v1'
 const TRIP_KEY = 'seoul-trip-edits-v1'
 const RESTAURANT_KEY = 'seoul-restaurant-edits-v1'
 const CLOUD_META_KEY = 'seoul-cloud-meta'
+const ITINERARY_MIGRATION_KEY = 'seoul-itinerary-migration'
 const STATE_URL = '/api/state'
 
 let remoteState = null
@@ -372,6 +373,24 @@ export async function pollCloud() {
 
 export function getTimelineOverrides() {
   return read(TIMELINE_KEY) || {}
+}
+
+export function migrateItineraryOnce() {
+  try {
+    const version = getTripMeta().itineraryVersion
+    if (localStorage.getItem(ITINERARY_MIGRATION_KEY) === version) return
+    const overrides = getTimelineOverrides()
+    const next = { ...overrides, 1: [], 2: [] }
+    next.__itineraryVersion = {
+      ...(next.__itineraryVersion || {}),
+      1: version,
+      2: version,
+    }
+    saveTimelineOverrides(next)
+    localStorage.setItem(ITINERARY_MIGRATION_KEY, version)
+  } catch {
+    /* ignore */
+  }
 }
 
 export function saveTimelineOverrides(value) {
