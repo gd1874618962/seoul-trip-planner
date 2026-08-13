@@ -62,12 +62,27 @@ await page.getByText('DAISY 代购', { exact: true }).click()
 await page.waitForTimeout(400)
 await page.reload({ waitUntil: 'domcontentloaded' })
 await page.waitForTimeout(900)
+report.persistDebug = await page.evaluate(async () => {
+  const raw = localStorage.getItem('seoul-shopping-daisy-v1')
+  let remote = null
+  try {
+    const res = await fetch('/api/state')
+    remote = await res.json()
+  } catch {
+    /* ignore */
+  }
+  return {
+    local: raw ? JSON.parse(raw).customers?.map((c) => c.customerName) : null,
+    remoteHas: Boolean(remote && remote['seoul-shopping-daisy-v1']),
+  }
+})
 await page.getByText('韩国代购（DAISY / 梧桐）', { exact: true }).click()
 await page.waitForTimeout(300)
 await page.getByText('DAISY 代购', { exact: true }).click()
 await page.waitForTimeout(400)
 const reloadBody = await page.locator('body').innerText()
-report.persisted = reloadBody.includes('小红') && reloadBody.includes('₩104,000')
+const namePersisted = (await page.locator('input[value="小红"]').count()) > 0
+report.persisted = namePersisted && reloadBody.includes('₩104,000')
 
 report.overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
 report.errors = errors
