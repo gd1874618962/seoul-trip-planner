@@ -71,12 +71,14 @@ report.t13_rateUpdate = body.includes('¥499.20')
 await page.locator('input[placeholder="搜索商品..."]').fill('帽子')
 await page.waitForTimeout(400)
 body = await page.locator('body').innerText()
+report.t15_debug = { hasCap: body.includes('贴布棒球帽'), hasTote: body.includes('托特包') }
 report.t15_search = body.includes('贴布棒球帽') && !body.includes('托特包')
 await page.locator('input[placeholder="搜索商品..."]').fill('')
 await page.waitForTimeout(500)
 await page.getByRole('button', { name: '应援棒', exact: true }).click()
 await page.waitForTimeout(500)
 body = await page.locator('body').innerText()
+report.t16_debug = { hasStick: body.includes('20周年纪念版官方应援棒'), hasCap: body.includes('贴布棒球帽') }
 report.t16_category = body.includes('20周年纪念版官方应援棒') && !body.includes('贴布棒球帽')
 
 // refresh persistence

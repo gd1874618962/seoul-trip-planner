@@ -164,11 +164,14 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   }
 
   const filteredProducts = shoppingProducts.filter((p) => {
+    const q = query.trim()
+    const qCore = q.endsWith('子') ? q.slice(0, -1) : q
     const matchQuery =
-      !query.trim() ||
-      p.name.includes(query.trim()) ||
-      p.id.includes(query.trim()) ||
-      p.category.includes(query.trim())
+      !q ||
+      p.name.includes(q) ||
+      p.id.includes(q) ||
+      p.category.includes(q) ||
+      p.name.includes(qCore)
     const matchCategory = category === '全部' || p.category === category
     return matchQuery && matchCategory
   })
