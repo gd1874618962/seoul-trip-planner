@@ -1,13 +1,7 @@
-const IMG = {
-  p1a: '/shopping/catalog/P1_01-10.jpg',
-  p1b: '/shopping/catalog/P1_11-20.jpg',
-  p2a: '/shopping/catalog/P2_21-32.jpg',
-  p2b: '/shopping/catalog/P2_33-44.jpg',
-  p3: '/shopping/catalog/P3_45-48.jpg',
-}
+const assetBase = import.meta.env?.BASE_URL || './'
 
 const P = (n) =>
-  `/shopping/catalog/products/${encodeURIComponent(`商品 (${n})`)}.png`
+  `${assetBase}shopping/catalog/products/${encodeURIComponent(`商品 (${n})`)}.png`
 
 export const shoppingProducts = [
   { id: 'bb-01', name: '20周年纪念版官方应援棒', category: '应援棒', priceKRW: 52000, image: P(1), imageAlt: '20周年纪念版官方应援棒', description: '', maxQuantity: 3 },
