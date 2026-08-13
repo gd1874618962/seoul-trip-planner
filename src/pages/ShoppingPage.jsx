@@ -390,7 +390,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           {filteredProducts.map((p) => (
-            <div key={p.id} className="overflow-hidden rounded-lg border border-line bg-white shadow-card">
+            <div key={p.id} data-product={p.id} className="overflow-hidden rounded-lg border border-line bg-white shadow-card">
               <img src={p.image} alt={p.imageAlt} className="aspect-square w-full object-cover" loading="lazy" />
               <div className="p-2.5">
                 <p className="text-[9px] font-bold text-gold">{p.id.replace('bb-', '')}</p>

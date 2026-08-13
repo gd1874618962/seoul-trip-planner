@@ -71,15 +71,17 @@ report.t13_rateUpdate = body.includes('¥499.20')
 await page.locator('input[placeholder="搜索商品..."]').fill('帽子')
 await page.waitForTimeout(400)
 body = await page.locator('body').innerText()
-report.t15_debug = { hasCap: body.includes('贴布棒球帽'), hasTote: body.includes('托特包') }
-report.t15_search = body.includes('贴布棒球帽') && !body.includes('托特包')
+const capCardsSearch = await page.locator('[data-product="bb-36"]').count()
+const toteCardsSearch = await page.locator('[data-product="bb-32"]').count()
+report.t15_search = capCardsSearch > 0 && toteCardsSearch === 0
 await page.locator('input[placeholder="搜索商品..."]').fill('')
 await page.waitForTimeout(500)
 await page.getByRole('button', { name: '应援棒', exact: true }).click()
 await page.waitForTimeout(500)
 body = await page.locator('body').innerText()
-report.t16_debug = { hasStick: body.includes('20周年纪念版官方应援棒'), hasCap: body.includes('贴布棒球帽') }
-report.t16_category = body.includes('20周年纪念版官方应援棒') && !body.includes('贴布棒球帽')
+const stickCards = await page.locator('[data-product="bb-01"]').count()
+const capCards = await page.locator('[data-product="bb-36"]').count()
+report.t16_category = stickCards > 0 && capCards === 0
 
 // refresh persistence
 await page.reload({ waitUntil: 'domcontentloaded' })
