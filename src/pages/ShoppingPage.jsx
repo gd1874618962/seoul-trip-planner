@@ -20,6 +20,7 @@ import {
 } from '../data/shoppingConfig'
 import { getShoppingState, saveShoppingState } from '../data/store'
 import PageHeader from '../components/PageHeader'
+import { canAdd, remaining, soldQuantity } from '../utils/shoppingLogic'
 
 const productMap = Object.fromEntries(shoppingProducts.map((p) => [p.id, p]))
 
@@ -30,13 +31,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   const rate = Number(state.settings?.krwToRmb) || 0.00477
   const customers = Array.isArray(state.customers) ? state.customers : []
   const toRMB = (krw) => Math.round(krw * rate * 100) / 100
-  const globalQtyMap = {}
-  customers.forEach((c) =>
-    c.orders.forEach((o) => {
-      globalQtyMap[o.productId] = (globalQtyMap[o.productId] || 0) + o.quantity
-    }),
-  )
-  const globalQty = (productId) => globalQtyMap[productId] || 0
+  const globalQty = (productId) => soldQuantity(customers, productId)
   const buyersOf = (productId) =>
     customers
       .filter((c) => c.orders.some((o) => o.productId === productId))
@@ -83,7 +78,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   const addProduct = (customerId, productId) => {
     const product = productMap[productId]
     if (!product) return
-    if (globalQty(productId) >= 3) {
+    if (!canAdd(customers, productId)) {
       window.alert('该商品全站总量已达 3 件上限，无法继续添加')
       return
     }
@@ -110,7 +105,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
       customers: customers.map((c) => {
         if (c.id !== customerId) return c
         const order = c.orders[orderIndex]
-        if (delta > 0 && order && globalQty(order.productId) >= 3) return c
+        if (delta > 0 && order && !canAdd(customers, order.productId)) return c
         const orders = c.orders
           .map((o, i) =>
             i === orderIndex
@@ -326,7 +321,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                         <button
                           type="button"
                           onClick={() => setQty(customer.id, i, 1)}
-                          disabled={globalQty(order.productId) >= 3}
+                          disabled={remaining(customers, order.productId) <= 0}
                           className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-black text-slate active:bg-cream disabled:opacity-30"
                         >
                           +
@@ -415,7 +410,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           {filteredProducts.map((p) => (
             <div key={p.id} data-product={p.id} className="relative overflow-hidden rounded-lg border border-line bg-white shadow-card">
-              {globalQty(p.id) >= 3 && (
+                  {remaining(customers, p.id) <= 0 && (
                 <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-coral text-lg font-black text-white shadow-md">
                   ✕
                 </span>

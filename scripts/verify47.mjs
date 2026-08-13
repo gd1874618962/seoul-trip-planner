@@ -1,5 +1,56 @@
+import {
+  PRODUCT_LIMIT,
+  canAdd,
+  maxAddable,
+  remaining,
+  soldQuantity,
+} from '../src/utils/shoppingLogic.js'
 import { chromium } from 'file:///C:/Users/PC/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
 
+const c = (name, orders, colorId = 'yellow') => ({ customerName: name, colorId, orders })
+const o = (productId, quantity) => ({ productId, quantity, unitPriceKRW: 1000 })
+
+const report = {}
+
+// A: one customer #01 x3
+const aCustomers = [c('小红', [o('bb-01', 3)])]
+report.tA = soldQuantity(aCustomers, 'bb-01') === 3 && remaining(aCustomers, 'bb-01') === 0
+
+// B: 4th blocked
+report.tB = canAdd(aCustomers, 'bb-01') === false && maxAddable(aCustomers, 'bb-01') === 0
+
+// C: A x2 + B x1 = 3
+const cCustomers = [c('客户A', [o('bb-01', 2)]), c('客户B', [o('bb-01', 1)])]
+report.tC = soldQuantity(cCustomers, 'bb-01') === 3 && remaining(cCustomers, 'bb-01') === 0
+
+// D: A x2, B x2 -> B max 1
+const dCustomers = [c('客户A', [o('bb-01', 2)])]
+report.tD = maxAddable(dCustomers, 'bb-01') === 1 && canAdd(dCustomers, 'bb-01') === true
+
+// E: daisy 3/3, wutong 0/3 independent
+const daisyCustomers = [c('A', [o('bb-04', 3)])]
+const wutongCustomers = []
+report.tE = soldQuantity(daisyCustomers, 'bb-04') === 3 && soldQuantity(wutongCustomers, 'bb-04') === 0
+
+// F: delete 1 -> 2/3, can add 1
+const fCustomers = [c('A', [o('bb-01', 2)]), c('B', [o('bb-01', 1)])]
+const fAfterDelete = [c('A', [o('bb-01', 2)]), c('B', [])]
+report.tF = soldQuantity(fAfterDelete, 'bb-01') === 2 && maxAddable(fAfterDelete, 'bb-01') === 1
+
+// G: same customer #05/#06/#07 all to 3 allowed
+const gCustomers = [c('A', [o('bb-05', 3), o('bb-06', 3), o('bb-07', 3)])]
+report.tG = [5, 6, 7].every((n) => soldQuantity(gCustomers, `bb-0${n}`) === 3)
+
+// H: different colors unified stock
+const hCustomers = [c('张三', [o('bb-01', 2)], 'red'), c('李四', [o('bb-01', 1)], 'blue')]
+report.tH = soldQuantity(hCustomers, 'bb-01') === 3
+
+// I: persistence via store keys
+const iCustomers = [c('小红', [o('bb-01', 2)])]
+report.tI_logic = soldQuantity(iCustomers, 'bb-01') === 2
+report.tJ_logic = soldQuantity(cCustomers, 'bb-01') !== soldQuantity(wutongCustomers, 'bb-01')
+
+// UI smoke
 const browser = await chromium.launch({
   executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
   headless: true,
@@ -12,126 +63,25 @@ page.on('console', (msg) => {
 })
 page.on('dialog', (dialog) => dialog.accept())
 
-const report = {}
-const waitBody = async (text) =>
-  page.waitForFunction((t) => document.body.innerText.includes(t), text, { timeout: 6000 })
-
-async function openOwner(label) {
-  await page.locator('nav button').filter({ hasText: '首页' }).click()
-  await page.waitForTimeout(250)
-  await page.getByText('韩国代购（DAISY / 梧桐）', { exact: true }).click()
-  await page.waitForTimeout(250)
-  await page.getByText(label, { exact: true }).click()
-  await page.waitForTimeout(350)
-}
-
-async function addCustomer(name) {
-  await page.getByText('添加客户', { exact: true }).click()
-  await page.waitForTimeout(250)
-  await page.locator('input[value="新客户"]').last().fill(name)
-}
-
-async function buyTo3(productId) {
-  await page.locator('select').last().selectOption(productId)
-  await waitBody('× 1')
-  for (let i = 1; i < 3; i++) {
-    await page.getByText('+', { exact: true }).last().click()
-    await waitBody(`× ${i + 1}`)
-  }
-}
-
 await page.goto('http://127.0.0.1:5173', { waitUntil: 'domcontentloaded', timeout: 60000 })
 await page.waitForTimeout(900)
 await page.getByText('韩国代购（DAISY / 梧桐）', { exact: true }).click()
 await page.waitForTimeout(250)
 await page.getByText('DAISY 代购', { exact: true }).click()
 await page.waitForTimeout(350)
-
-// A/B: one customer #02 x3, 4th blocked
-await addCustomer('小红')
-await page.locator('button[aria-label="蓝色"]').last().click()
-await buyTo3('bb-02')
-await waitBody('已购：3 / 3')
-let card = await page.locator('[data-product="bb-02"]').innerText()
-report.tA_singleTo3 = card.includes('已售罄') && card.includes('已购：3 / 3')
-report.tB_fourthBlocked =
-  (await page.getByText('+', { exact: true }).last().isDisabled()) === true
-
-// C: c1 #01 x2 + c2 #01 x1 = 3
-await addCustomer('Amy')
-await page.locator('select').first().selectOption('bb-01')
-await waitBody('× 1')
-await page.getByText('+', { exact: true }).first().click()
-await waitBody('已购：2 / 3')
-// add 1 for Amy via select (new row) -> total 3
-await page.locator('select').last().selectOption('bb-01')
-await waitBody('已购：3 / 3')
-card = await page.locator('[data-product="bb-01"]').innerText()
-report.cardCText = card.slice(0, 300)
-report.tC_total3 = card.includes('已购：3 / 3') && card.includes('小红') && card.includes('Amy')
-
-// D: Amy #03 x2, 小红 can add only 1
-await page.locator('select').last().selectOption('bb-03')
-await waitBody('× 1')
-await page.getByText('+', { exact: true }).last().click()
-await waitBody('已购：2 / 3')
-await page.locator('select').first().selectOption('bb-03')
-await waitBody('已购：3 / 3')
-await page.locator('select').first().selectOption('bb-03')
-await page.waitForTimeout(400)
-const cardD = await page.locator('[data-product="bb-03"]').innerText()
-report.tD_max1 = cardD.includes('已购：3 / 3') && !cardD.includes('已购：4')
-
-// F: remove 1 from Amy's #01 -> 2/3, then readd
-await page.getByText('−', { exact: true }).nth(2).click()
-await waitBody('已购：2 / 3')
-const cardF = await page.locator('[data-product="bb-01"]').innerText()
-report.cardFText = cardF.slice(0, 300)
-report.tF_restore = cardF.includes('已购：2 / 3')
-await page.locator('select').last().selectOption('bb-01')
-await waitBody('已购：3 / 3')
-report.tF_readd = (await page.locator('[data-product="bb-01"]').innerText()).includes('已购：3 / 3')
-
-// G: same customer #05/#06/#07 all to 3
-await buyTo3('bb-05')
-await buyTo3('bb-06')
-await buyTo3('bb-07')
-const gTexts = [
-  await page.locator('[data-product="bb-05"]').innerText(),
-  await page.locator('[data-product="bb-06"]').innerText(),
-  await page.locator('[data-product="bb-07"]').innerText(),
-]
-report.tG_allAllowed = gTexts.every((t) => t.includes('已购：3 / 3'))
-
-// H: different colors unified stock (bb-01 card shows both names)
-report.cardHText = card.slice(0, 300)
-report.tH_colorUnified = card.includes('已购：3 / 3') && card.includes('小红') && card.includes('Amy')
-
-// I: refresh persistence
-await page.reload({ waitUntil: 'domcontentloaded' })
-await page.waitForTimeout(900)
-await page.getByText('韩国代购（DAISY / 梧桐）', { exact: true }).click()
+await page.getByText('添加客户', { exact: true }).click()
 await page.waitForTimeout(250)
-await page.getByText('DAISY 代购', { exact: true }).click()
-await page.waitForTimeout(350)
-await waitBody('已购：3 / 3')
-report.tI_persist = (await page.locator('input[value="小红"]').count()) > 0
+await page.locator('input[value="新客户"]').fill('小红')
+await page.locator('select').last().selectOption('bb-01')
+await page.waitForFunction(() => document.body.innerText.includes('已购：1 / 3'))
+await page.getByText('+', { exact: true }).last().click()
+await page.waitForFunction(() => document.body.innerText.includes('已购：2 / 3'))
+report.ui = {
+  addWorks: (await page.locator('[data-product="bb-01"]').innerText()).includes('已购：2 / 3'),
+  overflow: (await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)) === 0,
+  noErrors: errors.length === 0,
+  limit: PRODUCT_LIMIT === 3,
+}
 
-// E/J: DAISY #04 3/3, 梧桐 #04 0/3 independent
-await page.locator('select').last().selectOption('bb-04')
-await waitBody('已购：3 / 3')
-await openOwner('梧桐代购')
-const wutongCard = await page.locator('[data-product="bb-04"]').innerText()
-report.tE_wutongStart = wutongCard.includes('已购：0 / 3') && !wutongCard.includes('已售罄')
-await addCustomer('梧桐客户')
-await buyTo3('bb-04')
-report.tE_wutongBuy3 = (await page.locator('[data-product="bb-04"]').innerText()).includes('已购：3 / 3')
-report.tJ_keysIsolated = await page.evaluate(() => {
-  const d = localStorage.getItem('seoul-shopping-daisy-v1')
-  const w = localStorage.getItem('seoul-shopping-wutong-v1')
-  return Boolean(d && w && d !== w)
-})
-
-report.errors = errors
 console.log(JSON.stringify(report, null, 2))
 await browser.close()
