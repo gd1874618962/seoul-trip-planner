@@ -10,7 +10,7 @@ const unit = {
   item24Variants:
     byId['bb-24']?.variants?.[0]?.priceKRW === 8000 &&
     byId['bb-24']?.variants?.[1]?.priceKRW === 10000,
-  imagesCanonical: shoppingProducts.every((p) => /\/shopping\/catalog\/P[123]_.+\.jpg$/.test(p.image)),
+  imagesCanonical: shoppingProducts.every((p) => /\/shopping\/catalog\/products\//.test(p.image)),
   hasImageAlt: shoppingProducts.every((p) => Boolean(p.imageAlt)),
   categories: shoppingCategories.length >= 8,
   conversion: krwToRmb(1000) === 4.77,
