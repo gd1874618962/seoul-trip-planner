@@ -49,10 +49,9 @@ const plus = page.getByText('+', { exact: true }).first()
 await plus.click()
 await plus.click()
 await page.waitForTimeout(300)
-report.t8_qty3 = (await page.getByText('3', { exact: true }).count()) > 0
-await plus.click()
-await page.waitForTimeout(200)
-report.t9_no4 = !(await page.locator('body').innerText()).includes('× 4')
+report.t8_qty3 = (await page.locator('body').innerText()).includes('× 3')
+const plusBtn = page.getByText('+', { exact: true }).first()
+report.t9_no4 = (await plusBtn.isDisabled()) === true && (await page.locator('body').innerText()).includes('× 3')
 await page.getByText('−', { exact: true }).first().click()
 await page.waitForTimeout(300)
 report.t10_decrease = (await page.getByText('× 2', { exact: false }).count()) > 0
