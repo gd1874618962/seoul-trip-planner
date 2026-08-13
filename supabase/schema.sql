@@ -72,6 +72,26 @@ create table if not exists expenses (
   updated_at timestamptz default now()
 );
 
+create table if not exists shopping_customers (
+  id text primary key,
+  owner text,
+  trip_id text references trips(id) on delete cascade,
+  customer_name text,
+  color_id text,
+  updated_at timestamptz default now()
+);
+
+create table if not exists shopping_orders (
+  id text primary key,
+  owner text,
+  trip_id text references trips(id) on delete cascade,
+  customer_id text,
+  product_id text,
+  quantity integer,
+  unit_price_krw numeric,
+  updated_at timestamptz default now()
+);
+
 alter table expenses add column if not exists merchant text;
 alter table expenses add column if not exists participants jsonb;
 alter table expenses add column if not exists note text;
@@ -84,6 +104,8 @@ create index if not exists idx_locations_trip on locations(trip_id);
 create index if not exists idx_flights_trip on flights(trip_id);
 create index if not exists idx_events_trip on events(trip_id);
 create index if not exists idx_expenses_trip on expenses(trip_id);
+create index if not exists idx_shopping_customers_owner on shopping_customers(owner);
+create index if not exists idx_shopping_orders_owner on shopping_orders(owner);
 
 -- API 权限：显式授权 anon / authenticated 访问，避免依赖“自动显示新表格”
 grant usage on schema public to anon, authenticated;
@@ -98,6 +120,8 @@ alter table locations enable row level security;
 alter table flights enable row level security;
 alter table events enable row level security;
 alter table expenses enable row level security;
+alter table shopping_customers enable row level security;
+alter table shopping_orders enable row level security;
 
 -- Default open policy for anon key demo. Replace with authenticated policies in production.
 drop policy if exists "public read trips" on trips;
@@ -148,3 +172,17 @@ drop policy if exists "public write expenses" on expenses;
 create policy "public write expenses" on expenses for insert with check (true);
 drop policy if exists "public update expenses" on expenses;
 create policy "public update expenses" on expenses for update using (true);
+
+drop policy if exists "public read shopping_customers" on shopping_customers;
+create policy "public read shopping_customers" on shopping_customers for select using (true);
+drop policy if exists "public write shopping_customers" on shopping_customers;
+create policy "public write shopping_customers" on shopping_customers for insert with check (true);
+drop policy if exists "public update shopping_customers" on shopping_customers;
+create policy "public update shopping_customers" on shopping_customers for update using (true);
+
+drop policy if exists "public read shopping_orders" on shopping_orders;
+create policy "public read shopping_orders" on shopping_orders for select using (true);
+drop policy if exists "public write shopping_orders" on shopping_orders;
+create policy "public write shopping_orders" on shopping_orders for insert with check (true);
+drop policy if exists "public update shopping_orders" on shopping_orders;
+create policy "public update shopping_orders" on shopping_orders for update using (true);

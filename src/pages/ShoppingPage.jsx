@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   ArrowLeft,
   Check,
+  Download,
   Plus,
   RotateCcw,
   Search,
@@ -125,6 +126,43 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   const totalItems = customers.reduce((sum, c) => sum + c.orders.reduce((s, o) => s + o.quantity, 0), 0)
   const totalKRW = customers.reduce((sum, c) => sum + customerKRW(c), 0)
 
+  const exportOrders = () => {
+    const rows = [
+      ['客户姓名', '颜色', '商品编号', '商品名称', '数量', '单价 KRW', '小计 KRW', '客户总计 KRW', '客户总计 RMB'],
+    ]
+    customers.forEach((customer) => {
+      const color = COLOR_PALETTE.find((c) => c.id === customer.colorId)?.name || ''
+      const krwTotal = customerKRW(customer)
+      if (!customer.orders.length) {
+        rows.push([customer.customerName, color, '', '', 0, 0, 0, krwTotal, krwToRmb(krwTotal).toFixed(2)])
+      }
+      customer.orders.forEach((order) => {
+        const product = productMap[order.productId]
+        rows.push([
+          customer.customerName,
+          color,
+          order.productId,
+          product?.name || '—',
+          order.quantity,
+          order.unitPriceKRW,
+          order.unitPriceKRW * order.quantity,
+          krwTotal,
+          krwToRmb(krwTotal).toFixed(2),
+        ])
+      })
+    })
+    const csv =
+      '\uFEFF' +
+      rows.map((row) => row.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${label}-orders.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const filteredProducts = shoppingProducts.filter((p) => {
     const matchQuery =
       !query.trim() ||
@@ -186,6 +224,14 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
               添加客户
             </button>
           </div>
+          <button
+            type="button"
+            onClick={exportOrders}
+            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-white/10 px-3 py-2 text-xs font-bold text-white active:opacity-90"
+          >
+            <Download size={14} />
+            导出订单
+          </button>
         </div>
       </section>
 

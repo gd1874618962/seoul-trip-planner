@@ -295,7 +295,38 @@ export async function pushAllToCloud() {
       updated_at: entry.updatedAt || updatedAt,
     })),
   )
-    setSyncStatus('success')
+  const shoppingCustomers = []
+  const shoppingOrders = []
+  ;[
+    ['daisy', getShoppingState('daisy')],
+    ['wutong', getShoppingState('wutong')],
+  ].forEach(([owner, shoppingState]) => {
+    ;(shoppingState.customers || []).forEach((customer) => {
+      shoppingCustomers.push({
+        id: customer.id,
+        owner,
+        trip_id: tripId,
+        customer_name: customer.customerName || '',
+        color_id: customer.colorId || '',
+        updated_at: customer.updatedAt || updatedAt,
+      })
+      ;(customer.orders || []).forEach((order, index) => {
+        shoppingOrders.push({
+          id: `${customer.id}-${index}`,
+          owner,
+          trip_id: tripId,
+          customer_id: customer.id,
+          product_id: order.productId,
+          quantity: order.quantity || 0,
+          unit_price_krw: order.unitPriceKRW || 0,
+          updated_at: customer.updatedAt || updatedAt,
+        })
+      })
+    })
+  })
+  await upsertRows('shopping_customers', shoppingCustomers)
+  await upsertRows('shopping_orders', shoppingOrders)
+  setSyncStatus('success')
     return true
   } catch (error) {
     setSyncStatus('error', '云同步失败，当前使用本地缓存')
