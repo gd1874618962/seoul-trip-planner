@@ -427,8 +427,11 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                 <p className="mt-1 text-[11px] font-black text-blue">{formatKRW(p.priceKRW)}</p>
                 <p className="text-[9px] font-bold text-slate">{formatCNY(toRMB(p.priceKRW))}</p>
                 <p className="mt-1 text-[9px] font-bold text-slate">
-                  单品总量上限 3 件 · 已订 {globalQty(p.id)}/3
+                  已购：{globalQty(p.id)} / 3 · 剩余：{Math.max(0, 3 - globalQty(p.id))}
                 </p>
+                {globalQty(p.id) >= 3 && (
+                  <p className="mt-0.5 text-[9px] font-black text-coral">已售罄</p>
+                )}
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {buyersOf(p.id).map((b) => (
                     <span
