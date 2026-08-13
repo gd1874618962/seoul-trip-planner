@@ -82,8 +82,7 @@ const cardD = await page.locator('[data-product="bb-03"]').innerText()
 report.tD_max1 = cardD.includes('已购：3 / 3') && !cardD.includes('已购：4')
 
 // F: remove 1 from Amy's #01 -> 2/3, then readd
-const amyCard = page.locator('div').filter({ has: page.locator('input[value="Amy"]') }).last()
-await amyCard.getByText('−', { exact: true }).first().click()
+await page.getByText('−', { exact: true }).nth(2).click()
 await waitBody('已购：2 / 3')
 report.tF_restore = (await page.locator('[data-product="bb-01"]').innerText()).includes('已购：2 / 3')
 await page.locator('select').last().selectOption('bb-01')
