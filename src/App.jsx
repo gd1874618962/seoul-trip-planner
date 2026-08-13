@@ -10,6 +10,8 @@ import Reminders from './pages/Reminders'
 import Ledger from './pages/Ledger'
 import EditTrip from './pages/EditTrip'
 import Today from './pages/Today'
+import ShoppingHub from './pages/ShoppingHub'
+import ShoppingPage from './pages/ShoppingPage'
 import { pollCloud, pollRemote } from './data/store'
 
 export const tabs = [
@@ -52,6 +54,9 @@ export default function App() {
           {page === 'ledger' && <Ledger />}
           {page === 'editTrip' && <EditTrip onNavigate={navigate} />}
           {page === 'today' && <Today onNavigate={navigate} />}
+          {page === 'shopping' && <ShoppingHub onNavigate={navigate} />}
+          {page === 'shoppingDaisy' && <ShoppingPage owner="daisy" label="DAISY" onNavigate={navigate} />}
+          {page === 'shoppingWutong' && <ShoppingPage owner="wutong" label="梧桐" onNavigate={navigate} />}
         </main>
         <BottomNav current={page} onNavigate={navigate} />
       </div>

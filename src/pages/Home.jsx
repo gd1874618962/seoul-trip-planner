@@ -11,6 +11,7 @@ import {
   Pencil,
   Plane,
   RefreshCw,
+  ShoppingBag,
   Ticket,
   Upload,
   Wallet,
@@ -158,6 +159,14 @@ export default function HomePage({ onNavigate }) {
         >
           <CalendarDays size={14} />
           今日行程（当天执行视图）
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate('shopping')}
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue/25 bg-mist/70 py-2.5 text-xs font-bold text-blue active:bg-mist"
+        >
+          <ShoppingBag size={14} />
+          韩国代购（DAISY / 梧桐）
         </button>
         <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-line bg-white/95 px-3 py-2 shadow-card">
           <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold ${syncMeta[sync.status]?.cls || 'text-slate'}`}>

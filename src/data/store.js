@@ -22,6 +22,8 @@ const BUDGET_KEY = 'seoul-budget-v1'
 const LEDGER_KEY = 'seoul-ledger-v1'
 const TRIP_KEY = 'seoul-trip-edits-v1'
 const RESTAURANT_KEY = 'seoul-restaurant-edits-v1'
+const SHOPPING_DAISY_KEY = 'seoul-shopping-daisy-v1'
+const SHOPPING_WUTONG_KEY = 'seoul-shopping-wutong-v1'
 const CLOUD_META_KEY = 'seoul-cloud-meta'
 const ITINERARY_MIGRATION_KEY = 'seoul-itinerary-migration'
 const STATE_URL = '/api/state'
@@ -198,6 +200,8 @@ export async function pushAllToCloud() {
       [LEDGER_KEY]: ledgerState,
       [TRIP_KEY]: getTripEdits(),
       [RESTAURANT_KEY]: getRestaurantEdits(),
+      [SHOPPING_DAISY_KEY]: getShoppingState('daisy'),
+      [SHOPPING_WUTONG_KEY]: getShoppingState('wutong'),
     }
 
     cloudMeta = { createdAt, updatedAt }
@@ -301,7 +305,16 @@ export async function pushAllToCloud() {
 
 function applyCloudData(data) {
   if (!data || typeof data !== 'object') return
-  const keys = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY]
+  const keys = [
+    TIMELINE_KEY,
+    REMINDER_KEY,
+    BUDGET_KEY,
+    LEDGER_KEY,
+    TRIP_KEY,
+    RESTAURANT_KEY,
+    SHOPPING_DAISY_KEY,
+    SHOPPING_WUTONG_KEY,
+  ]
   keys.forEach((key) => {
     if (data[key] && typeof data[key] === 'object') writeLocal(key, data[key])
   })
@@ -618,7 +631,29 @@ export function saveLedgerState(value) {
   scheduleCloudPush()
 }
 
-const DATA_KEYS = [TIMELINE_KEY, REMINDER_KEY, BUDGET_KEY, LEDGER_KEY, TRIP_KEY, RESTAURANT_KEY]
+export function getShoppingState(owner) {
+  const key = owner === 'wutong' ? SHOPPING_WUTONG_KEY : SHOPPING_DAISY_KEY
+  const saved = read(key)
+  if (saved && Array.isArray(saved.customers)) return saved
+  return { customers: [], settings: { krwToRmb: 0.00477 } }
+}
+
+export function saveShoppingState(owner, value) {
+  const key = owner === 'wutong' ? SHOPPING_WUTONG_KEY : SHOPPING_DAISY_KEY
+  write(key, value || { customers: [], settings: { krwToRmb: 0.00477 } })
+  scheduleCloudPush()
+}
+
+const DATA_KEYS = [
+  TIMELINE_KEY,
+  REMINDER_KEY,
+  BUDGET_KEY,
+  LEDGER_KEY,
+  TRIP_KEY,
+  RESTAURANT_KEY,
+  SHOPPING_DAISY_KEY,
+  SHOPPING_WUTONG_KEY,
+]
 
 export function exportAllState() {
   const data = { version: 1, tripId: getTripId(), savedAt: new Date().toISOString(), data: {} }
