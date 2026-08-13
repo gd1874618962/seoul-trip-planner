@@ -30,6 +30,24 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   const rate = Number(state.settings?.krwToRmb) || 0.00477
   const customers = Array.isArray(state.customers) ? state.customers : []
   const toRMB = (krw) => Math.round(krw * rate * 100) / 100
+  const globalQtyMap = {}
+  customers.forEach((c) =>
+    c.orders.forEach((o) => {
+      globalQtyMap[o.productId] = (globalQtyMap[o.productId] || 0) + o.quantity
+    }),
+  )
+  const globalQty = (productId) => globalQtyMap[productId] || 0
+  const buyersOf = (productId) =>
+    customers
+      .filter((c) => c.orders.some((o) => o.productId === productId))
+      .map((c) => {
+        const qty = c.orders.reduce(
+          (sum, o) => sum + (o.productId === productId ? o.quantity : 0),
+          0,
+        )
+        const color = COLOR_PALETTE.find((x) => x.id === c.colorId) || COLOR_PALETTE[0]
+        return { name: c.customerName, hex: color.hex, qty }
+      })
 
   const persist = (next) => {
     setState(next)
@@ -65,6 +83,10 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   const addProduct = (customerId, productId) => {
     const product = productMap[productId]
     if (!product) return
+    if (globalQty(productId) >= 3) {
+      window.alert('该商品全站总量已达 3 件上限，无法继续添加')
+      return
+    }
     persist({
       ...state,
       customers: customers.map((c) => {
@@ -87,6 +109,8 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
       ...state,
       customers: customers.map((c) => {
         if (c.id !== customerId) return c
+        const order = c.orders[orderIndex]
+        if (delta > 0 && order && globalQty(order.productId) >= 3) return c
         const orders = c.orders
           .map((o, i) =>
             i === orderIndex
@@ -302,7 +326,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                         <button
                           type="button"
                           onClick={() => setQty(customer.id, i, 1)}
-                          disabled={order.quantity >= 3}
+                          disabled={globalQty(order.productId) >= 3}
                           className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-black text-slate active:bg-cream disabled:opacity-30"
                         >
                           +
@@ -390,14 +414,32 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2.5">
           {filteredProducts.map((p) => (
-            <div key={p.id} data-product={p.id} className="overflow-hidden rounded-lg border border-line bg-white shadow-card">
+            <div key={p.id} data-product={p.id} className="relative overflow-hidden rounded-lg border border-line bg-white shadow-card">
+              {globalQty(p.id) >= 3 && (
+                <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-coral text-lg font-black text-white shadow-md">
+                  ✕
+                </span>
+              )}
               <img src={p.image} alt={p.imageAlt} className="aspect-square w-full object-cover" loading="lazy" />
               <div className="p-2.5">
                 <p className="text-[9px] font-bold text-gold">{p.id.replace('bb-', '')}</p>
                 <p className="mt-0.5 line-clamp-2 min-h-[2.2em] text-[11px] font-black leading-snug text-ink">{p.name}</p>
                 <p className="mt-1 text-[11px] font-black text-blue">{formatKRW(p.priceKRW)}</p>
                 <p className="text-[9px] font-bold text-slate">{formatCNY(toRMB(p.priceKRW))}</p>
-                <p className="mt-1 text-[9px] font-bold text-slate">单人限购 3 件</p>
+                <p className="mt-1 text-[9px] font-bold text-slate">
+                  单品总量上限 3 件 · 已订 {globalQty(p.id)}/3
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {buyersOf(p.id).map((b) => (
+                    <span
+                      key={b.name}
+                      className="inline-flex items-center gap-1 rounded-full bg-cream px-1.5 py-0.5 text-[9px] font-bold text-slate"
+                    >
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.hex }} />
+                      {b.name} ×{b.qty}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
