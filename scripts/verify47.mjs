@@ -67,6 +67,7 @@ await waitBody('已购：2 / 3')
 await page.locator('select').last().selectOption('bb-01')
 await waitBody('已购：3 / 3')
 card = await page.locator('[data-product="bb-01"]').innerText()
+report.cardCText = card.slice(0, 300)
 report.tC_total3 = card.includes('已购：3 / 3') && card.includes('小红') && card.includes('Amy')
 
 // D: Amy #03 x2, 小红 can add only 1
@@ -84,7 +85,9 @@ report.tD_max1 = cardD.includes('已购：3 / 3') && !cardD.includes('已购：4
 // F: remove 1 from Amy's #01 -> 2/3, then readd
 await page.getByText('−', { exact: true }).nth(2).click()
 await waitBody('已购：2 / 3')
-report.tF_restore = (await page.locator('[data-product="bb-01"]').innerText()).includes('已购：2 / 3')
+const cardF = await page.locator('[data-product="bb-01"]').innerText()
+report.cardFText = cardF.slice(0, 300)
+report.tF_restore = cardF.includes('已购：2 / 3')
 await page.locator('select').last().selectOption('bb-01')
 await waitBody('已购：3 / 3')
 report.tF_readd = (await page.locator('[data-product="bb-01"]').innerText()).includes('已购：3 / 3')
@@ -101,6 +104,7 @@ const gTexts = [
 report.tG_allAllowed = gTexts.every((t) => t.includes('已购：3 / 3'))
 
 // H: different colors unified stock (bb-01 card shows both names)
+report.cardHText = card.slice(0, 300)
 report.tH_colorUnified = card.includes('已购：3 / 3') && card.includes('小红') && card.includes('Amy')
 
 // I: refresh persistence
