@@ -17,7 +17,6 @@ import {
   COLOR_PALETTE,
   formatCNY,
   formatKRW,
-  krwToRmb,
 } from '../data/shoppingConfig'
 import { getShoppingState, saveShoppingState } from '../data/store'
 import PageHeader from '../components/PageHeader'
@@ -30,6 +29,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
   const [category, setCategory] = useState('全部')
   const rate = Number(state.settings?.krwToRmb) || 0.00477
   const customers = Array.isArray(state.customers) ? state.customers : []
+  const toRMB = (krw) => Math.round(krw * rate * 100) / 100
 
   const persist = (next) => {
     setState(next)
@@ -134,7 +134,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
       const color = COLOR_PALETTE.find((c) => c.id === customer.colorId)?.name || ''
       const krwTotal = customerKRW(customer)
       if (!customer.orders.length) {
-        rows.push([customer.customerName, color, '', '', 0, 0, 0, krwTotal, krwToRmb(krwTotal).toFixed(2)])
+        rows.push([customer.customerName, color, '', '', 0, 0, 0, krwTotal, toRMB(krwTotal).toFixed(2)])
       }
       customer.orders.forEach((order) => {
         const product = productMap[order.productId]
@@ -147,7 +147,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
           order.unitPriceKRW,
           order.unitPriceKRW * order.quantity,
           krwTotal,
-          krwToRmb(krwTotal).toFixed(2),
+          toRMB(krwTotal).toFixed(2),
         ])
       })
     })
@@ -213,7 +213,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
             <div>
               <p className="text-[11px] font-bold text-white/70">{totalItems} 件商品</p>
               <p className="mt-1 text-2xl font-black">{formatKRW(totalKRW)}</p>
-              <p className="mt-1 text-sm font-bold text-white/80">{formatCNY(krwToRmb(totalKRW))}</p>
+              <p className="mt-1 text-sm font-bold text-white/80">{formatCNY(toRMB(totalKRW))}</p>
             </div>
             <button
               type="button"
@@ -351,7 +351,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
               <div className="mt-2.5 flex items-center justify-between rounded-md bg-mist/60 px-3 py-2">
                 <span className="text-[11px] font-bold text-slate">客户合计</span>
                 <span className="text-sm font-black text-ink">
-                  {formatKRW(krw)} <span className="text-[10px] text-slate">{formatCNY(krwToRmb(krw))}</span>
+                  {formatKRW(krw)} <span className="text-[10px] text-slate">{formatCNY(toRMB(krw))}</span>
                 </span>
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                 <p className="text-[9px] font-bold text-gold">{p.id.replace('bb-', '')}</p>
                 <p className="mt-0.5 line-clamp-2 min-h-[2.2em] text-[11px] font-black leading-snug text-ink">{p.name}</p>
                 <p className="mt-1 text-[11px] font-black text-blue">{formatKRW(p.priceKRW)}</p>
-                <p className="text-[9px] font-bold text-slate">{formatCNY(krwToRmb(p.priceKRW))}</p>
+                <p className="text-[9px] font-bold text-slate">{formatCNY(toRMB(p.priceKRW))}</p>
                 <p className="mt-1 text-[9px] font-bold text-slate">单人限购 3 件</p>
               </div>
             </div>
