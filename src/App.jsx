@@ -74,36 +74,37 @@ export default function App() {
   }
 
   if (page === 'cities') {
-    return (
-      <div className="min-h-screen bg-[#EFECE4]">
-        <div className="mx-auto min-h-screen w-full max-w-app bg-[#FCFBF8] shadow-float">
-          <Cities onSelectTrip={selectTrip} />
-        </div>
-      </div>
-    )
+    return <Cities onSelectTrip={selectTrip} />
   }
 
   const trip = getTripMeta()
 
   return (
-    <div className="min-h-screen bg-[#EFECE4]">
-      <div className="relative mx-auto min-h-screen w-full max-w-app bg-[#FCFBF8] pb-24 shadow-float">
-        <TripSwitcher trip={trip} onSwitch={() => navigate('cities')} />
-        <main key={`${activeTripId}-${tick}-${page}`}>
-          {page === 'home' && <HomePage onNavigate={navigate} />}
-          {page === 'timeline' && <Timeline />}
-          {page === 'map' && <MapPage />}
-          {page === 'food' && <Restaurants onNavigate={navigate} />}
-          {page === 'budget' && <Budget />}
-          {page === 'reminders' && <Reminders />}
-          {page === 'ledger' && <Ledger />}
-          {page === 'editTrip' && <EditTrip onNavigate={navigate} />}
-          {page === 'today' && <Today onNavigate={navigate} />}
-          {page === 'shopping' && <ShoppingHub onNavigate={navigate} />}
-          {page === 'shoppingDaisy' && <ShoppingPage owner="daisy" label="DAISY" onNavigate={navigate} />}
-          {page === 'shoppingWutong' && <ShoppingPage owner="wutong" label="梧桐" onNavigate={navigate} />}
-        </main>
-        <BottomNav current={page} onNavigate={navigate} />
+    <div className="min-h-screen bg-canvas">
+      <div className="mx-auto min-h-screen w-full max-w-[1480px] bg-paper lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
+        <BottomNav
+          current={page}
+          trip={trip}
+          onNavigate={navigate}
+          onSwitch={() => navigate('cities')}
+        />
+        <div className="min-w-0 pb-24 lg:pb-0">
+          <TripSwitcher trip={trip} onSwitch={() => navigate('cities')} />
+          <main key={`${activeTripId}-${tick}-${page}`} className="mx-auto w-full max-w-[1280px]">
+            {page === 'home' && <HomePage onNavigate={navigate} />}
+            {page === 'timeline' && <Timeline />}
+            {page === 'map' && <MapPage />}
+            {page === 'food' && <Restaurants onNavigate={navigate} />}
+            {page === 'budget' && <Budget />}
+            {page === 'reminders' && <Reminders />}
+            {page === 'ledger' && <Ledger />}
+            {page === 'editTrip' && <EditTrip onNavigate={navigate} />}
+            {page === 'today' && <Today onNavigate={navigate} />}
+            {page === 'shopping' && <ShoppingHub onNavigate={navigate} />}
+            {page === 'shoppingDaisy' && <ShoppingPage owner="daisy" label="DAISY" onNavigate={navigate} />}
+            {page === 'shoppingWutong' && <ShoppingPage owner="wutong" label="梧桐" onNavigate={navigate} />}
+          </main>
+        </div>
       </div>
     </div>
   )

@@ -95,7 +95,7 @@ export default function TripMap({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-line shadow-card">
+    <div className="overflow-hidden border border-ink/20 bg-mist">
       <MapContainer
         center={[tripMeta.mapCenter?.lat || 37.5665, tripMeta.mapCenter?.lng || 126.978]}
         zoom={11}
@@ -150,7 +150,7 @@ export default function TripMap({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 inline-flex rounded-md bg-blue px-2.5 py-1 text-[11px] font-bold text-white"
+                  className="mt-2 inline-flex bg-ink px-2.5 py-1 text-[11px] font-semibold text-paper"
                 >
                   在地图打开
                 </a>

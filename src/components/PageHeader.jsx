@@ -1,9 +1,11 @@
 export default function PageHeader({ eyebrow, title, subtitle }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-line/70 bg-[#FCFBF8]/95 px-4 pb-3 pt-4 backdrop-blur-md">
-      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gold">{eyebrow}</p>
-      <h1 className="mt-1 font-display text-2xl font-bold leading-tight text-ink">{title}</h1>
-      {subtitle && <p className="mt-1 text-[13px] font-medium text-slate">{subtitle}</p>}
+    <header className="sticky top-[57px] z-20 border-b border-ink/15 bg-paper/95 px-5 py-5 backdrop-blur-md lg:static lg:px-10 lg:pb-8 lg:pt-10">
+      <p className="editorial-label text-gold">{eyebrow}</p>
+      <div className="mt-2 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(250px,420px)] lg:items-end lg:gap-10">
+        <h1 className="font-display text-[32px] leading-[1.02] text-ink lg:text-[48px]">{title}</h1>
+        {subtitle && <p className="mt-2 max-w-xl text-[12px] leading-relaxed text-slate lg:mt-0 lg:text-right lg:text-[13px]">{subtitle}</p>}
+      </div>
     </header>
   )
 }

@@ -63,79 +63,83 @@ function SeoulMapPage() {
         subtitle="点击标记查看详情，或直接打开外部地图导航"
       />
 
-      <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-3">
-        {filters.map((f) => {
-          const active = filter === f.id
-          return (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setFilter(f.id)}
-              className={`shrink-0 rounded-full border px-3.5 py-2 text-xs font-bold ${
-                active ? 'border-ink bg-ink text-white' : 'border-line bg-white text-slate active:bg-cream'
-              }`}
-            >
-              {f.label}
-            </button>
-          )
-        })}
-      </div>
+      <div className="px-5 pb-16 pt-5 lg:px-10">
+        <section className="editorial-rule flex flex-col justify-between gap-3 pt-4 md:flex-row md:items-center">
+          <div className="no-scrollbar flex gap-2 overflow-x-auto">
+            {filters.map((f) => {
+              const active = filter === f.id
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setFilter(f.id)}
+                  className={`shrink-0 border px-3 py-2 text-[10px] font-semibold ${
+                    active ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate active:bg-cream'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="shrink-0 text-[10px] text-slate">{filtered.length} 个地点</p>
+        </section>
 
-      <div className="px-4">
-        <TripMap items={filtered} />
-        <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5">
-          {daysList.map((day) => (
-            <span key={day.id} className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: dayColors[day.id] }} />
-              {day.label}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <section className="mt-5 px-4">
-        <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-base font-bold text-ink">点位列表</h2>
-          <span className="text-[11px] font-bold text-slate">{filtered.length} 个地点</span>
-        </div>
-        <div className="space-y-2.5">
-          {filtered.map((p) => (
-            <div key={p.id} className="flex items-center gap-3 rounded-lg border border-line bg-white p-3 shadow-card">
-              <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black text-white"
-                style={{ backgroundColor: dayColors[p.day] }}
-              >
-                {p.markerNo}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-black text-ink">{p.displayName}</p>
-                  <span className="shrink-0 rounded-md bg-cream px-1.5 py-0.5 text-[9px] font-bold text-gold">
-                    DAY {p.day}
-                  </span>
-                </div>
-                <p className="mt-0.5 flex items-center gap-1 truncate text-[11px] font-medium text-slate">
-                  <MapPin size={11} className="shrink-0" />
-                  {p.officialAddress}
-                </p>
-              </div>
-              <a
-                href={
-                  tripMeta.tripId === 'seoul-2026'
-                    ? `https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`
-                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.officialAddress || p.address || p.name)}`
-                }
-                target="_blank"
-                rel="noreferrer"
-                className="flex shrink-0 items-center gap-1 rounded-md bg-blue px-2.5 py-1.5 text-[11px] font-bold text-white"
-              >
-                导航
-                <ExternalLink size={11} />
-              </a>
+        <div className="mt-5 grid gap-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:items-start">
+          <div className="lg:sticky lg:top-[82px]">
+            <TripMap items={filtered} heightClass="h-[320px] lg:h-[600px]" />
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+              {daysList.map((day) => (
+                <span key={day.id} className="inline-flex items-center gap-1.5 text-[9px] text-slate">
+                  <span className="h-px w-4" style={{ backgroundColor: dayColors[day.id] }} />
+                  {day.label}
+                </span>
+              ))}
             </div>
-          ))}
+          </div>
+
+          <section className="min-w-0">
+            <div className="flex items-end justify-between border-b border-ink/20 pb-3">
+              <h2 className="font-display text-[26px] leading-none text-ink">点位列表</h2>
+              <span className="editorial-label text-slate">Map index</span>
+            </div>
+            <div>
+              {filtered.map((p) => (
+                <div key={p.id} className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-start gap-3 border-b border-ink/15 py-4">
+                  <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-ink/30 text-[10px] font-semibold text-ink">
+                    {p.markerNo}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-[13px] font-semibold text-ink">{p.displayName}</p>
+                      <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.12em] text-gold">
+                        Day {p.day}
+                      </span>
+                    </div>
+                    <p className="mt-1 flex items-start gap-1 text-[10px] leading-relaxed text-slate">
+                      <MapPin size={10} className="mt-0.5 shrink-0" />
+                      <span className="line-clamp-2">{p.officialAddress}</span>
+                    </p>
+                  </div>
+                  <a
+                    href={
+                      tripMeta.tripId === 'seoul-2026'
+                        ? `https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.officialAddress || p.address || p.name)}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex shrink-0 items-center gap-1 border-b border-ink/30 pb-0.5 text-[10px] font-semibold text-ink"
+                  >
+                    导航
+                    <ExternalLink size={10} />
+                  </a>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
     </div>
   )
 }

@@ -65,58 +65,51 @@ function mapHref(point) {
 function PlaceCard({ point, expanded, onToggle, onFavorite }) {
   const hasAddress = point.officialAddress && !point.officialAddress.startsWith('待确认')
   return (
-    <article
-      className={`rounded-lg border bg-white transition ${
-        point.keyRestaurant ? 'border-gold/35' : 'border-line'
-      } ${expanded ? 'shadow-card' : 'shadow-none'}`}
-    >
+    <article className="border-b border-ink/15">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-3.5 text-left active:bg-cream/40"
+        className="w-full py-4 text-left active:bg-cream/40"
       >
         <div className="flex items-start gap-3">
           <span
-            className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
-              point.hasCoordinates ? 'text-white' : 'bg-cream text-gold'
+            className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[10px] font-semibold ${
+              point.hasCoordinates ? 'border-ink/35 text-ink' : 'border-dashed border-gold/60 text-gold'
             }`}
-            style={point.hasCoordinates ? { backgroundColor: point.markerColor } : undefined}
           >
-            {point.hasCoordinates ? point.markerNo : <MapPin size={14} />}
+            {point.hasCoordinates ? point.markerNo : <MapPin size={12} />}
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="text-[14px] font-black leading-snug text-ink">{point.displayName}</h3>
-                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-slate">
+                <h3 className="text-[13px] font-semibold leading-snug text-ink">{point.displayName}</h3>
+                <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-slate">
                   {point.area}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1.5">
                 {point.keyRestaurant && (
-                  <span className="rounded-full bg-cream px-2 py-1 text-[9px] font-black text-gold">
+                  <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-gold">
                     重点正餐
                   </span>
                 )}
                 {point.mustVisit && !point.keyRestaurant && (
-                  <span className="rounded-full bg-mist px-2 py-1 text-[9px] font-black text-blue">必去</span>
+                  <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-blue">必去</span>
                 )}
               </div>
             </div>
-            <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-slate">
+            <p className="mt-2 text-[10px] leading-relaxed text-slate">
               {point.note || point.category}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className="rounded-md border border-line bg-[#FBFAF6] px-2 py-0.5 text-[9px] font-bold text-slate">
-                {point.category}
-              </span>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[8px] font-semibold uppercase tracking-[0.09em] text-slate">
+              <span>{point.category}</span>
               {point.branchPending && (
-                <span className="rounded-md border border-gold/25 bg-cream/70 px-2 py-0.5 text-[9px] font-bold text-gold">
+                <span className="border-l border-gold/40 pl-3 text-gold">
                   分店 / 地址待确认
                 </span>
               )}
               {point.distanceLevel && (
-                <span className="rounded-md border border-coral/25 bg-coral/5 px-2 py-0.5 text-[9px] font-bold text-coral">
+                <span className="border-l border-coral/40 pl-3 text-coral">
                   {point.distanceLevel}
                 </span>
               )}
@@ -126,18 +119,15 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
       </button>
 
       {expanded && (
-        <div className="border-t border-line/70 px-3.5 pb-3.5 pt-3">
-          <p className="flex items-start gap-1.5 text-[11px] font-medium leading-relaxed text-slate">
+        <div className="ml-11 border-l border-ink/15 pb-4 pl-4">
+          <p className="flex items-start gap-1.5 text-[10px] leading-relaxed text-slate">
             <MapPin size={12} className="mt-0.5 shrink-0 text-sage" />
             {hasAddress ? point.officialAddress : '地址或分店尚未确认，请先通过地图搜索核实。'}
           </p>
           {point.recommended?.length > 0 && (
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
               {point.recommended.map((item) => (
-                <span
-                  key={item}
-                  className="rounded-md bg-mist/70 px-2 py-1 text-[10px] font-bold text-blue"
-                >
+                <span key={item} className="text-[9px] text-blue">
                   {item}
                 </span>
               ))}
@@ -148,7 +138,7 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
               href={mapHref(point)}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink px-3 py-2 text-[11px] font-bold text-white active:opacity-90"
+              className="inline-flex flex-1 items-center justify-center gap-1.5 bg-ink px-3 py-2 text-[10px] font-semibold text-paper active:opacity-90"
             >
               <Navigation size={12} />
               搜索 / 导航
@@ -156,10 +146,10 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
             <button
               type="button"
               onClick={onFavorite}
-              className={`inline-flex items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-[11px] font-bold ${
+              className={`inline-flex items-center justify-center gap-1.5 border px-3 py-2 text-[10px] font-semibold ${
                 point.isFavorite
-                  ? 'border-gold/40 bg-cream text-gold'
-                  : 'border-line bg-white text-slate'
+                  ? 'border-gold/40 text-gold'
+                  : 'border-ink/20 text-slate'
               }`}
             >
               {point.isFavorite ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
@@ -236,160 +226,166 @@ export default function KualaLumpurPlaces() {
         subtitle="按区域自由组合路线，不锁定每天的餐厅和时间"
       />
 
-      <section className="px-4 pt-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-gold">
-                {tripMeta.dates} · {tripMeta.people}人
-              </p>
-              <h1 className="mt-1.5 font-display text-2xl font-black leading-tight text-ink">
-                先看位置，再定路线
-              </h1>
-              <p className="mt-1.5 max-w-[275px] text-[12px] font-medium leading-relaxed text-slate">
-                地点已按真实区域归组。城际移动优先 Grab / 出租车，不默认远距离地点步行可达。
-              </p>
-            </div>
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist text-blue">
-              <Compass size={18} />
-            </span>
+      <div className="px-5 pb-14 pt-5 lg:px-10">
+        <section className="grid gap-6 border-b border-ink/20 pb-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+          <div>
+            <p className="editorial-label text-gold">
+              {tripMeta.dates} · {tripMeta.people} people
+            </p>
+            <h2 className="mt-3 max-w-2xl font-display text-[36px] leading-[1.02] text-ink lg:text-[52px]">
+              先看位置，再定路线
+            </h2>
+            <p className="mt-4 max-w-xl text-[12px] leading-6 text-slate">
+              地点按真实区域归组。城际移动优先 Grab / 出租车，不默认远距离地点步行可达。
+            </p>
           </div>
-          <div className="mt-4 grid grid-cols-3 divide-x divide-line border-t border-line pt-3 text-center">
+          <div className="grid grid-cols-3 border-y border-ink/20">
             <div>
-              <p className="text-lg font-black text-ink">{points.length}</p>
-              <p className="text-[9px] font-bold text-slate">地点</p>
+              <p className="py-3 text-center font-display text-[28px] leading-none text-ink lg:text-left">{points.length}</p>
+              <p className="pb-3 text-center text-[9px] text-slate lg:text-left">地点</p>
             </div>
-            <div>
-              <p className="text-lg font-black text-ink">{mapped.length}</p>
-              <p className="text-[9px] font-bold text-slate">地图已定位</p>
+            <div className="border-l border-ink/15 pl-3">
+              <p className="py-3 text-center font-display text-[28px] leading-none text-ink lg:text-left">{mapped.length}</p>
+              <p className="pb-3 text-center text-[9px] text-slate lg:text-left">地图已定位</p>
             </div>
-            <div>
-              <p className="text-lg font-black text-gold">{keyCount}</p>
-              <p className="text-[9px] font-bold text-slate">重点正餐</p>
+            <div className="border-l border-ink/15 pl-3">
+              <p className="py-3 text-center font-display text-[28px] leading-none text-gold lg:text-left">{keyCount}</p>
+              <p className="pb-3 text-center text-[9px] text-slate lg:text-left">重点正餐</p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mt-4 px-4">
-        <TripMap
-          items={mapped}
-          focusId={focusId}
-          showRoutes={false}
-          onSelectPoint={(locationId) => {
-            setFocusId(locationId)
-            setExpandedId(locationId)
-          }}
-          heightClass="h-[340px]"
-        />
-        <div className="mt-2 flex items-start justify-between gap-3">
-          <p className="text-[10px] font-medium leading-relaxed text-slate">
-            金色光圈表示重点正餐。{unlocatedCount} 个地点因分店或地址待确认，暂不放置推测坐标。
-          </p>
-          <span className="shrink-0 text-[10px] font-bold text-blue">{mapped.length} PIN</span>
-        </div>
-      </section>
-
-      <section className="mt-4 px-4">
-        <p className="mb-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate">区域</p>
-        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
-          <button
-            type="button"
-            onClick={() => {
-              setAreaFilter('all')
-              setFocusId('')
-            }}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
-              areaFilter === 'all' ? 'border-ink bg-ink text-white' : 'border-line bg-white text-slate'
-            }`}
-          >
-            全部区域
-          </button>
-          {areas.map(([area]) => (
-            <button
-              key={area}
-              type="button"
-              onClick={() => {
-                setAreaFilter(area)
-                setFocusId('')
+        <section className="mt-6 grid gap-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(350px,0.85fr)] lg:items-start">
+          <div className="lg:sticky lg:top-[82px]">
+            <div className="mb-3 flex items-end justify-between border-b border-ink/20 pb-3">
+              <p className="font-display text-[24px] leading-none text-ink">地理分布</p>
+              <span className="editorial-label text-slate">{mapped.length} pins</span>
+            </div>
+            <TripMap
+              items={mapped}
+              focusId={focusId}
+              showRoutes={false}
+              onSelectPoint={(locationId) => {
+                setFocusId(locationId)
+                setExpandedId(locationId)
               }}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
-                areaFilter === area ? 'border-ink bg-ink text-white' : 'border-line bg-white text-slate'
-              }`}
-            >
-              {area}
-            </button>
-          ))}
-        </div>
-        <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
-          {typeFilters.map((filter) => {
-            const Icon = filter.icon
-            return (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() => {
-                  setTypeFilter(filter.id)
-                  setFocusId('')
-                }}
-                className={`inline-flex shrink-0 items-center gap-1 rounded-md border px-2.5 py-1.5 text-[10px] font-bold ${
-                  typeFilter === filter.id
-                    ? 'border-blue/30 bg-mist text-blue'
-                    : 'border-line bg-white text-slate'
-                }`}
-              >
-                {Icon && <Icon size={11} />}
-                {filter.label}
-              </button>
-            )
-          })}
-        </div>
-      </section>
+              heightClass="h-[330px] lg:h-[600px]"
+            />
+            <div className="mt-3 flex items-start justify-between gap-4">
+              <p className="max-w-xl text-[9px] leading-relaxed text-slate">
+                金色光圈表示重点正餐。{unlocatedCount} 个地点因分店或地址待确认，暂不放置推测坐标。
+              </p>
+              <span className="shrink-0 text-[9px] font-semibold text-blue">{mapped.length} PIN</span>
+            </div>
+          </div>
 
-      <section className="mt-5 space-y-6 px-4 pb-4">
-        {grouped.map((group) => (
-          <div key={group.area}>
-            <div className="mb-2.5 flex items-end justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-gold">Area</p>
-                <h2 className="mt-0.5 font-display text-lg font-black leading-tight text-ink">
-                  {group.area}
-                </h2>
+          <div className="min-w-0">
+            <section className="border-y border-ink/20 py-4">
+              <div className="flex items-center justify-between gap-4">
+                <p className="editorial-label text-gold">Area</p>
+                <p className="text-[9px] text-slate">按地理区域浏览</p>
               </div>
-              <span className="shrink-0 text-[10px] font-bold text-slate">{group.points.length} 个地点</span>
-            </div>
-            <div className="space-y-2.5">
-              {group.points.map((point) => (
-                <PlaceCard
-                  key={point.locationId}
-                  point={point}
-                  expanded={expandedId === point.locationId}
-                  onToggle={() => selectPoint(point)}
-                  onFavorite={() => toggleFavorite(point.locationId)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-        {grouped.length === 0 && (
-          <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
-            <MapPin size={20} className="mx-auto text-gold" />
-            <p className="mt-2 text-sm font-black text-ink">当前筛选没有地点</p>
-            <p className="mt-1 text-[11px] font-medium text-slate">切换区域或类型后再试。</p>
-          </div>
-        )}
-      </section>
+              <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAreaFilter('all')
+                    setFocusId('')
+                  }}
+                  className={`shrink-0 border px-3 py-1.5 text-[10px] font-semibold ${
+                    areaFilter === 'all' ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate'
+                  }`}
+                >
+                  全部区域
+                </button>
+                {areas.map(([area]) => (
+                  <button
+                    key={area}
+                    type="button"
+                    onClick={() => {
+                      setAreaFilter(area)
+                      setFocusId('')
+                    }}
+                    className={`shrink-0 border px-3 py-1.5 text-[10px] font-semibold ${
+                      areaFilter === area ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate'
+                    }`}
+                  >
+                    {area}
+                  </button>
+                ))}
+              </div>
+              <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
+                {typeFilters.map((filter) => {
+                  const Icon = filter.icon
+                  return (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => {
+                        setTypeFilter(filter.id)
+                        setFocusId('')
+                      }}
+                      className={`inline-flex shrink-0 items-center gap-1 border px-2.5 py-1.5 text-[9px] font-semibold ${
+                        typeFilter === filter.id
+                          ? 'border-gold text-gold'
+                          : 'border-ink/15 text-slate'
+                      }`}
+                    >
+                      {Icon && <Icon size={10} />}
+                      {filter.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
 
-      <div className="px-4 pb-3">
-        <a
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Kuala Lumpur attractions restaurants')}`}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center gap-1.5 rounded-lg border border-line bg-white py-2.5 text-[11px] font-bold text-slate active:bg-cream"
-        >
-          在 Google Maps 查看吉隆坡全城
-          <ExternalLink size={12} />
-        </a>
+            <div className="lg:max-h-[720px] lg:overflow-y-auto lg:pr-3">
+              {grouped.map((group) => (
+                <section key={group.area} className="pt-6">
+                  <div className="flex items-end justify-between gap-3 border-b border-ink/20 pb-3">
+                    <div>
+                      <p className="editorial-label text-gold">Area</p>
+                      <h3 className="mt-1 font-display text-[24px] leading-tight text-ink">
+                        {group.area}
+                      </h3>
+                    </div>
+                    <span className="shrink-0 text-[9px] text-slate">{group.points.length} 个地点</span>
+                  </div>
+                  <div>
+                    {group.points.map((point) => (
+                      <PlaceCard
+                        key={point.locationId}
+                        point={point}
+                        expanded={expandedId === point.locationId}
+                        onToggle={() => selectPoint(point)}
+                        onFavorite={() => toggleFavorite(point.locationId)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+              {grouped.length === 0 && (
+                <div className="border-b border-ink/15 py-12 text-center">
+                  <MapPin size={20} className="mx-auto text-gold" />
+                  <p className="mt-3 font-display text-lg text-ink">当前筛选没有地点</p>
+                  <p className="mt-1 text-[10px] text-slate">切换区域或类型后再试。</p>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-6">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Kuala Lumpur attractions restaurants')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between border-y border-ink/20 py-3 text-[10px] font-semibold text-slate active:text-ink"
+              >
+                在 Google Maps 查看吉隆坡全城
+                <ExternalLink size={11} />
+              </a>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   )
