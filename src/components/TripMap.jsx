@@ -12,26 +12,46 @@ export const dayColors = {
   4: '#2E4A5C',
 }
 
-function makeIcon(num, day) {
+function makeIcon(num, color, highlighted = false, selected = false) {
+  const markerColor = color || '#4B7B9C'
   return L.divIcon({
     className: 'trip-marker-wrap',
-    html: `<div class="trip-marker" style="--marker-color:${dayColors[day]}">${num}</div>`,
-    iconSize: [26, 30],
-    iconAnchor: [13, 28],
-    popupAnchor: [0, -26],
+    html: `<div class="trip-marker${highlighted ? ' trip-marker-key' : ''}${selected ? ' trip-marker-selected' : ''}" style="--marker-color:${markerColor}">${num}</div>`,
+    iconSize: selected ? [34, 38] : [26, 30],
+    iconAnchor: selected ? [17, 34] : [13, 28],
+    popupAnchor: [0, -30],
   })
 }
 
 function FitBounds({ items }) {
   const map = useMap()
+  const itemKey = items.map((item) => item.locationId).join('|')
   useEffect(() => {
     if (!items.length) return
     map.fitBounds(items.map((p) => [p.lat, p.lng]), { padding: [44, 44], maxZoom: 14 })
-  }, [items, map])
+  }, [itemKey, map])
   return null
 }
 
-export default function TripMap({ items }) {
+function FocusPoint({ items, focusId }) {
+  const map = useMap()
+  const focusItem = items.find((entry) => entry.locationId === focusId)
+  const lat = focusItem?.lat
+  const lng = focusItem?.lng
+  useEffect(() => {
+    if (!focusId || lat == null || lng == null) return
+    map.flyTo([lat, lng], Math.max(map.getZoom(), 15), { animate: true, duration: 0.65 })
+  }, [focusId, lat, lng, map])
+  return null
+}
+
+export default function TripMap({
+  items,
+  focusId = '',
+  showRoutes = true,
+  onSelectPoint,
+  heightClass = 'h-[380px]',
+}) {
   const tripMeta = getTripMeta()
   const routeByDay = {}
   getDays().forEach((day) => {
@@ -65,7 +85,7 @@ export default function TripMap({ items }) {
     })
   })
 
-  if (getNaverClientId() && tripMeta.tripId === 'seoul-2026') {
+  if (showRoutes && getNaverClientId() && tripMeta.tripId === 'seoul-2026') {
     return (
       <NaverMap
         items={items}
@@ -83,12 +103,13 @@ export default function TripMap({ items }) {
         fadeAnimation={false}
         markerZoomAnimation={false}
         scrollWheelZoom={false}
-        className="h-[380px] w-full"
+        className={`${heightClass} w-full`}
         attributionControl={false}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FitBounds items={items} />
-        {transportRoutes.map(([a, b], i) => (
+        <FocusPoint items={items} focusId={focusId} />
+        {showRoutes && transportRoutes.map(([a, b], i) => (
           <Polyline
             key={`transport-${i}`}
             positions={[
@@ -98,7 +119,7 @@ export default function TripMap({ items }) {
             pathOptions={{ color: '#D97B5F', weight: 2, opacity: 0.75, dashArray: '2 6' }}
           />
         ))}
-        {byDay.map(({ day, route }) => (
+        {showRoutes && byDay.map(({ day, route }) => (
           <Polyline
             key={day}
             positions={route.map((p) => [p.lat, p.lng])}
@@ -109,7 +130,13 @@ export default function TripMap({ items }) {
           <Marker
             key={p.id}
             position={[p.lat, p.lng]}
-            icon={makeIcon(p.markerNo || (typeof p.id === 'number' ? p.id : '★'), p.day)}
+            icon={makeIcon(
+              p.markerNo || (typeof p.id === 'number' ? p.id : '★'),
+              p.markerColor || dayColors[p.day],
+              p.keyRestaurant,
+              p.locationId === focusId,
+            )}
+            eventHandlers={{ click: () => onSelectPoint?.(p.locationId) }}
           >
             <Popup>
               <div className="min-w-[160px] text-[13px]">

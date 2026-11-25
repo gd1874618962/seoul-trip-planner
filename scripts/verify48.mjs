@@ -79,7 +79,7 @@ const klText = await page.locator('body').innerText()
 report.kualaLumpurDefaults = {
   flight: klText.includes('MH387'),
   hotel: klText.includes('京华心悦大酒店'),
-  concert: klText.includes('bigbang演唱会'),
+  concert: klText.includes('BIGBANG演唱会'),
   dates: klText.includes('2027.01.08 - 01.11'),
 }
 
@@ -134,7 +134,9 @@ report.kualaLumpurPages = kualaLumpurPages
 await clickTab('首页')
 await page.getByText('今日行程（当天执行视图）', { exact: true }).click()
 await page.waitForTimeout(250)
-report.todayUsesActiveTrip = (await page.locator('body').innerText()).includes('吉隆坡行程待规划')
+report.todayUsesActiveTrip =
+  (await page.locator('body').innerText()).includes('今日行程')
+  && (await page.locator('body').innerText()).includes('10:10')
 report.finalNoOverflow = await noOverflow()
 report.errors = errors
 

@@ -3,8 +3,9 @@ import { ExternalLink, MapPin } from 'lucide-react'
 import { getDays, getPoints, getTripMeta } from '../data/store'
 import TripMap, { dayColors } from '../components/TripMap'
 import PageHeader from '../components/PageHeader'
+import KualaLumpurPlaces from './KualaLumpurPlaces'
 
-export default function MapPage() {
+function SeoulMapPage() {
   const [filter, setFilter] = useState('all')
   const tripMeta = getTripMeta()
   const daysList = getDays()
@@ -137,4 +138,10 @@ export default function MapPage() {
       </section>
     </div>
   )
+}
+
+export default function MapPage() {
+  return getTripMeta().tripId === 'kuala-lumpur-2027-01'
+    ? <KualaLumpurPlaces />
+    : <SeoulMapPage />
 }

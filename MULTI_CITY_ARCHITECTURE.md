@@ -35,6 +35,8 @@
 
 城市内部另有今日模式、基础资料编辑和独立代购入口。
 
+吉隆坡地图页内部使用独立的地点图谱组件，支持区域、类型、重点餐厅和收藏筛选；首尔地图页保持原有按天筛选和路线展示。
+
 ## 3. 当前旅行选择
 
 当前 `tripId` 保存于：
@@ -70,6 +72,7 @@ seoul-budget-v1
 seoul-ledger-v1
 seoul-trip-edits-v1
 seoul-restaurant-edits-v1
+seoul-place-favorites-v1
 seoul-cloud-meta
 seoul-reminders-{groupId}
 ```
@@ -83,6 +86,7 @@ seoul-budget-v1--kuala-lumpur-2027-01
 seoul-ledger-v1--kuala-lumpur-2027-01
 seoul-trip-edits-v1--kuala-lumpur-2027-01
 seoul-restaurant-edits-v1--kuala-lumpur-2027-01
+seoul-place-favorites-v1--kuala-lumpur-2027-01
 seoul-cloud-meta--kuala-lumpur-2027-01
 seoul-reminders-{groupId}--kuala-lumpur-2027-01
 ```
@@ -181,7 +185,7 @@ success / error
 1. 新城市仍需要在代码中注册默认数据集，城市页的“新增旅行城市”目前是预留入口。
 2. Supabase RLS 仍为当前项目的公开策略，多用户认证和按用户隔离尚未接入。
 3. 预算与账本货币字段仍沿用现有结构；吉隆坡正式记账前应再确定 MYR / RMB 字段策略。
-4. 吉隆坡航班、酒店、演唱会资料已建立，但景点、餐厅、交通和路线按需求保持待规划。
+4. 吉隆坡已建立地点图谱；部分餐厅分店和坐标仍需确认，未确认地点不会生成推测地图标记。
 
 ## 10. 验收结果
 
@@ -197,3 +201,12 @@ success / error
 - 今日模式识别当前旅行
 - 移动端和桌面端横向溢出
 - 控制台页面错误
+
+`scripts/verify49.mjs` 额外覆盖：
+
+- 吉隆坡三人、集合、返程信息
+- 六家重点正餐
+- 区域与类型筛选
+- 地图卡片联动
+- 地点收藏持久化
+- 吉隆坡和首尔地图回归

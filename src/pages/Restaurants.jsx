@@ -6,6 +6,7 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  Star,
   Trash2,
   UtensilsCrossed,
   Wallet,
@@ -13,6 +14,7 @@ import {
 import {
   getRestaurantEdits,
   getRestaurants,
+  getPoints,
   getTripMeta,
   saveRestaurantEdits,
 } from '../data/store'
@@ -65,7 +67,7 @@ function PhotoCarousel({ photos }) {
   )
 }
 
-export default function Restaurants() {
+function SeoulRestaurants() {
   const [editing, setEditing] = useState(false)
   const [tick, setTick] = useState(0)
   const [loadingId, setLoadingId] = useState(null)
@@ -234,4 +236,94 @@ export default function Restaurants() {
       </p>
     </div>
   )
+}
+
+function KualaLumpurRestaurants({ onNavigate }) {
+  const keyRestaurants = getPoints().filter((point) => point.keyRestaurant)
+
+  return (
+    <div>
+      <PageHeader
+        eyebrow="Kuala Lumpur / Key Tables"
+        title="重点餐厅"
+        subtitle="六家指定正餐，不锁定日期与连续用餐时间"
+      />
+
+      <section className="px-4 pt-4">
+        <div className="rounded-lg border border-gold/25 bg-cream/55 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-[11px] font-black text-gold">
+                <Star size={13} />
+                KEY TABLES · {keyRestaurants.length}
+              </p>
+              <h2 className="mt-1.5 font-display text-xl font-black text-ink">优先确认分店</h2>
+              <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate">
+                肥肥蟹和 De.Wan 1958 优先 Pavilion Elite 附近；兴记与 Talk Crab 同属甲洞；Grub 需与 Mid Valley 分开规划交通。
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate?.('map')}
+              className="shrink-0 rounded-md bg-ink px-3 py-2 text-[10px] font-bold text-white"
+            >
+              地点地图
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-4 space-y-3 px-4 pb-4">
+        {keyRestaurants.map((restaurant) => (
+          <article key={restaurant.locationId} className="rounded-lg border border-line bg-white p-4 shadow-card">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-gold">
+                  {restaurant.area}
+                </p>
+                <h2 className="mt-1 text-[17px] font-black leading-tight text-ink">
+                  {restaurant.displayName}
+                </h2>
+              </div>
+              <span className="shrink-0 rounded-full bg-cream px-2.5 py-1 text-[9px] font-black text-gold">
+                重点正餐
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] font-medium leading-relaxed text-slate">{restaurant.note}</p>
+            {restaurant.recommended?.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {restaurant.recommended.map((item) => (
+                  <span key={item} className="rounded-md bg-mist/70 px-2 py-1 text-[10px] font-bold text-blue">
+                    {item}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/70 pt-3">
+              <p className="line-clamp-2 min-w-0 text-[10px] font-medium leading-relaxed text-slate">
+                {restaurant.officialAddress}
+              </p>
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  restaurant.mapQuery || `${restaurant.name} Kuala Lumpur`,
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-line bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate"
+              >
+                核实地点
+                <ExternalLink size={10} />
+              </a>
+            </div>
+          </article>
+        ))}
+      </section>
+    </div>
+  )
+}
+
+export default function Restaurants({ onNavigate }) {
+  return getTripMeta().tripId === 'kuala-lumpur-2027-01'
+    ? <KualaLumpurRestaurants onNavigate={onNavigate} />
+    : <SeoulRestaurants />
 }

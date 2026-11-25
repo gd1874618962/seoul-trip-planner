@@ -93,7 +93,7 @@ export default function App() {
           {page === 'home' && <HomePage onNavigate={navigate} />}
           {page === 'timeline' && <Timeline />}
           {page === 'map' && <MapPage />}
-          {page === 'food' && <Restaurants />}
+          {page === 'food' && <Restaurants onNavigate={navigate} />}
           {page === 'budget' && <Budget />}
           {page === 'reminders' && <Reminders />}
           {page === 'ledger' && <Ledger />}

@@ -30,10 +30,10 @@ npm run build
 ## 测试
 
 ```bash
-node scripts/verify48.mjs
+node scripts/verify49.mjs
 ```
 
-`verify48.mjs` 覆盖城市切换、两座城市数据隔离、刷新持久化、7 个旅行页面、移动端/桌面端横向溢出和控制台错误。
+`verify49.mjs` 覆盖吉隆坡地点图谱、区域/类型筛选、地图联动、收藏和 7 个旅行页面；`verify48.mjs` 覆盖城市切换与云端数据隔离。
 
 其他历史验证脚本位于 `scripts/verify*.mjs`。
 

@@ -17,8 +17,8 @@ export default {
         gold: '#B99A5B',
       },
       fontFamily: {
-        display: ['"Noto Serif SC"', '"Songti SC"', 'STSong', 'serif'],
-        sans: ['Pretendard', '"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+        display: ['"Avenir Next"', '"Segoe UI"', '"Noto Sans SC"', '"Microsoft YaHei"', 'sans-serif'],
+        sans: ['"Avenir Next"', 'Pretendard', '"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 2px rgba(34, 51, 59, 0.04), 0 8px 24px -18px rgba(34, 51, 59, 0.28)',

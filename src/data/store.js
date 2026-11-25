@@ -15,6 +15,7 @@ const BUDGET_KEY = 'seoul-budget-v1'
 const LEDGER_KEY = 'seoul-ledger-v1'
 const TRIP_KEY = 'seoul-trip-edits-v1'
 const RESTAURANT_KEY = 'seoul-restaurant-edits-v1'
+const PLACE_FAVORITES_KEY = 'seoul-place-favorites-v1'
 const SHOPPING_DAISY_KEY = 'seoul-shopping-daisy-v1'
 const SHOPPING_WUTONG_KEY = 'seoul-shopping-wutong-v1'
 const CLOUD_META_KEY = 'seoul-cloud-meta'
@@ -275,6 +276,7 @@ export async function pushAllToCloud() {
       [scopedKey(LEDGER_KEY)]: ledgerState,
       [scopedKey(TRIP_KEY)]: getTripEdits(),
       [scopedKey(RESTAURANT_KEY)]: getRestaurantEdits(),
+      [scopedKey(PLACE_FAVORITES_KEY)]: getFavoritePlaceIds(),
       [SHOPPING_DAISY_KEY]: getShoppingState('daisy'),
       [SHOPPING_WUTONG_KEY]: getShoppingState('wutong'),
     }
@@ -418,6 +420,7 @@ function applyCloudData(data, tripId = getActiveTripId()) {
     LEDGER_KEY,
     TRIP_KEY,
     RESTAURANT_KEY,
+    PLACE_FAVORITES_KEY,
   ].map((key) => getLegacyOrScopedKey(key, tripId))
   const allowedKeys = new Set([
     ...scopedKeys,
@@ -663,6 +666,18 @@ export function getPoints() {
   })
 }
 
+export function getFavoritePlaceIds() {
+  const saved = read(getTripStorageKey(PLACE_FAVORITES_KEY))
+  return Array.isArray(saved?.ids) ? saved.ids : []
+}
+
+export function saveFavoritePlaceIds(ids) {
+  write(getTripStorageKey(PLACE_FAVORITES_KEY), {
+    ids: Array.from(new Set((ids || []).filter(Boolean))),
+  })
+  scheduleCloudPush()
+}
+
 export function getReminderOverrides() {
   return read(getTripStorageKey(REMINDER_KEY)) || {}
 }
@@ -800,6 +815,7 @@ const TRIP_DATA_BASE_KEYS = [
   LEDGER_KEY,
   TRIP_KEY,
   RESTAURANT_KEY,
+  PLACE_FAVORITES_KEY,
 ]
 
 export function exportAllState() {
