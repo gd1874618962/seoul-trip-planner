@@ -11,7 +11,7 @@
     margin: 0;
     background: #EFECE4;
     color: #22333B;
-    font-family: "Avenir Next", Pretendard, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   button {

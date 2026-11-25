@@ -17,8 +17,8 @@ export default {
         gold: '#B99A5B',
       },
       fontFamily: {
-        display: ['"Avenir Next"', '"Segoe UI"', '"Noto Sans SC"', '"Microsoft YaHei"', 'sans-serif'],
-        sans: ['"Avenir Next"', 'Pretendard', '"Noto Sans SC"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+        display: ['"Avenir Next"', '"DIN Alternate"', '"Segoe UI Variable Display"', '"Segoe UI"', '"PingFang SC"', '"Microsoft YaHei"', '"Noto Sans SC"', 'sans-serif'],
+        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', '"PingFang SC"', '"Microsoft YaHei"', '"Noto Sans SC"', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 2px rgba(34, 51, 59, 0.04), 0 8px 24px -18px rgba(34, 51, 59, 0.28)',
