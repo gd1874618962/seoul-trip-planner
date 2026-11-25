@@ -1,19 +1,12 @@
 import { useState } from 'react'
 import { ExternalLink, MapPin } from 'lucide-react'
-import { getDays, getPoints } from '../data/store'
+import { getDays, getPoints, getTripMeta } from '../data/store'
 import TripMap, { dayColors } from '../components/TripMap'
 import PageHeader from '../components/PageHeader'
 
-const filters = [
-  { id: 'all', label: '全部' },
-  { id: 1, label: 'DAY 1' },
-  { id: 2, label: 'DAY 2' },
-  { id: 3, label: 'DAY 3' },
-  { id: 4, label: 'DAY 4' },
-]
-
 export default function MapPage() {
   const [filter, setFilter] = useState('all')
+  const tripMeta = getTripMeta()
   const daysList = getDays()
   const basePoints = getPoints()
   const customPoints = daysList.flatMap((d) =>
@@ -56,10 +49,18 @@ export default function MapPage() {
   })
   const points = ordered.map((p, i) => ({ ...p, markerNo: i + 1 }))
   const filtered = filter === 'all' ? points : points.filter((p) => p.day === filter)
+  const filters = [
+    { id: 'all', label: '全部' },
+    ...daysList.map((day) => ({ id: day.id, label: day.label })),
+  ]
 
   return (
     <div>
-      <PageHeader eyebrow="Seoul Map" title="地图点位" subtitle="点击标记查看详情，或直接跳转 Naver 导航" />
+      <PageHeader
+        eyebrow={`${tripMeta.city} Map`}
+        title="地图点位"
+        subtitle="点击标记查看详情，或直接打开外部地图导航"
+      />
 
       <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 py-3">
         {filters.map((f) => {
@@ -82,10 +83,10 @@ export default function MapPage() {
       <div className="px-4">
         <TripMap items={filtered} />
         <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5">
-          {[1, 2, 3, 4].map((d) => (
-            <span key={d} className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: dayColors[d] }} />
-              DAY {d}
+          {daysList.map((day) => (
+            <span key={day.id} className="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate">
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: dayColors[day.id] }} />
+              {day.label}
             </span>
           ))}
         </div>
@@ -118,7 +119,11 @@ export default function MapPage() {
                 </p>
               </div>
               <a
-                href={`https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`}
+                href={
+                  tripMeta.tripId === 'seoul-2026'
+                    ? `https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`
+                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.officialAddress || p.address || p.name)}`
+                }
                 target="_blank"
                 rel="noreferrer"
                 className="flex shrink-0 items-center gap-1 rounded-md bg-blue px-2.5 py-1.5 text-[11px] font-bold text-white"

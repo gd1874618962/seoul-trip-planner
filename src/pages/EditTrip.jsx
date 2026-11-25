@@ -3,6 +3,8 @@ import {
   ArrowLeft,
   BedDouble,
   Check,
+  FileText,
+  Music4,
   Plane,
   Plus,
   RotateCcw,
@@ -17,6 +19,7 @@ import {
 import {
   getFlights,
   getHotels,
+  getTripId,
   getTravelers,
   getTripMeta,
   pushAllToCloud,
@@ -27,19 +30,28 @@ import PageHeader from '../components/PageHeader'
 const inputCls =
   'w-full rounded-md border border-line bg-white px-2.5 py-2 text-xs font-medium text-ink outline-none focus:border-blue'
 
-const LOCATIONS = Array.from({ length: 16 }, (_, i) => `loc-${i + 1}`)
-
-function Field({ label, value, onChange, type = 'text', placeholder }) {
+function Field({ label, value, onChange, type = 'text', placeholder, readOnly = false, textarea = false }) {
   return (
     <label className="block min-w-0">
       <span className="mb-1 block text-[10px] font-bold text-slate">{label}</span>
-      <input
-        type={type}
-        className={inputCls}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      {textarea ? (
+        <textarea
+          rows={3}
+          className={inputCls}
+          value={value ?? ''}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <input
+          type={type}
+          className={`${inputCls} ${readOnly ? 'bg-cream/60 text-slate' : ''}`}
+          value={value ?? ''}
+          placeholder={placeholder}
+          readOnly={readOnly}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
     </label>
   )
 }
@@ -60,6 +72,8 @@ export default function EditTrip({ onNavigate }) {
   })
 
   const patchMeta = (field, value) => setMeta({ ...meta, [field]: value })
+  const patchConcert = (field, value) =>
+    setMeta({ ...meta, concert: { ...(meta.concert || {}), [field]: value } })
 
   const patchFlight = (side, index, field, value) => {
     const list = [...flightData[side]]
@@ -82,6 +96,32 @@ export default function EditTrip({ onNavigate }) {
     setHotelData(list)
   }
 
+  const addHotel = () =>
+    setHotelData([
+      ...hotelData,
+      {
+        night: '',
+        name: '',
+        en: '',
+        area: '',
+        address: '',
+        price: '',
+        perPerson: '',
+        features: [],
+        locationId: `custom-hotel-${Date.now().toString(36)}`,
+        checkInDate: meta.startDate || '',
+        checkOutDate: meta.endDate || '',
+        checkInTime: '',
+        checkOutTime: '',
+        note: '',
+      },
+    ])
+
+  const removeHotel = (index) => {
+    if (!window.confirm('确定删除这家酒店吗？')) return
+    setHotelData(hotelData.filter((_, i) => i !== index))
+  }
+
   const patchTraveler = (index, field, value) => {
     const list = [...travelerData]
     list[index] = { ...list[index], [field]: value }
@@ -89,7 +129,12 @@ export default function EditTrip({ onNavigate }) {
   }
 
   const save = () => {
-    saveTripEdits({ meta, flights: flightData, hotels: hotelData, travelers: travelerData })
+    saveTripEdits({
+      meta: { ...meta, tripId: getTripId() },
+      flights: flightData,
+      hotels: hotelData,
+      travelers: travelerData,
+    })
     window.alert('已保存，所有页面会同步更新')
     onNavigate('home')
   }
@@ -142,15 +187,42 @@ export default function EditTrip({ onNavigate }) {
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
           <h2 className="text-[15px] font-black text-ink">基本信息</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <Field label="旅行ID" value={meta.tripId || 'seoul-2026'} placeholder="seoul-2026" onChange={(v) => patchMeta('tripId', v)} />
+            <Field label="旅行ID（固定）" value={meta.tripId || getTripId()} readOnly onChange={() => {}} />
             <Field label="旅行名称" value={meta.title} placeholder="Seoul Trip Planner 2026" onChange={(v) => patchMeta('title', v)} />
+            <Field label="城市（中文）" value={meta.cityCn} placeholder="吉隆坡" onChange={(v) => patchMeta('cityCn', v)} />
+            <Field label="城市（英文）" value={meta.city} placeholder="Kuala Lumpur" onChange={(v) => patchMeta('city', v)} />
+            <Field label="国家（英文）" value={meta.country} placeholder="Malaysia" onChange={(v) => patchMeta('country', v)} />
+            <Field label="国家（中文）" value={meta.countryCn} placeholder="马来西亚" onChange={(v) => patchMeta('countryCn', v)} />
             <Field label="日期" value={meta.dates} placeholder="2026.08.21 - 08.24" onChange={(v) => patchMeta('dates', v)} />
+            <Field label="开始日期" type="date" value={meta.startDate} onChange={(v) => patchMeta('startDate', v)} />
+            <Field label="结束日期" type="date" value={meta.endDate} onChange={(v) => patchMeta('endDate', v)} />
             <Field label="天数" value={meta.duration} placeholder="4天3晚" onChange={(v) => patchMeta('duration', v)} />
             <Field label="总预算（RMB/人）" type="number" value={meta.budgetPerPerson} onChange={(v) => patchMeta('budgetPerPerson', Number(v) || 0)} />
             <Field label="人数" type="number" value={meta.people} onChange={(v) => patchMeta('people', Number(v) || 0)} />
             <Field label="年龄" type="number" value={meta.age} onChange={(v) => patchMeta('age', Number(v) || 0)} />
           </div>
           <Field label="主题" value={meta.theme} onChange={(v) => patchMeta('theme', v)} />
+          <div className="mt-2">
+            <Field label="旅行备注" value={meta.notes} placeholder="记录待确认事项" textarea onChange={(v) => patchMeta('notes', v)} />
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-4 px-4">
+        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
+          <h2 className="flex items-center gap-1.5 text-[15px] font-black text-ink">
+            <Music4 size={15} className="text-coral" />
+            演唱会
+          </h2>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Field label="演唱会名称" value={meta.concert?.name} placeholder="演唱会名称" onChange={(v) => patchConcert('name', v)} />
+            <Field label="日期" type="date" value={meta.concert?.date} onChange={(v) => patchConcert('date', v)} />
+            <Field label="入场时间" type="time" value={meta.concert?.entryTime} onChange={(v) => patchConcert('entryTime', v)} />
+            <Field label="结束时间" type="time" value={meta.concert?.endTime} onChange={(v) => patchConcert('endTime', v)} />
+          </div>
+          <div className="mt-2">
+            <Field label="场馆名称" value={meta.concert?.venue} placeholder="场馆名称" onChange={(v) => patchConcert('venue', v)} />
+          </div>
         </div>
       </section>
 
@@ -207,10 +279,24 @@ export default function EditTrip({ onNavigate }) {
             <BedDouble size={15} className="text-gold" />
             酒店
           </h2>
+          <p className="mt-1 flex items-center gap-1 text-[10px] font-medium text-slate">
+            <FileText size={11} />
+            留空的航班、酒店与时间会原样保留，方便后续补充
+          </p>
           <div className="mt-3 space-y-4">
             {hotelData.map((hotel, index) => (
               <div key={hotel.locationId || index} className="rounded-md border border-line bg-cream/50 p-2.5">
-                <p className="text-[11px] font-bold text-slate">第 {index + 1} 晚 · {hotel.night}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-bold text-slate">第 {index + 1} 晚 · {hotel.night || '日期待填写'}</p>
+                  <button
+                    type="button"
+                    onClick={() => removeHotel(index)}
+                    className="flex h-7 w-7 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+                    aria-label="删除酒店"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <Field label="酒店名称" value={hotel.name} placeholder="酒店名称" onChange={(v) => patchHotel(index, 'name', v)} />
                   <Field label="关联地点" value={hotel.locationId} onChange={(v) => patchHotel(index, 'locationId', v)} />
@@ -242,6 +328,14 @@ export default function EditTrip({ onNavigate }) {
                 <Field label="备注" value={hotel.note || ''} placeholder="酒店备注" onChange={(v) => patchHotel(index, 'note', v)} />
               </div>
             ))}
+            <button
+              type="button"
+              onClick={addHotel}
+              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-[11px] font-bold text-blue active:opacity-90"
+            >
+              <Plus size={13} />
+              添加酒店
+            </button>
           </div>
         </div>
       </section>

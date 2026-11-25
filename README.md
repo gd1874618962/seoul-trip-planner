@@ -1,12 +1,14 @@
-# Seoul Trip Planner 2026
+# Seoul Trip Planner / Multi-City Travel Planner
 
-首尔 8.21-8.24 旅行执行攻略 Web App，移动端优先。
+移动端优先的多城市旅行攻略 Web App。目前包含首尔 2026 和吉隆坡 2027 两个独立旅行实例。
 
 ## 技术栈
 
 - React 18 + Vite 5 + Tailwind CSS
 - Leaflet 地图 + Naver 地图导航跳转
-- 数据层：`src/data/trip.js`（默认内容）+ `src/data/store.js`（统一读写/同步）
+- 多城市数据层：`src/data/store.js` 根据 `tripId` 选择默认数据与独立 localStorage 命名空间
+- 默认数据：首尔 `src/data/trip.js`，吉隆坡 `src/data/kualaLumpur.js`
+- 城市目录：`src/data/cityTrips.js`
 
 ## 本地启动
 
@@ -28,10 +30,12 @@ npm run build
 ## 测试
 
 ```bash
-node scripts/verify3.mjs
+node scripts/verify48.mjs
 ```
 
-其他验证脚本位于 `scripts/verify*.mjs`。
+`verify48.mjs` 覆盖城市切换、两座城市数据隔离、刷新持久化、7 个旅行页面、移动端/桌面端横向溢出和控制台错误。
+
+其他历史验证脚本位于 `scripts/verify*.mjs`。
 
 ## 部署（GitHub Pages）
 

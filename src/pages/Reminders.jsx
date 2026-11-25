@@ -14,8 +14,13 @@ import {
   SunMedium,
   Trash2,
 } from 'lucide-react'
-import { getReminderOverrides, getReminders, saveReminderOverrides } from '../data/store'
-import { reminders as defaultReminders } from '../data/trip'
+import {
+  getReminderCheckKey,
+  getReminderOverrides,
+  getReminders,
+  isDefaultReminderGroup,
+  saveReminderOverrides,
+} from '../data/store'
 import PageHeader from '../components/PageHeader'
 
 const iconMap = {
@@ -27,7 +32,7 @@ const iconMap = {
 }
 
 function useChecks(id, count) {
-  const key = `seoul-reminders-${id}`
+  const key = getReminderCheckKey(id)
   const [checks, setChecks] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem(key))
@@ -134,7 +139,7 @@ function ReminderCard({
           <div className="h-1.5 w-16 overflow-hidden rounded-full bg-cream">
             <div
               className="h-full rounded-full bg-blue transition-all"
-              style={{ width: `${(done / group.items.length) * 100}%` }}
+              style={{ width: `${group.items.length ? (done / group.items.length) * 100 : 0}%` }}
             />
           </div>
         )}
@@ -267,7 +272,7 @@ export default function Reminders() {
     const group = groups.find((g) => g.id === id)
     if (!window.confirm(`确定删除“${group?.title || '这个提醒块'}”吗？`)) return
     const next = { ...overrides }
-    if (defaultReminders.some((g) => g.id === id)) {
+    if (isDefaultReminderGroup(id)) {
       next[id] = { _deleted: true }
     } else {
       delete next[id]
@@ -330,6 +335,13 @@ export default function Reminders() {
       </div>
 
       <section className="mt-3.5 space-y-3.5 px-4">
+        {groups.length === 0 && !editing && (
+          <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
+            <ClipboardList size={22} className="mx-auto text-gold" />
+            <p className="mt-2 text-sm font-black text-ink">还没有提醒清单</p>
+            <p className="mt-1 text-[11px] font-medium text-slate">进入编辑模式后可以新增机场、演唱会和行李提醒。</p>
+          </div>
+        )}
         {groups.map((group, index) => (
           <ReminderCard
             key={group.id}

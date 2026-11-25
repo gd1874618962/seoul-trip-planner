@@ -8,7 +8,7 @@ import {
   MapPin,
   Wallet,
 } from 'lucide-react'
-import { getDays, getTimelineOverrides, saveTimelineOverrides } from '../data/store'
+import { getDays, getTimelineOverrides, getTripMeta, saveTimelineOverrides } from '../data/store'
 import PageHeader from '../components/PageHeader'
 
 function todayKey() {
@@ -54,6 +54,7 @@ function TransportLine({ entry }) {
 
 export default function Today({ onNavigate }) {
   const [tick, setTick] = useState(0)
+  const tripMeta = getTripMeta()
   const days = getDays()
   const day = days.find((d) => d.date === todayKey()) || days[0]
   if (!day) return null
@@ -160,6 +161,21 @@ export default function Today({ onNavigate }) {
       )}
 
       <section className="mt-5 space-y-3 px-4">
+        {entries.length === 0 && (
+          <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
+            <CalendarDays size={22} className="mx-auto text-gold" />
+            <p className="mt-2 text-sm font-black text-ink">{tripMeta.cityCn}行程待规划</p>
+            <p className="mt-1 text-[11px] font-medium text-slate">当前旅行已独立载入，之后添加的地点会在这里按时间执行。</p>
+            <button
+              type="button"
+              onClick={() => onNavigate('timeline')}
+              className="mt-3 inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-[11px] font-bold text-white"
+            >
+              <CalendarDays size={13} />
+              打开行程页
+            </button>
+          </div>
+        )}
         {entries.map((entry) => (
           <div key={entry.id}>{entry === next || entry === active ? null : big(entry)}</div>
         ))}

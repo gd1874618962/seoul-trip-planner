@@ -41,9 +41,10 @@ export default function Budget() {
   const ledgerTotal = getLedgerExpenseTotal()
   const spentTotal = totalSpent + ledgerTotal
   const plannedTotal = state.planned.reduce((sum, item) => sum + Number(item.amount || 0), 0)
-  const remaining = state.perPerson - spentTotal
+  const budgetPerPerson = Number(state.perPerson) || 0
+  const remaining = budgetPerPerson - spentTotal
   const buffer = remaining - plannedTotal
-  const pct = Math.min(100, Math.round((totalSpent / state.perPerson) * 100))
+  const pct = budgetPerPerson ? Math.min(100, Math.round((totalSpent / budgetPerPerson) * 100)) : 0
   const maxPlanned = Math.max(1, ...state.planned.map((item) => Number(item.amount || 0)))
   const radius = 52
   const circumference = 2 * Math.PI * radius

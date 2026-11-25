@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Home, CalendarDays, Map as MapIcon, UtensilsCrossed, Wallet, BellRing, Calculator } from 'lucide-react'
 import BottomNav from './components/BottomNav'
+import TripSwitcher from './components/TripSwitcher'
+import Cities from './pages/Cities'
 import HomePage from './pages/Home'
 import Timeline from './pages/Timeline'
 import MapPage from './pages/MapPage'
@@ -12,7 +14,16 @@ import EditTrip from './pages/EditTrip'
 import Today from './pages/Today'
 import ShoppingHub from './pages/ShoppingHub'
 import ShoppingPage from './pages/ShoppingPage'
-import { pollCloud, pollRemote } from './data/store'
+import {
+  getActiveTripId,
+  getTripMeta,
+  initCloudSync,
+  initRemoteSync,
+  migrateItineraryOnce,
+  pollCloud,
+  pollRemote,
+  switchActiveTrip,
+} from './data/store'
 
 export const tabs = [
   { id: 'home', label: '首页', icon: Home },
@@ -25,15 +36,25 @@ export const tabs = [
 ]
 
 export default function App() {
-  const [page, setPage] = useState('home')
+  const [page, setPage] = useState('cities')
+  const [activeTripId, setActiveTripIdState] = useState(() => getActiveTripId())
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
+    let cancelled = false
+    Promise.all([initRemoteSync(), initCloudSync()]).finally(() => {
+      if (cancelled) return
+      migrateItineraryOnce()
+      setTick((v) => v + 1)
+    })
     const timer = setInterval(async () => {
       const results = await Promise.all([pollRemote(), pollCloud()])
       if (results.some(Boolean)) setTick((v) => v + 1)
     }, 5000)
-    return () => clearInterval(timer)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
   }, [])
 
   const navigate = (next) => {
@@ -41,10 +62,34 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const selectTrip = async (tripId) => {
+    if (!(await switchActiveTrip(tripId))) return
+    setActiveTripIdState(tripId)
+    setPage('home')
+    setTick((v) => v + 1)
+    window.scrollTo({ top: 0 })
+    await initCloudSync()
+    migrateItineraryOnce()
+    setTick((v) => v + 1)
+  }
+
+  if (page === 'cities') {
+    return (
+      <div className="min-h-screen bg-[#EFECE4]">
+        <div className="mx-auto min-h-screen w-full max-w-app bg-[#FCFBF8] shadow-float">
+          <Cities onSelectTrip={selectTrip} />
+        </div>
+      </div>
+    )
+  }
+
+  const trip = getTripMeta()
+
   return (
     <div className="min-h-screen bg-[#EFECE4]">
       <div className="relative mx-auto min-h-screen w-full max-w-app bg-[#FCFBF8] pb-24 shadow-float">
-        <main key={tick}>
+        <TripSwitcher trip={trip} onSwitch={() => navigate('cities')} />
+        <main key={`${activeTripId}-${tick}-${page}`}>
           {page === 'home' && <HomePage onNavigate={navigate} />}
           {page === 'timeline' && <Timeline />}
           {page === 'map' && <MapPage />}

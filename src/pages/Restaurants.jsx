@@ -13,6 +13,7 @@ import {
 import {
   getRestaurantEdits,
   getRestaurants,
+  getTripMeta,
   saveRestaurantEdits,
 } from '../data/store'
 import PageHeader from '../components/PageHeader'
@@ -68,6 +69,7 @@ export default function Restaurants() {
   const [editing, setEditing] = useState(false)
   const [tick, setTick] = useState(0)
   const [loadingId, setLoadingId] = useState(null)
+  const tripMeta = getTripMeta()
   const restaurants = getRestaurants()
   const edits = getRestaurantEdits()
 
@@ -96,7 +98,7 @@ export default function Restaurants() {
 
   return (
     <div>
-      <PageHeader eyebrow="Food Guide" title="餐厅收藏" subtitle="实拍照片 · 菜单 · 地址导航" />
+      <PageHeader eyebrow={`${tripMeta.city} Food`} title="餐厅收藏" subtitle="照片 · 菜单 · 地址导航" />
 
       <div className="mx-4 mt-3 flex items-center justify-between gap-2">
         {editing ? (
@@ -122,6 +124,13 @@ export default function Restaurants() {
       </div>
 
       <section className="mt-4 space-y-4 px-4">
+        {restaurants.length === 0 && (
+          <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
+            <UtensilsCrossed size={22} className="mx-auto text-gold" />
+            <p className="mt-2 text-sm font-black text-ink">餐厅清单待建立</p>
+            <p className="mt-1 text-[11px] font-medium text-slate">可以等行程和演唱会场馆确认后再补充。</p>
+          </div>
+        )}
         {restaurants.map((r) => {
           const direct = edits[r.id] || {}
           const photos = Array.isArray(direct.photos) && direct.photos.length ? direct.photos : r.photos || [r.image]
@@ -200,13 +209,17 @@ export default function Restaurants() {
                     {r.priceRange}
                   </span>
                   <a
-                    href={`https://map.naver.com/p/search/${encodeURIComponent(`${r.name} ${r.ko}`)}`}
+                    href={
+                      tripMeta.tripId === 'seoul-2026'
+                        ? `https://map.naver.com/p/search/${encodeURIComponent(`${r.name} ${r.ko}`)}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${r.name} ${r.address || ''}`)}`
+                    }
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 rounded-md bg-ink px-3 py-2 text-[11px] font-bold text-white active:opacity-90"
                   >
                     <ExternalLink size={12} />
-                    Naver 导航
+                    打开地图
                   </a>
                 </div>
               </div>

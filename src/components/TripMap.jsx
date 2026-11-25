@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import L from 'leaflet'
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { getDays } from '../data/store'
+import { getDays, getTripMeta } from '../data/store'
 import NaverMap, { getNaverClientId } from './NaverMap'
 
 export const dayColors = {
@@ -32,6 +32,7 @@ function FitBounds({ items }) {
 }
 
 export default function TripMap({ items }) {
+  const tripMeta = getTripMeta()
   const routeByDay = {}
   getDays().forEach((day) => {
     const refs = []
@@ -64,7 +65,7 @@ export default function TripMap({ items }) {
     })
   })
 
-  if (getNaverClientId()) {
+  if (getNaverClientId() && tripMeta.tripId === 'seoul-2026') {
     return (
       <NaverMap
         items={items}
@@ -76,8 +77,11 @@ export default function TripMap({ items }) {
   return (
     <div className="overflow-hidden rounded-lg border border-line shadow-card">
       <MapContainer
-        center={[37.5665, 126.978]}
+        center={[tripMeta.mapCenter?.lat || 37.5665, tripMeta.mapCenter?.lng || 126.978]}
         zoom={11}
+        zoomAnimation={false}
+        fadeAnimation={false}
+        markerZoomAnimation={false}
         scrollWheelZoom={false}
         className="h-[380px] w-full"
         attributionControl={false}
@@ -112,12 +116,16 @@ export default function TripMap({ items }) {
                 <p className="font-bold text-ink">{p.displayName || p.name}</p>
                 <p className="mt-0.5 text-[11px] text-slate">{p.officialAddress || p.address}</p>
                 <a
-                  href={`https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`}
+                  href={
+                    tripMeta.tripId === 'seoul-2026'
+                      ? `https://map.naver.com/p/search/${encodeURIComponent(p.officialAddress || p.naver)}`
+                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.officialAddress || p.address || p.name)}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                   className="mt-2 inline-flex rounded-md bg-blue px-2.5 py-1 text-[11px] font-bold text-white"
                 >
-                  在 Naver 地图打开
+                  在地图打开
                 </a>
               </div>
             </Popup>
