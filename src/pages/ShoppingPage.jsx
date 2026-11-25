@@ -203,18 +203,18 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('shopping')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-slate active:bg-cream"
+          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
         >
           <ArrowLeft size={14} />
           返回代购
         </button>
-        <label className="inline-flex items-center gap-1.5 rounded-md bg-mist px-2.5 py-2 text-[11px] font-bold text-blue">
+        <label className="inline-flex items-center gap-1.5 rounded-md bg-mist px-2.5 py-2 text-sm font-semibold text-blue">
           汇率 1000 KRW =
           <input
             type="number"
             step="0.01"
             min="0"
-            className="w-16 rounded-md border border-line bg-white px-1.5 py-1 text-right text-xs font-black text-ink outline-none focus:border-blue"
+            className="w-16 rounded-md border border-line bg-white px-1.5 py-1 text-right text-xs font-semibold text-ink outline-none focus:border-blue"
             value={(rate * 1000).toFixed(2)}
             onChange={(e) => setRate(e.target.value)}
           />
@@ -225,22 +225,22 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-ink/10 bg-ink p-4 text-white shadow-card">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-white/70">今日代购汇总</p>
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-white/80">
+            <p className="text-xs font-semibold text-white/70">今日代购汇总</p>
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-white/80">
               <Users size={13} />
               {customers.length} 位客户
             </span>
           </div>
           <div className="mt-3 flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-bold text-white/70">{totalItems} 件商品</p>
-              <p className="mt-1 text-2xl font-black">{formatKRW(totalKRW)}</p>
-              <p className="mt-1 text-sm font-bold text-white/80">{formatCNY(toRMB(totalKRW))}</p>
+              <p className="text-sm font-semibold text-white/70">{totalItems} 件商品</p>
+              <p className="mt-1 text-2xl font-semibold">{formatKRW(totalKRW)}</p>
+              <p className="mt-1 text-sm font-semibold text-white/80">{formatCNY(toRMB(totalKRW))}</p>
             </div>
             <button
               type="button"
               onClick={addCustomer}
-              className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-bold text-ink active:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-semibold text-ink active:opacity-90"
             >
               <Plus size={14} />
               添加客户
@@ -249,7 +249,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
           <button
             type="button"
             onClick={exportOrders}
-            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-white/10 px-3 py-2 text-xs font-bold text-white active:opacity-90"
+            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-white/10 px-3 py-2 text-xs font-semibold text-white active:opacity-90"
           >
             <Download size={14} />
             导出订单
@@ -268,7 +268,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                 <input
                   value={customer.customerName}
                   onChange={(e) => patchCustomer(customer.id, { customerName: e.target.value })}
-                  className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-1.5 text-sm font-black text-ink outline-none focus:border-blue"
+                  className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-1.5 text-sm font-semibold text-ink outline-none focus:border-blue"
                 />
                 <button
                   type="button"
@@ -302,10 +302,10 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                   return (
                     <div key={`${order.productId}-${i}`} className="flex items-center gap-2 rounded-md bg-cream/60 px-2.5 py-2">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[12px] font-black text-ink">
+                        <p className="truncate text-sm font-semibold text-ink">
                           {product ? `${product.name} (${order.productId})` : '商品已下架'}
                         </p>
-                        <p className="text-[10px] font-bold text-slate">
+                        <p className="text-xs font-semibold text-slate">
                           {formatKRW(order.unitPriceKRW)} × {order.quantity}
                         </p>
                       </div>
@@ -313,16 +313,16 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                         <button
                           type="button"
                           onClick={() => setQty(customer.id, i, -1)}
-                          className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-black text-slate active:bg-cream"
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-semibold text-slate active:bg-cream"
                         >
                           −
                         </button>
-                        <span className="w-6 text-center text-sm font-black text-ink">{order.quantity}</span>
+                        <span className="w-6 text-center text-sm font-semibold text-ink">{order.quantity}</span>
                         <button
                           type="button"
                           onClick={() => setQty(customer.id, i, 1)}
                           disabled={remaining(customers, order.productId) <= 0}
-                          className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-black text-slate active:bg-cream disabled:opacity-30"
+                          className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-semibold text-slate active:bg-cream disabled:opacity-30"
                         >
                           +
                         </button>
@@ -339,7 +339,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                   )
                 })}
                 {customer.orders.length === 0 && (
-                  <p className="rounded-md bg-cream/50 px-3 py-2 text-[11px] font-medium text-slate">
+                  <p className="rounded-md bg-cream/50 px-3 py-2 text-sm font-medium text-slate">
                     还没有商品，从下方选择添加
                   </p>
                 )}
@@ -347,7 +347,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
 
               <div className="mt-2.5 flex items-center gap-2">
                 <select
-                  className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-2 text-[11px] font-medium text-ink outline-none focus:border-blue"
+                  className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-2 text-sm font-medium text-ink outline-none focus:border-blue"
                   value=""
                   onChange={(e) => {
                     if (e.target.value) addProduct(customer.id, e.target.value)
@@ -363,7 +363,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                 <button
                   type="button"
                   onClick={() => clearCustomer(customer.id)}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-line bg-white px-2.5 py-2 text-[10px] font-bold text-slate active:bg-cream"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-line bg-white px-2.5 py-2 text-xs font-semibold text-slate active:bg-cream"
                 >
                   <RotateCcw size={12} />
                   清空
@@ -371,9 +371,9 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
               </div>
 
               <div className="mt-2.5 flex items-center justify-between rounded-md bg-mist/60 px-3 py-2">
-                <span className="text-[11px] font-bold text-slate">客户合计</span>
-                <span className="text-sm font-black text-ink">
-                  {formatKRW(krw)} <span className="text-[10px] text-slate">{formatCNY(toRMB(krw))}</span>
+                <span className="text-sm font-semibold text-slate">客户合计</span>
+                <span className="text-sm font-semibold text-ink">
+                  {formatKRW(krw)} <span className="text-xs text-slate">{formatCNY(toRMB(krw))}</span>
                 </span>
               </div>
             </div>
@@ -399,7 +399,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
               key={c}
               type="button"
               onClick={() => setCategory(c)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold ${
                 category === c ? 'border-ink bg-ink text-white' : 'border-line bg-white text-slate'
               }`}
             >
@@ -411,27 +411,27 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
           {filteredProducts.map((p) => (
             <div key={p.id} data-product={p.id} className="relative overflow-hidden rounded-lg border border-line bg-white shadow-card">
                   {remaining(customers, p.id) <= 0 && (
-                <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-coral text-lg font-black text-white shadow-md">
+                <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-coral text-lg font-semibold text-white shadow-md">
                   ✕
                 </span>
               )}
               <img src={p.image} alt={p.imageAlt} className="aspect-square w-full object-cover" loading="lazy" />
               <div className="p-2.5">
-                <p className="text-[9px] font-bold text-gold">{p.id.replace('bb-', '')}</p>
-                <p className="mt-0.5 line-clamp-2 min-h-[2.2em] text-[11px] font-black leading-snug text-ink">{p.name}</p>
-                <p className="mt-1 text-[11px] font-black text-blue">{formatKRW(p.priceKRW)}</p>
-                <p className="text-[9px] font-bold text-slate">{formatCNY(toRMB(p.priceKRW))}</p>
-                <p className="mt-1 text-[9px] font-bold text-slate">
+                <p className="text-xs font-semibold text-gold">{p.id.replace('bb-', '')}</p>
+                <p className="mt-0.5 line-clamp-2 min-h-[2.2em] text-sm font-semibold leading-snug text-ink">{p.name}</p>
+                <p className="mt-1 text-sm font-semibold text-blue">{formatKRW(p.priceKRW)}</p>
+                <p className="text-xs font-semibold text-slate">{formatCNY(toRMB(p.priceKRW))}</p>
+                <p className="mt-1 text-xs font-semibold text-slate">
                   已购：{globalQty(p.id)} / 3 · 剩余：{Math.max(0, 3 - globalQty(p.id))}
                 </p>
                 {globalQty(p.id) >= 3 && (
-                  <p className="mt-0.5 text-[9px] font-black text-coral">已售罄</p>
+                  <p className="mt-0.5 text-xs font-semibold text-coral">已售罄</p>
                 )}
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {buyersOf(p.id).map((b) => (
                     <span
                       key={b.name}
-                      className="inline-flex items-center gap-1 rounded-full bg-cream px-1.5 py-0.5 text-[9px] font-bold text-slate"
+                      className="inline-flex items-center gap-1 rounded-full bg-cream px-1.5 py-0.5 text-xs font-semibold text-slate"
                     >
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.hex }} />
                       {b.name} ×{b.qty}

@@ -72,23 +72,23 @@ function TransportCard({ transport }) {
   if (typeof transport !== 'object' || !transport?.options?.length) return null
   return (
     <div className="mt-2.5 space-y-2">
-      <p className="text-[10px] font-bold text-slate">
+      <p className="text-xs font-semibold text-slate">
         交通攻略{transport.status === 'estimated' ? '（估算，接入 API 后为真实线路）' : ''}
       </p>
       {transport.options.map((opt, i) => (
         <div key={`${opt.type}-${i}`} className="rounded-md border border-blue/10 bg-mist/40 p-2.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11px] font-black text-ink">
+            <span className="text-sm font-semibold text-ink">
               {opt.type === 'subway' ? '🚇 地铁' : opt.type === 'taxi' ? '🚕 打车' : '🚶 步行'}
             </span>
-            <span className="text-[10px] font-bold text-slate">
+            <span className="text-xs font-semibold text-slate">
               {opt.duration} · {opt.costKRW}
             </span>
           </div>
           {opt.steps && opt.steps.length > 0 && (
             <div className="mt-1.5 space-y-0.5">
               {opt.steps.map((step, j) => (
-                <p key={j} className="text-[10px] font-medium leading-relaxed text-slate">
+                <p key={j} className="text-xs font-medium leading-relaxed text-slate">
                   {step.mode === 'subway'
                     ? `${step.line || '地铁'}：${step.from} → ${step.to}`
                     : `🚶 ${step.description}`}
@@ -117,7 +117,7 @@ function Field({ label, value, onChange, textarea }) {
     'w-full rounded-md border border-line bg-white px-2.5 py-2 text-xs font-medium text-ink outline-none focus:border-blue'
   return (
     <label className="block min-w-0">
-      <span className="mb-1 block text-[10px] font-bold text-slate">{label}</span>
+      <span className="mb-1 block text-xs font-semibold text-slate">{label}</span>
       {textarea ? (
         <textarea rows={2} className={cls} value={value} onChange={(e) => onChange(e.target.value)} />
       ) : (
@@ -242,7 +242,7 @@ function LocationSearch({ onPick }) {
         <button
           type="button"
           onClick={search}
-          className="inline-flex shrink-0 items-center gap-1 rounded-md bg-blue px-2.5 py-1.5 text-[11px] font-bold text-white active:opacity-90"
+          className="inline-flex shrink-0 items-center gap-1 rounded-md bg-blue px-2.5 py-1.5 text-sm font-semibold text-white active:opacity-90"
         >
           <Search size={12} />
           {busy ? '搜索中' : '搜索'}
@@ -255,24 +255,24 @@ function LocationSearch({ onPick }) {
               key={item.key}
               type="button"
               onClick={() => pick(item)}
-              className="block w-full rounded-md bg-white px-2 py-1.5 text-left text-[10px] font-medium leading-relaxed text-slate active:bg-mist"
+              className="block w-full rounded-md bg-white px-2 py-1.5 text-left text-xs font-medium leading-relaxed text-slate active:bg-mist"
             >
               {item.display_name}
             </button>
           ))}
         </div>
       )}
-      {error && <p className="mt-1.5 text-[10px] font-bold text-coral">{error}</p>}
+      {error && <p className="mt-1.5 text-xs font-semibold text-coral">{error}</p>}
       <div className="mt-1.5 grid grid-cols-2 gap-1.5">
         <input
-          className="rounded-md border border-line bg-white px-2 py-1.5 text-[10px] text-ink outline-none focus:border-blue"
+          className="rounded-md border border-line bg-white px-2 py-1.5 text-xs text-ink outline-none focus:border-blue"
           placeholder="纬度（如 37.5512）"
           inputMode="decimal"
           value={lat}
           onChange={(e) => setLat(e.target.value)}
         />
         <input
-          className="rounded-md border border-line bg-white px-2 py-1.5 text-[10px] text-ink outline-none focus:border-blue"
+          className="rounded-md border border-line bg-white px-2 py-1.5 text-xs text-ink outline-none focus:border-blue"
           placeholder="经度（如 126.9882）"
           inputMode="decimal"
           value={lng}
@@ -282,7 +282,7 @@ function LocationSearch({ onPick }) {
       <button
         type="button"
         onClick={applyManual}
-        className="mt-1.5 w-full rounded-md bg-cream px-2 py-1.5 text-[10px] font-bold text-gold active:bg-sand"
+        className="mt-1.5 w-full rounded-md bg-cream px-2 py-1.5 text-xs font-semibold text-gold active:bg-sand"
       >
         手动定位到该坐标
       </button>
@@ -461,7 +461,7 @@ export default function Timeline() {
     <div>
       <PageHeader eyebrow="Daily Timeline" title="每日行程" subtitle="时间 · 地点 · 交通 · 费用一目了然" />
 
-      <div className="no-scrollbar sticky top-[104px] z-20 flex gap-2 overflow-x-auto bg-[#FCFBF8]/95 px-4 py-3 backdrop-blur-md">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto border-y border-line px-5 py-3 lg:px-10">
         {days.map((d) => {
           const active = d.id === activeDay
           return (
@@ -469,8 +469,8 @@ export default function Timeline() {
               key={d.id}
               type="button"
               onClick={() => setActiveDay(d.id)}
-              className={`flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-bold transition ${
-                active ? 'border-ink bg-ink text-white shadow-card' : 'border-line bg-white text-slate active:bg-cream'
+              className={`flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-sm font-medium transition ${
+                active ? 'border-ink bg-ink text-paper' : 'border-line bg-transparent text-slate active:bg-cream'
               }`}
             >
               <span>{d.label}</span>
@@ -480,13 +480,13 @@ export default function Timeline() {
         })}
       </div>
 
-      <div className="mx-4 mt-1 flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 px-5 pt-4 lg:px-10">
         {editing ? (
           <>
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-xs font-bold text-white active:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-xs font-semibold text-white active:opacity-90"
             >
               <Check size={14} />
               完成编辑
@@ -494,7 +494,7 @@ export default function Timeline() {
             <button
               type="button"
               onClick={() => setEntries(reflowEntries(entries))}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-slate active:bg-cream"
+              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
             >
               <Clock size={14} />
               顺延时间
@@ -502,7 +502,7 @@ export default function Timeline() {
             <button
               type="button"
               onClick={resetDay}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-slate active:bg-cream"
+              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
             >
               <RotateCcw size={14} />
               恢复默认
@@ -512,45 +512,45 @@ export default function Timeline() {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-mist px-3 py-2 text-xs font-bold text-blue active:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-mist px-3 py-2 text-xs font-semibold text-blue active:opacity-90"
           >
             <Pencil size={14} />
             编辑行程
           </button>
         )}
-        <span className="text-[11px] font-medium text-slate">{editing ? '用箭头调整顺序' : '步行参考 ~2 万步/天'}</span>
+        <span className="text-sm font-normal text-slate">{editing ? '用箭头调整顺序' : '步行参考 ~2 万步/天'}</span>
       </div>
 
-      <div className="mx-4 mt-3 rounded-lg border border-blue/15 bg-gradient-to-r from-mist via-white to-cream p-4 shadow-card">
+      <div className="mx-5 mt-4 border-y border-line py-5 lg:mx-10">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-gold">
               {baseDay.label} · {baseDay.date} {baseDay.weekday}
             </p>
-            <h2 className="mt-1 font-display text-xl font-bold leading-snug text-ink">{baseDay.theme}</h2>
+            <h2 className="mt-1 font-display text-[24px] font-semibold leading-snug text-ink">{baseDay.theme}</h2>
           </div>
           <div className="shrink-0 text-center">
-            <p className="text-[10px] font-bold text-slate">已完成</p>
-            <p className="text-sm font-black text-blue">
+            <p className="text-xs font-semibold text-slate">已完成</p>
+            <p className="text-sm font-semibold text-blue">
               {entries.filter((e) => e.status === 'completed').length}/{entries.length}
             </p>
           </div>
         </div>
       </div>
 
-      <section className="mt-5 px-4">
+      <section className="mt-5 px-5 pb-12 lg:px-10">
         {entries.length === 0 && (
           <div className="mb-3 rounded-lg border border-dashed border-blue/30 bg-mist/45 px-4 py-7 text-center">
             <Plane size={22} className="mx-auto text-blue" />
-            <p className="mt-2 text-sm font-black text-ink">这一天还没有行程</p>
-            <p className="mt-1 text-[11px] font-medium text-slate">先完成航班、酒店和演唱会信息，再逐步添加地点。</p>
+            <p className="mt-2 text-sm font-semibold text-ink">这一天还没有行程</p>
+            <p className="mt-1 text-sm font-medium text-slate">先完成航班、酒店和演唱会信息，再逐步添加地点。</p>
             <button
               type="button"
               onClick={() => {
                 setEditing(true)
                 addEntry()
               }}
-              className="mt-3 inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-[11px] font-bold text-white active:opacity-90"
+              className="mt-3 inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-sm font-semibold text-white active:opacity-90"
             >
               <Plus size={13} />
               添加第一个地点
@@ -563,19 +563,19 @@ export default function Timeline() {
             {entries.map((entry, index) => (
               <div key={entry.id || `${activeDay}-${index}`} className="relative flex gap-3">
                 <div className="w-[52px] shrink-0 pt-3 text-right">
-                  <span className="text-[11px] font-black leading-tight text-ink">{entry.time}</span>
+                  <span className="text-sm font-semibold leading-tight text-ink">{entry.time}</span>
                 </div>
                 <div className="relative z-10 flex w-6 shrink-0 justify-center pt-3">
                   <span className="h-2.5 w-2.5 rounded-full border-2 border-white bg-blue shadow-sm" />
                 </div>
                 <div
-                  className={`mb-1 flex-1 rounded-lg border bg-white p-3.5 shadow-card ${
+                  className={`mb-2 flex-1 rounded-lg border bg-paper p-4 ${
                     entry.isBackup ? 'border-dashed border-sand bg-cream/60' : 'border-line'
                   } ${entry.status === 'completed' ? 'opacity-70' : ''}`}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-semibold ${
                         entry.isBackup ? 'bg-sand/70 text-slate' : 'bg-mist text-blue'
                       }`}
                     >
@@ -592,7 +592,7 @@ export default function Timeline() {
                               entry.status === 'completed' ? 'planned' : 'completed',
                             )
                           }
-                          className={`flex h-7 items-center gap-1 rounded-md border px-2 text-[10px] font-bold active:bg-cream ${
+                          className={`flex h-7 items-center gap-1 rounded-md border px-2 text-xs font-semibold active:bg-cream ${
                             entry.status === 'completed'
                               ? 'border-sage/40 bg-mist text-sage'
                               : 'border-line bg-white text-slate'
@@ -648,7 +648,7 @@ export default function Timeline() {
                         }}
                       />
                       <div>
-                        <span className="mb-1 block text-[10px] font-bold text-slate">交通方式</span>
+                        <span className="mb-1 block text-xs font-semibold text-slate">交通方式</span>
                         <div className="grid grid-cols-4 gap-1.5">
                           {['transit', 'walk', 'taxi', 'other'].map((mode) => {
                             const active = entry.transportMode === mode
@@ -657,7 +657,7 @@ export default function Timeline() {
                                 key={mode}
                                 type="button"
                                 onClick={() => patchEntry(index, 'transportMode', active ? undefined : mode)}
-                                className={`rounded-md border px-1 py-1.5 text-[10px] font-bold ${
+                                className={`rounded-md border px-1 py-1.5 text-xs font-semibold ${
                                   active ? 'border-blue bg-blue text-white' : 'border-line bg-white text-slate active:bg-cream'
                                 }`}
                               >
@@ -703,42 +703,42 @@ export default function Timeline() {
                   ) : (
                     <>
                       <h3
-                        className={`mt-2 text-[15px] font-black leading-snug ${
+                        className={`mt-2 text-lg font-semibold leading-snug ${
                           entry.status === 'completed' ? 'text-slate/60 line-through' : 'text-ink'
                         }`}
                       >
                         {entry.title}
                       </h3>
                       {entry.address && (
-                        <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate">{entry.address}</p>
+                        <p className="mt-1 text-sm font-normal leading-6 text-slate">{entry.address}</p>
                       )}
                       <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1.5">
                         {typeof entry.transport === 'string' && entry.transport !== '—' && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
+                          <span className="inline-flex items-center gap-1 text-sm font-medium text-slate">
                             <TransportIcon mode={entry.transportMode} />
                             {entry.transport}
                             {entry.transportCost ? <span className="text-slate/70"> · {entry.transportCost}</span> : null}
                           </span>
                         )}
                         {entry.transportEta && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
+                          <span className="inline-flex items-center gap-1 text-sm font-medium text-slate">
                             <Clock size={12} className="text-blue" />
                             {entry.transportEta}
                           </span>
                         )}
                         {entry.transportCostEstimate && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
+                          <span className="inline-flex items-center gap-1 text-sm font-medium text-slate">
                             <Wallet size={12} className="text-gold" />
                             {entry.transportCostEstimate}
                           </span>
                         )}
                         {entry.suggestedDeparture && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sage">
+                          <span className="inline-flex items-center gap-1 text-sm font-semibold text-sage">
                             建议出发 {entry.suggestedDeparture}
                           </span>
                         )}
                         {entry.cost && entry.cost !== '—' && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate">
+                          <span className="inline-flex items-center gap-1 text-sm font-medium text-slate">
                             <Wallet size={12} className="text-gold" />
                             {entry.cost}
                           </span>
@@ -749,7 +749,7 @@ export default function Timeline() {
                           {entry.recommend.map((r) => (
                             <span
                               key={r}
-                              className="rounded-md border border-blue/15 bg-mist/70 px-2 py-0.5 text-[10px] font-bold text-blue"
+                              className="rounded-md border border-blue/15 bg-mist/70 px-2 py-0.5 text-xs font-semibold text-blue"
                             >
                               {r}
                             </span>
@@ -761,16 +761,16 @@ export default function Timeline() {
                         <button
                           type="button"
                           onClick={() => generateTransport(index)}
-                          className="mt-2.5 inline-flex items-center gap-1 rounded-md bg-blue/10 px-2.5 py-1.5 text-[10px] font-bold text-blue active:bg-mist"
+                          className="mt-2.5 inline-flex items-center gap-1 rounded-md bg-blue/10 px-2.5 py-1.5 text-xs font-semibold text-blue active:bg-mist"
                         >
                           生成交通攻略
                         </button>
                       )}
                       {genError[index] && (
-                        <p className="mt-1.5 text-[10px] font-bold text-coral">{genError[index]}</p>
+                        <p className="mt-1.5 text-xs font-semibold text-coral">{genError[index]}</p>
                       )}
                       {entry.note && (
-                        <p className="mt-2.5 border-t border-line/70 pt-2 text-[11px] font-medium leading-relaxed text-slate">
+                        <p className="mt-2.5 border-t border-line/70 pt-2 text-sm font-medium leading-relaxed text-slate">
                           {entry.note}
                         </p>
                       )}
@@ -786,7 +786,7 @@ export default function Timeline() {
           <button
             type="button"
             onClick={addEntry}
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue/40 bg-mist/50 py-3 text-xs font-bold text-blue active:bg-mist"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue/40 bg-mist/50 py-3 text-xs font-semibold text-blue active:bg-mist"
           >
             <Plus size={15} />
             新增一个时间点

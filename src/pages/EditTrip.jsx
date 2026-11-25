@@ -33,7 +33,7 @@ const inputCls =
 function Field({ label, value, onChange, type = 'text', placeholder, readOnly = false, textarea = false }) {
   return (
     <label className="block min-w-0">
-      <span className="mb-1 block text-[10px] font-bold text-slate">{label}</span>
+      <span className="mb-1 block text-xs font-semibold text-slate">{label}</span>
       {textarea ? (
         <textarea
           rows={3}
@@ -175,17 +175,17 @@ export default function EditTrip({ onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-slate active:bg-cream"
+          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
         >
           <ArrowLeft size={14} />
           返回首页
         </button>
-        <span className="text-[11px] font-medium text-slate">保存后立即生效</span>
+        <span className="text-sm font-medium text-slate">保存后立即生效</span>
       </div>
 
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="text-[15px] font-black text-ink">基本信息</h2>
+          <h2 className="text-[15px] font-semibold text-ink">基本信息</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Field label="旅行ID（固定）" value={meta.tripId || getTripId()} readOnly onChange={() => {}} />
             <Field label="旅行名称" value={meta.title} placeholder="Seoul Trip Planner 2026" onChange={(v) => patchMeta('title', v)} />
@@ -210,7 +210,7 @@ export default function EditTrip({ onNavigate }) {
 
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-black text-ink">
+          <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
             <Music4 size={15} className="text-coral" />
             演唱会
           </h2>
@@ -229,15 +229,15 @@ export default function EditTrip({ onNavigate }) {
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-1.5 text-[15px] font-black text-ink">
+            <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
               <Plane size={15} className="text-blue" />
               航班
             </h2>
-            <span className="text-[11px] font-bold text-slate">可增删航班段</span>
+            <span className="text-sm font-semibold text-slate">可增删航班段</span>
           </div>
           {['outbound', 'return'].map((side) => (
             <div key={side} className="mt-3">
-              <p className="text-xs font-bold text-slate">{side === 'outbound' ? '去程' : '回程'}</p>
+              <p className="text-xs font-semibold text-slate">{side === 'outbound' ? '去程' : '回程'}</p>
               <div className="mt-2 space-y-2.5">
                 {flightData[side].map((flight, index) => (
                   <div key={`${side}-${index}`} className="rounded-md border border-line bg-cream/50 p-2.5">
@@ -262,7 +262,7 @@ export default function EditTrip({ onNavigate }) {
                 <button
                   type="button"
                   onClick={() => addFlight(side)}
-                  className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-[11px] font-bold text-blue active:opacity-90"
+                  className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-sm font-semibold text-blue active:opacity-90"
                 >
                   <Plus size={13} />
                   添加航班段
@@ -275,11 +275,11 @@ export default function EditTrip({ onNavigate }) {
 
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-black text-ink">
+          <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
             <BedDouble size={15} className="text-gold" />
             酒店
           </h2>
-          <p className="mt-1 flex items-center gap-1 text-[10px] font-medium text-slate">
+          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-slate">
             <FileText size={11} />
             留空的航班、酒店与时间会原样保留，方便后续补充
           </p>
@@ -287,7 +287,7 @@ export default function EditTrip({ onNavigate }) {
             {hotelData.map((hotel, index) => (
               <div key={hotel.locationId || index} className="rounded-md border border-line bg-cream/50 p-2.5">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-[11px] font-bold text-slate">第 {index + 1} 晚 · {hotel.night || '日期待填写'}</p>
+                  <p className="text-sm font-semibold text-slate">第 {index + 1} 晚 · {hotel.night || '日期待填写'}</p>
                   <button
                     type="button"
                     onClick={() => removeHotel(index)}
@@ -331,7 +331,7 @@ export default function EditTrip({ onNavigate }) {
             <button
               type="button"
               onClick={addHotel}
-              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-[11px] font-bold text-blue active:opacity-90"
+              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-sm font-semibold text-blue active:opacity-90"
             >
               <Plus size={13} />
               添加酒店
@@ -342,14 +342,14 @@ export default function EditTrip({ onNavigate }) {
 
       <section className="mt-4 px-4">
         <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-black text-ink">
+          <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
             <Users size={15} className="text-sage" />
             旅行成员
           </h2>
           <div className="mt-3 space-y-3">
             {travelerData.map((traveler, index) => (
               <div key={traveler.id} className="rounded-md border border-line bg-cream/50 p-2.5">
-                <p className="text-[11px] font-bold text-slate">成员 {index + 1}</p>
+                <p className="text-sm font-semibold text-slate">成员 {index + 1}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <Field label="姓名" value={traveler.name} placeholder="姓名" onChange={(v) => patchTraveler(index, 'name', v)} />
                   <Field label="备注" value={traveler.note || ''} placeholder="27 岁" onChange={(v) => patchTraveler(index, 'note', v)} />
@@ -361,15 +361,15 @@ export default function EditTrip({ onNavigate }) {
       </section>
 
       <section className="mt-4 px-4">
-        <div className="rounded-lg border border-blue/15 bg-gradient-to-br from-mist via-white to-cream p-4 shadow-card">
-          <h2 className="text-[15px] font-black text-ink">云同步（Supabase）</h2>
-          <p className="mt-1 text-[11px] font-medium leading-relaxed text-slate">
+        <div className="border-y border-line bg-cream/30 p-4">
+          <h2 className="text-[15px] font-semibold text-ink">云同步（Supabase）</h2>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-slate">
             填写 Supabase 项目地址和 anon key 后，修改会自动上传；其他设备刷新后同步。
           </p>
           <div className="mt-3 space-y-2">
             <Field label="Project URL" value={cloudConfig.url} placeholder="https://xxxx.supabase.co" onChange={(v) => setCloudConfig({ ...cloudConfig, url: v })} />
             <label className="block min-w-0">
-              <span className="mb-1 block text-[10px] font-bold text-slate">Anon Key</span>
+              <span className="mb-1 block text-xs font-semibold text-slate">Anon Key</span>
               <input
                 type="password"
                 className={inputCls}
@@ -379,7 +379,7 @@ export default function EditTrip({ onNavigate }) {
               />
             </label>
             <label className="block min-w-0">
-              <span className="mb-1 block text-[10px] font-bold text-slate">Naver Maps Client ID（可选，填了地图切换为 Naver）</span>
+              <span className="mb-1 block text-xs font-semibold text-slate">Naver Maps Client ID（可选，填了地图切换为 Naver）</span>
               <input
                 className={inputCls}
                 value={naverId}
@@ -392,12 +392,12 @@ export default function EditTrip({ onNavigate }) {
             <button
               type="button"
               onClick={connectCloud}
-              className="inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-xs font-bold text-white active:opacity-90"
+              className="inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-xs font-semibold text-white active:opacity-90"
             >
               <Check size={14} />
               保存并连接
             </button>
-            <span className="text-[11px] font-bold text-slate">{cloudStatus}</span>
+            <span className="text-sm font-semibold text-slate">{cloudStatus}</span>
           </div>
         </div>
       </section>
@@ -407,7 +407,7 @@ export default function EditTrip({ onNavigate }) {
           <button
             type="button"
             onClick={save}
-            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink py-3 text-sm font-bold text-white active:opacity-90"
+            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink py-3 text-sm font-semibold text-white active:opacity-90"
           >
             <Check size={16} />
             保存全部修改
@@ -415,7 +415,7 @@ export default function EditTrip({ onNavigate }) {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-4 py-3 text-xs font-bold text-slate active:bg-cream"
+            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-4 py-3 text-xs font-semibold text-slate active:bg-cream"
           >
             <RotateCcw size={15} />
             恢复默认

@@ -211,52 +211,52 @@ export default function Ledger() {
     <div>
       <PageHeader eyebrow="Travel Ledger" title="旅行账本" subtitle="汇率换算 · AA 结算 · 分类统计" />
 
-      <section className="mt-4 px-4">
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-line bg-white p-3 shadow-card">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue">
+      <section className="mt-4 px-5 lg:px-10">
+        <div className="flex items-center justify-between gap-3 border-y border-line py-3">
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue">
             <RefreshCw size={13} />
             汇率：1 RMB ≈
           </span>
           <input
             type="number"
             min="1"
-            className="w-20 rounded-md border border-line bg-white px-2 py-1.5 text-right text-sm font-black text-ink outline-none focus:border-blue"
+            className="w-20 rounded-md border border-line bg-white px-2 py-1.5 text-right text-sm font-semibold text-ink outline-none focus:border-blue"
             value={rate}
             onChange={(e) => setRate(e.target.value)}
           />
-          <span className="text-[11px] font-bold text-slate">KRW</span>
+          <span className="text-sm font-semibold text-slate">KRW</span>
         </div>
       </section>
 
-      <section className="mt-3 px-4">
-        <div className="grid grid-cols-3 gap-2.5">
-          <div className="rounded-lg border border-line bg-white p-3 text-center shadow-card">
+      <section className="mt-4 px-5 lg:px-10">
+        <div className="grid grid-cols-3 border-y border-line">
+          <div className="py-4 text-center">
             <Wallet size={15} className="mx-auto text-blue" />
-            <p className="mt-1.5 text-[10px] font-bold text-slate">累计支出</p>
-            <p className="mt-0.5 text-sm font-black text-ink">{Math.round(expenseTotal)}</p>
+            <p className="mt-1.5 text-xs font-semibold text-slate">累计支出</p>
+            <p className="mt-0.5 text-sm font-semibold text-ink">{Math.round(expenseTotal)}</p>
           </div>
-          <div className="rounded-lg border border-line bg-white p-3 text-center shadow-card">
+          <div className="border-l border-line py-4 text-center">
             <TrendingUp size={15} className="mx-auto text-sage" />
-            <p className="mt-1.5 text-[10px] font-bold text-slate">累计收入</p>
-            <p className="mt-0.5 text-sm font-black text-ink">{Math.round(incomeTotal)}</p>
+            <p className="mt-1.5 text-xs font-semibold text-slate">累计收入</p>
+            <p className="mt-0.5 text-sm font-semibold text-ink">{Math.round(incomeTotal)}</p>
           </div>
-          <div className="rounded-lg border border-line bg-white p-3 text-center shadow-card">
+          <div className="border-l border-line py-4 text-center">
             <CalendarDays size={15} className="mx-auto text-gold" />
-            <p className="mt-1.5 text-[10px] font-bold text-slate">记录笔数</p>
-            <p className="mt-0.5 text-sm font-black text-ink">{entries.length}</p>
+            <p className="mt-1.5 text-xs font-semibold text-slate">记录笔数</p>
+            <p className="mt-0.5 text-sm font-semibold text-ink">{entries.length}</p>
           </div>
         </div>
       </section>
 
       {travelers.length > 0 && (
-        <section className="mt-3 px-4">
-          <div className="rounded-lg border border-blue/15 bg-gradient-to-br from-mist via-white to-cream p-4 shadow-card">
+        <section className="mt-4 px-5 lg:px-10">
+          <div className="border-y border-line bg-mist/25 px-4 py-5">
             <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-1.5 text-[14px] font-black text-ink">
+              <h2 className="flex items-center gap-1.5 text-xl font-semibold text-ink">
                 <Users size={15} className="text-blue" />
                 AA 结算
               </h2>
-              <span className="text-[10px] font-bold text-slate">
+              <span className="text-xs font-semibold text-slate">
                 应收 {Math.round(receiveTotal)} · 应付 {Math.round(oweTotal)}
               </span>
             </div>
@@ -264,30 +264,30 @@ export default function Ledger() {
               {aa.map((row) => (
                 <div key={row.traveler.id} className="rounded-md border border-line bg-white p-2.5">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-black text-ink">{row.traveler.name}</p>
-                    <p className={`text-xs font-black ${row.diff >= 0 ? 'text-sage' : 'text-coral'}`}>
+                    <p className="text-xs font-semibold text-ink">{row.traveler.name}</p>
+                    <p className={`text-xs font-semibold ${row.diff >= 0 ? 'text-sage' : 'text-coral'}`}>
                       {row.diff >= 0 ? '应收回' : '应补出'} {Math.round(Math.abs(row.diff))} RMB
                     </p>
                   </div>
                   <div className="mt-1.5 grid grid-cols-3 gap-2 text-center">
                     <div>
-                      <p className="text-[9px] font-bold text-slate">应承担</p>
-                      <p className="text-[11px] font-bold text-ink">{Math.round(row.share)}</p>
+                      <p className="text-xs font-semibold text-slate">应承担</p>
+                      <p className="text-sm font-semibold text-ink">{Math.round(row.share)}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold text-slate">实际支付</p>
-                      <p className="text-[11px] font-bold text-ink">{Math.round(row.paid)}</p>
+                      <p className="text-xs font-semibold text-slate">实际支付</p>
+                      <p className="text-sm font-semibold text-ink">{Math.round(row.paid)}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold text-slate">补差</p>
-                      <p className="text-[11px] font-black text-ink">{Math.round(row.diff)}</p>
+                      <p className="text-xs font-semibold text-slate">补差</p>
+                      <p className="text-sm font-semibold text-ink">{Math.round(row.diff)}</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
             {settlement && (
-              <p className="mt-2.5 rounded-md bg-ink px-3 py-2 text-[12px] font-bold text-white">
+              <p className="mt-2.5 rounded-md bg-ink px-3 py-2 text-sm font-semibold text-white">
                 {settlement.from} 需付 {settlement.to} {Math.round(settlement.amount)} RMB
               </p>
             )}
@@ -295,15 +295,15 @@ export default function Ledger() {
         </section>
       )}
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="text-[15px] font-black text-ink">{form.id ? '编辑这笔消费' : '记一笔'}</h2>
+      <section className="mt-6 px-5 lg:px-10">
+        <div className="border-y border-line py-5">
+          <h2 className="text-xl font-semibold text-ink">{form.id ? '编辑这笔消费' : '记一笔'}</h2>
           <div className="mt-2.5 flex items-center gap-2">
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={ocrBusy}
-              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-2 text-[11px] font-bold text-blue active:opacity-90 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-2 text-sm font-semibold text-blue active:opacity-90 disabled:opacity-50"
             >
               <Camera size={13} />
               {ocrBusy ? '识别中...' : '上传小票识别（OCR）'}
@@ -316,16 +316,16 @@ export default function Ledger() {
               className="hidden"
               onChange={handleReceiptFile}
             />
-            {ocrError && <span className="text-[10px] font-bold text-coral">{ocrError}</span>}
+            {ocrError && <span className="text-xs font-semibold text-coral">{ocrError}</span>}
           </div>
           <form onSubmit={save} className="mt-3 space-y-2.5">
             <div className="grid grid-cols-2 gap-2">
               <label className="block min-w-0">
-                <span className="mb-1 block text-[10px] font-bold text-slate">日期</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">日期</span>
                 <input type="date" className={inputCls} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
               </label>
               <label className="block min-w-0">
-                <span className="mb-1 block text-[10px] font-bold text-slate">分类</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">分类</span>
                 <select className={inputCls} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
@@ -336,22 +336,22 @@ export default function Ledger() {
               </label>
             </div>
             <label className="block min-w-0">
-              <span className="mb-1 block text-[10px] font-bold text-slate">店名 / 商家</span>
+              <span className="mb-1 block text-xs font-semibold text-slate">店名 / 商家</span>
               <input className={inputCls} placeholder="店名/商家" value={form.merchant} onChange={(e) => setForm({ ...form, merchant: e.target.value })} />
             </label>
             <div className="grid grid-cols-2 gap-2">
               <label className="block min-w-0">
-                <span className="mb-1 block text-[10px] font-bold text-slate">韩元金额</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">韩元金额</span>
                 <input type="number" min="0" inputMode="decimal" placeholder="韩元金额" className={inputCls} value={form.amountKRW} onChange={(e) => handleKRW(e.target.value)} />
               </label>
               <label className="block min-w-0">
-                <span className="mb-1 block text-[10px] font-bold text-slate">人民币金额 ≈</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">人民币金额 ≈</span>
                 <input type="number" min="0" inputMode="decimal" placeholder="人民币金额" className={inputCls} value={form.amountRMB} onChange={(e) => handleRMB(e.target.value)} />
               </label>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <label className="block min-w-0">
-                <span className="mb-1 block text-[10px] font-bold text-slate">支付人</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">支付人</span>
                 <select className={inputCls} value={form.payer} onChange={(e) => setForm({ ...form, payer: e.target.value })}>
                   <option value="">未选择</option>
                   {travelers.map((t) => (
@@ -362,13 +362,13 @@ export default function Ledger() {
                 </select>
               </label>
               <label className="block min-w-0">
-                <span className="mb-1 block text-[10px] font-bold text-slate">备注</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">备注</span>
                 <input className={inputCls} placeholder="备注" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
               </label>
             </div>
             {travelers.length > 0 && (
               <div>
-                <span className="mb-1 block text-[10px] font-bold text-slate">参与人</span>
+                <span className="mb-1 block text-xs font-semibold text-slate">参与人</span>
                 <div className="flex flex-wrap gap-2">
                   {travelers.map((t) => {
                     const active = form.participants.includes(t.id)
@@ -377,7 +377,7 @@ export default function Ledger() {
                         key={t.id}
                         type="button"
                         onClick={() => toggleParticipant(t.id)}
-                        className={`rounded-full border px-3 py-1.5 text-[11px] font-bold ${
+                        className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${
                           active ? 'border-blue bg-blue text-white' : 'border-line bg-white text-slate'
                         }`}
                       >
@@ -391,7 +391,7 @@ export default function Ledger() {
             <div className="flex gap-2">
               <button
                 type="submit"
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink py-2.5 text-xs font-bold text-white active:opacity-90"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink py-2.5 text-xs font-semibold text-white active:opacity-90"
               >
                 {form.id ? <Check size={14} /> : <Plus size={14} />}
                 {form.id ? '保存修改' : '记入账本'}
@@ -400,7 +400,7 @@ export default function Ledger() {
                 <button
                   type="button"
                   onClick={() => setForm(blankForm(rate))}
-                  className="inline-flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2.5 text-xs font-bold text-slate active:bg-cream"
+                  className="inline-flex items-center gap-1 rounded-md border border-line bg-white px-3 py-2.5 text-xs font-semibold text-slate active:bg-cream"
                 >
                   <X size={14} />
                   取消
@@ -411,16 +411,16 @@ export default function Ledger() {
         </div>
       </section>
 
-      <section className="mt-5 px-4">
+      <section className="mt-8 px-5 lg:px-10">
         <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-base font-bold text-ink">分类统计</h2>
-          <span className="text-[11px] font-bold text-slate">合计 {Math.round(expenseTotal)} RMB</span>
+          <h2 className="font-display text-[24px] font-semibold text-ink">分类统计</h2>
+          <span className="text-sm font-semibold text-slate">合计 {Math.round(expenseTotal)} RMB</span>
         </div>
-        <div className="space-y-2.5 rounded-lg border border-line bg-white p-4 shadow-card">
+        <div className="space-y-4 border-y border-line py-5">
           {catTotals.length === 0 && <p className="text-xs font-medium text-slate">还没有支出记录，先记一笔吧。</p>}
           {catTotals.map((item) => (
             <div key={item.category}>
-              <div className="flex items-center justify-between text-xs font-bold">
+              <div className="flex items-center justify-between text-xs font-semibold">
                 <span className="text-ink">{item.category}</span>
                 <span className="text-slate">
                   {Math.round(item.total)} RMB · {expenseTotal ? Math.round((item.total / expenseTotal) * 100) : 0}%
@@ -428,7 +428,7 @@ export default function Ledger() {
               </div>
               <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-cream">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-blue to-sage"
+                  className="h-full rounded-full bg-blue"
                   style={{ width: `${Math.round((item.total / maxCat) * 100)}%` }}
                 />
               </div>
@@ -437,28 +437,28 @@ export default function Ledger() {
         </div>
       </section>
 
-      <section className="mt-5 px-4">
+      <section className="mt-8 px-5 pb-12 lg:px-10">
         <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-base font-bold text-ink">收支明细</h2>
-          <span className="text-[11px] font-bold text-slate">{sorted.length} 笔</span>
+          <h2 className="font-display text-[24px] font-semibold text-ink">收支明细</h2>
+          <span className="text-sm font-semibold text-slate">{sorted.length} 笔</span>
         </div>
-        <div className="space-y-2">
+        <div className="border-t border-line">
           {sorted.map((entry) => (
-            <div key={entry.id} className="flex items-center gap-3 rounded-lg border border-line bg-white p-3 shadow-card">
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-black text-white ${entry.type === 'income' ? 'bg-sage' : 'bg-blue'}`}>
+            <div key={entry.id} className="flex items-center gap-3 border-b border-line py-4">
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white ${entry.type === 'income' ? 'bg-sage' : 'bg-blue'}`}>
                 {entry.type === 'income' ? '+' : '-'}
               </span>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate text-[13px] font-black text-ink">{entry.merchant || entry.note || entry.category}</p>
-                  <span className="shrink-0 rounded-md bg-cream px-1.5 py-0.5 text-[9px] font-bold text-gold">{entry.category}</span>
+                  <p className="truncate text-sm font-semibold text-ink">{entry.merchant || entry.note || entry.category}</p>
+                  <span className="shrink-0 rounded-md bg-cream px-1.5 py-0.5 text-xs font-semibold text-gold">{entry.category}</span>
                 </div>
-                <p className="mt-0.5 text-[10px] font-medium text-slate">
+                <p className="mt-0.5 text-xs font-medium text-slate">
                   {entry.date}
                   {entry.amountKRW ? ` · ${entry.amountKRW} KRW ≈ ${Math.round(entry.amountRMB)} RMB` : ''}
                 </p>
               </div>
-              <p className={`text-sm font-black ${entry.type === 'income' ? 'text-sage' : 'text-ink'}`}>
+              <p className={`text-sm font-semibold ${entry.type === 'income' ? 'text-sage' : 'text-ink'}`}>
                 {entry.type === 'income' ? '+' : '-'}
                 {Math.round(entry.amountRMB || 0)}
               </p>

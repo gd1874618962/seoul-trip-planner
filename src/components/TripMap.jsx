@@ -6,14 +6,14 @@ import { getDays, getTripMeta } from '../data/store'
 import NaverMap, { getNaverClientId } from './NaverMap'
 
 export const dayColors = {
-  1: '#4B7B9C',
-  2: '#7E9B85',
-  3: '#D97B5F',
-  4: '#2E4A5C',
+  1: '#657E80',
+  2: '#7B8F82',
+  3: '#A47D6C',
+  4: '#445B5E',
 }
 
 function makeIcon(num, color, highlighted = false, selected = false) {
-  const markerColor = color || '#4B7B9C'
+  const markerColor = color || '#536E6F'
   return L.divIcon({
     className: 'trip-marker-wrap',
     html: `<div class="trip-marker${highlighted ? ' trip-marker-key' : ''}${selected ? ' trip-marker-selected' : ''}" style="--marker-color:${markerColor}">${num}</div>`,
@@ -139,9 +139,9 @@ export default function TripMap({
             eventHandlers={{ click: () => onSelectPoint?.(p.locationId) }}
           >
             <Popup>
-              <div className="min-w-[160px] text-[13px]">
-                <p className="font-bold text-ink">{p.displayName || p.name}</p>
-                <p className="mt-0.5 text-[11px] text-slate">{p.officialAddress || p.address}</p>
+              <div className="min-w-[160px] text-sm">
+                <p className="font-semibold text-ink">{p.displayName || p.name}</p>
+                <p className="mt-0.5 text-sm text-slate">{p.officialAddress || p.address}</p>
                 <a
                   href={
                     tripMeta.tripId === 'seoul-2026'
@@ -150,7 +150,7 @@ export default function TripMap({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 inline-flex bg-ink px-2.5 py-1 text-[11px] font-semibold text-paper"
+                  className="mt-2 inline-flex bg-ink px-2.5 py-1 text-sm font-semibold text-paper"
                 >
                   在地图打开
                 </a>

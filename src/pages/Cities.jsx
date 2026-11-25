@@ -19,7 +19,7 @@ function CityCover({ trip }) {
       <div className="absolute -right-14 top-10 h-52 w-52 rounded-full border border-ink/20" />
       <div className="absolute -right-2 top-22 h-36 w-36 rounded-full border border-ink/15" />
       <p className="editorial-label absolute left-6 top-6">3.1390 N / 101.6869 E</p>
-      <p className="absolute bottom-7 left-6 max-w-[85%] font-display text-[44px] leading-[0.9] text-ink/80 sm:text-[58px]">
+      <p className="absolute bottom-7 left-6 max-w-[85%] font-display text-[36px] font-semibold leading-[0.95] text-ink/80 sm:text-[44px]">
         KUALA<br />LUMPUR
       </p>
     </div>
@@ -47,20 +47,20 @@ export default function Cities({ onSelectTrip }) {
         <header>
           <div className="flex items-center justify-between border-b border-ink/20 pb-4">
             <p className="editorial-label text-ink">Field notes / Travel archive</p>
-            <p className="text-[10px] font-medium text-slate">2026-2027</p>
+            <p className="text-xs font-medium text-slate">2026-2027</p>
           </div>
           <div className="grid gap-8 pb-9 pt-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end lg:pb-12 lg:pt-16">
             <div>
               <p className="editorial-label text-gold">Personal travel index</p>
-              <h1 className="mt-4 max-w-3xl font-display text-[58px] leading-[0.88] text-ink sm:text-[76px] lg:text-[108px]">
+              <h1 className="mt-4 max-w-3xl font-display text-[42px] font-semibold leading-[1.02] text-ink sm:text-[48px]">
                 我的旅行
               </h1>
             </div>
             <div className="border-t border-ink/20 pt-4 lg:border-l lg:border-t-0 lg:pl-8">
-              <p className="max-w-sm text-[13px] leading-6 text-slate">
+              <p className="max-w-sm text-[15px] leading-7 text-slate">
                 收藏每一座去过的城市，也为下一次出发留好位置。旅行资料、地点与现场记录都从这里开始。
               </p>
-              <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink">
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink">
                 {trips.length} journeys archived
               </p>
             </div>
@@ -86,14 +86,14 @@ export default function Cities({ onSelectTrip }) {
                 <div className="flex items-end justify-between gap-4">
                   <div className="min-w-0">
                     <p className="editorial-label text-gold">{trip.country}</p>
-                    <h2 className="mt-2 font-display text-[38px] leading-none text-ink sm:text-[46px]">{trip.cityCn}</h2>
-                    <p className="mt-1 text-[12px] text-slate">{trip.city}</p>
+                    <h2 className="mt-2 font-display text-[28px] font-semibold leading-none text-ink sm:text-[32px]">{trip.cityCn}</h2>
+                    <p className="mt-1 text-sm text-slate">{trip.city}</p>
                   </div>
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/30 text-ink transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
                     <ArrowUpRight size={17} />
                   </span>
                 </div>
-                <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-2 border-t border-ink/15 pt-3 text-[11px]">
+                <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-2 border-t border-ink/15 pt-3 text-sm">
                   <span className="flex items-center gap-1.5 font-semibold text-ink">
                     <CalendarDays size={13} className="text-gold" />
                     {trip.dates}
@@ -111,7 +111,7 @@ export default function Cities({ onSelectTrip }) {
         <button
           type="button"
           onClick={() => window.alert('新增旅行城市入口已预留，下一阶段可继续接入新城市。')}
-          className="flex w-full items-center justify-between border-y border-ink/20 py-5 text-left text-[12px] font-semibold text-slate transition-colors hover:text-ink"
+          className="flex w-full items-center justify-between border-y border-ink/20 py-5 text-left text-sm font-semibold text-slate transition-colors hover:text-ink"
         >
           <span className="flex items-center gap-2">
             <Plus size={16} />

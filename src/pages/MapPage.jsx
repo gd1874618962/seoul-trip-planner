@@ -73,7 +73,7 @@ function SeoulMapPage() {
                   key={f.id}
                   type="button"
                   onClick={() => setFilter(f.id)}
-                  className={`shrink-0 border px-3 py-2 text-[10px] font-semibold ${
+                  className={`shrink-0 border px-3 py-2 text-xs font-semibold ${
                     active ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate active:bg-cream'
                   }`}
                 >
@@ -82,7 +82,7 @@ function SeoulMapPage() {
               )
             })}
           </div>
-          <p className="shrink-0 text-[10px] text-slate">{filtered.length} 个地点</p>
+          <p className="shrink-0 text-xs text-slate">{filtered.length} 个地点</p>
         </section>
 
         <div className="mt-5 grid gap-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:items-start">
@@ -90,7 +90,7 @@ function SeoulMapPage() {
             <TripMap items={filtered} heightClass="h-[320px] lg:h-[600px]" />
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
               {daysList.map((day) => (
-                <span key={day.id} className="inline-flex items-center gap-1.5 text-[9px] text-slate">
+                <span key={day.id} className="inline-flex items-center gap-1.5 text-xs text-slate">
                   <span className="h-px w-4" style={{ backgroundColor: dayColors[day.id] }} />
                   {day.label}
                 </span>
@@ -100,23 +100,23 @@ function SeoulMapPage() {
 
           <section className="min-w-0">
             <div className="flex items-end justify-between border-b border-ink/20 pb-3">
-              <h2 className="font-display text-[26px] leading-none text-ink">点位列表</h2>
+              <h2 className="font-display text-[24px] font-semibold leading-none text-ink">点位列表</h2>
               <span className="editorial-label text-slate">Map index</span>
             </div>
             <div>
               {filtered.map((p) => (
                 <div key={p.id} className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-start gap-3 border-b border-ink/15 py-4">
-                  <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-ink/30 text-[10px] font-semibold text-ink">
+                  <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-ink/30 text-xs font-semibold text-ink">
                     {p.markerNo}
                   </span>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-[13px] font-semibold text-ink">{p.displayName}</p>
-                      <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.12em] text-gold">
+                      <p className="truncate text-base font-medium text-ink">{p.displayName}</p>
+                      <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-gold">
                         Day {p.day}
                       </span>
                     </div>
-                    <p className="mt-1 flex items-start gap-1 text-[10px] leading-relaxed text-slate">
+                    <p className="mt-1 flex items-start gap-1 text-sm leading-6 text-slate">
                       <MapPin size={10} className="mt-0.5 shrink-0" />
                       <span className="line-clamp-2">{p.officialAddress}</span>
                     </p>
@@ -129,7 +129,7 @@ function SeoulMapPage() {
                     }
                     target="_blank"
                     rel="noreferrer"
-                    className="flex shrink-0 items-center gap-1 border-b border-ink/30 pb-0.5 text-[10px] font-semibold text-ink"
+                    className="flex shrink-0 items-center gap-1 border-b border-ink/30 pb-0.5 text-xs font-semibold text-ink"
                   >
                     导航
                     <ExternalLink size={10} />

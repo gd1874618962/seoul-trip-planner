@@ -84,22 +84,22 @@ function ReminderCard({
   }
 
   return (
-    <section className="rounded-lg border border-line bg-white p-4 shadow-card">
+    <section className="border-b border-line py-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist text-blue">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-slate">
             <Icon size={18} />
           </span>
           {editing ? (
             <input
               value={group.title}
               onChange={(e) => onChange({ title: e.target.value })}
-              className="w-40 rounded-md border border-line bg-white px-2 py-1.5 text-sm font-black text-ink outline-none focus:border-blue"
+              className="w-40 rounded-md border border-line bg-white px-2 py-1.5 text-sm font-semibold text-ink outline-none focus:border-blue"
             />
           ) : (
             <div>
-              <h2 className="text-[15px] font-black text-ink">{group.title}</h2>
-              <p className="text-[10px] font-bold text-slate">
+              <h2 className="text-xl font-semibold text-ink">{group.title}</h2>
+              <p className="text-xs font-semibold text-slate">
                 {done} / {group.items.length} 已完成
               </p>
             </div>
@@ -156,7 +156,7 @@ function ReminderCard({
                   next[index] = e.target.value
                   onChange({ items: next })
                 }}
-                className="min-w-0 flex-1 rounded-md border border-line bg-white px-2.5 py-2 text-[13px] font-medium text-ink outline-none focus:border-blue"
+                className="min-w-0 flex-1 rounded-md border border-line bg-white px-2.5 py-2 text-sm font-medium text-ink outline-none focus:border-blue"
               />
               <div className="flex shrink-0 items-center gap-1">
                 <button
@@ -192,7 +192,7 @@ function ReminderCard({
               key={`${group.id}-${index}`}
               type="button"
               onClick={() => toggle(index)}
-              className="flex w-full items-start gap-2.5 rounded-md px-2 py-2 text-left active:bg-cream/60"
+              className="flex w-full items-start gap-3 rounded-md px-1 py-2.5 text-left active:bg-cream/60"
             >
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
@@ -201,7 +201,7 @@ function ReminderCard({
               >
                 <Check size={12} strokeWidth={3} />
               </span>
-              <span className={`flex-1 text-[13px] font-medium leading-relaxed ${checks[index] ? 'text-slate/60 line-through' : 'text-ink'}`}>
+              <span className={`flex-1 text-sm font-medium leading-relaxed ${checks[index] ? 'text-slate/60 line-through' : 'text-ink'}`}>
                 {item}
               </span>
             </button>
@@ -214,7 +214,7 @@ function ReminderCard({
           <button
             type="button"
             onClick={() => onChange({ items: [...group.items, '新提醒'] })}
-            className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-[11px] font-bold text-blue active:opacity-90"
+            className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-sm font-semibold text-blue active:opacity-90"
           >
             <Plus size={13} />
             添加一条
@@ -222,7 +222,7 @@ function ReminderCard({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1.5 text-[11px] font-bold text-slate active:bg-cream"
+            className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1.5 text-sm font-semibold text-slate active:bg-cream"
           >
             <RotateCcw size={13} />
             恢复默认
@@ -299,13 +299,13 @@ export default function Reminders() {
     <div>
       <PageHeader eyebrow="Checklist" title="旅行提醒" subtitle="逐项打勾，出发前过一遍" />
 
-      <div className="mx-4 mt-3 flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 px-5 pt-4 lg:px-10">
         {editing ? (
           <>
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-xs font-bold text-white active:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-xs font-semibold text-white active:opacity-90"
             >
               <Check size={14} />
               完成编辑
@@ -313,7 +313,7 @@ export default function Reminders() {
             <button
               type="button"
               onClick={resetAll}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-slate active:bg-cream"
+              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
             >
               <RotateCcw size={14} />
               全部恢复默认
@@ -323,23 +323,23 @@ export default function Reminders() {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-mist px-3 py-2 text-xs font-bold text-blue active:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-md bg-mist px-3 py-2 text-xs font-semibold text-blue active:opacity-90"
           >
             <Pencil size={14} />
             编辑提醒
           </button>
         )}
-        <span className="text-[11px] font-medium text-slate">
+        <span className="text-sm font-medium text-slate">
           {editing ? '改完自动保存到本机' : '勾选状态会保存在本机'}
         </span>
       </div>
 
-      <section className="mt-3.5 space-y-3.5 px-4">
+      <section className="mt-4 px-5 pb-12 lg:px-10">
         {groups.length === 0 && !editing && (
           <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
             <ClipboardList size={22} className="mx-auto text-gold" />
-            <p className="mt-2 text-sm font-black text-ink">还没有提醒清单</p>
-            <p className="mt-1 text-[11px] font-medium text-slate">进入编辑模式后可以新增机场、演唱会和行李提醒。</p>
+            <p className="mt-2 text-sm font-semibold text-ink">还没有提醒清单</p>
+            <p className="mt-1 text-sm font-medium text-slate">进入编辑模式后可以新增机场、演唱会和行李提醒。</p>
           </div>
         )}
         {groups.map((group, index) => (
@@ -360,7 +360,7 @@ export default function Reminders() {
           <button
             type="button"
             onClick={addGroup}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue/40 bg-mist/50 py-3 text-xs font-bold text-blue active:bg-mist"
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue/40 bg-mist/50 py-3 text-xs font-semibold text-blue active:bg-mist"
           >
             <Plus size={15} />
             新增提醒块

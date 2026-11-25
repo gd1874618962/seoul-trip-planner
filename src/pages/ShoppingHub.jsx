@@ -10,7 +10,7 @@ export default function ShoppingHub({ onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-bold text-slate active:bg-cream"
+          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
         >
           <ArrowLeft size={14} />
           返回首页
@@ -21,27 +21,27 @@ export default function ShoppingHub({ onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('shoppingDaisy')}
-          className="flex w-full items-center gap-3 rounded-lg border border-blue/20 bg-gradient-to-br from-mist via-white to-cream p-4 text-left shadow-card active:opacity-90"
+          className="flex w-full items-center gap-3 border-y border-line bg-mist/30 p-4 text-left active:opacity-90"
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue text-white">
             <ShoppingBag size={20} />
           </span>
           <div>
-            <p className="text-base font-black text-ink">DAISY 代购</p>
-            <p className="mt-0.5 text-[11px] font-medium text-slate">独立订单 · 独立统计</p>
+            <p className="text-base font-semibold text-ink">DAISY 代购</p>
+            <p className="mt-0.5 text-sm font-medium text-slate">独立订单 · 独立统计</p>
           </div>
         </button>
         <button
           type="button"
           onClick={() => onNavigate('shoppingWutong')}
-          className="flex w-full items-center gap-3 rounded-lg border border-sage/20 bg-gradient-to-br from-cream via-white to-mist p-4 text-left shadow-card active:opacity-90"
+          className="flex w-full items-center gap-3 border-y border-line bg-cream/35 p-4 text-left active:opacity-90"
         >
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-sage text-white">
             <ShoppingBag size={20} />
           </span>
           <div>
-            <p className="text-base font-black text-ink">梧桐代购</p>
-            <p className="mt-0.5 text-[11px] font-medium text-slate">独立订单 · 独立统计</p>
+            <p className="text-base font-semibold text-ink">梧桐代购</p>
+            <p className="mt-0.5 text-sm font-medium text-slate">独立订单 · 独立统计</p>
           </div>
         </button>
       </section>

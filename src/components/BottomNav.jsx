@@ -8,7 +8,7 @@ export default function BottomNav({ current, trip, onNavigate, onSwitch }) {
         <button type="button" onClick={onSwitch} className="hidden border-b border-ink/15 pb-5 text-left lg:block">
           <p className="editorial-label text-gold">Travel archive</p>
           <p className="mt-3 font-display text-2xl leading-tight text-ink">{trip.cityCn}</p>
-          <p className="mt-1 text-[11px] text-slate">{trip.city} · {trip.dates}</p>
+          <p className="mt-1 text-sm text-slate">{trip.city} · {trip.dates}</p>
         </button>
 
         <div className="grid lg:mt-8 lg:block lg:space-y-1" style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}>
@@ -20,7 +20,7 @@ export default function BottomNav({ current, trip, onNavigate, onSwitch }) {
                 key={tab.id}
                 type="button"
                 onClick={() => onNavigate(tab.id)}
-                className={`group relative flex min-w-0 flex-col items-center gap-1 py-1 text-[9px] font-medium transition-colors lg:w-full lg:flex-row lg:gap-3 lg:py-2.5 lg:pl-4 lg:text-left lg:text-[12px] lg:font-semibold ${
+                className={`group relative flex min-w-0 flex-col items-center gap-1 py-1 text-xs font-medium transition-colors lg:w-full lg:flex-row lg:gap-3 lg:py-2.5 lg:pl-4 lg:text-left lg:text-sm lg:font-semibold ${
                   active ? 'text-ink' : 'text-slate/80 hover:text-ink'
                 }`}
                 aria-label={tab.label}
@@ -36,7 +36,7 @@ export default function BottomNav({ current, trip, onNavigate, onSwitch }) {
         <button
           type="button"
           onClick={onSwitch}
-          className="mt-auto hidden items-center justify-between border-t border-ink/15 pt-5 text-[11px] font-semibold text-slate hover:text-ink lg:flex"
+          className="mt-auto hidden items-center justify-between border-t border-ink/15 pt-5 text-sm font-semibold text-slate hover:text-ink lg:flex"
         >
           切换旅行
           <ArrowUpRight size={14} />
