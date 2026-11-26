@@ -199,22 +199,22 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
     <div>
       <PageHeader eyebrow="Korea Proxy" title={`${label} 代购`} subtitle="客户颜色 · 限购 3 件 · 自动计算" />
 
-      <div className="mx-4 mt-3 flex items-center justify-between gap-2">
+      <div className="mx-5 mt-5 flex items-center justify-between gap-2 lg:mx-10">
         <button
           type="button"
           onClick={() => onNavigate('shopping')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
+          className="journal-button journal-button--secondary"
         >
           <ArrowLeft size={14} />
           返回代购
         </button>
-        <label className="inline-flex items-center gap-1.5 rounded-md bg-mist px-2.5 py-2 text-sm font-semibold text-blue">
+        <label className="inline-flex items-center gap-1.5 type-caption font-semibold text-muted">
           汇率 1000 KRW =
           <input
             type="number"
             step="0.01"
             min="0"
-            className="w-16 rounded-md border border-line bg-white px-1.5 py-1 text-right text-xs font-semibold text-ink outline-none focus:border-blue"
+            className="journal-input w-20 text-right"
             value={(rate * 1000).toFixed(2)}
             onChange={(e) => setRate(e.target.value)}
           />
@@ -222,25 +222,25 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         </label>
       </div>
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-ink/10 bg-ink p-4 text-white shadow-card">
+      <section className="mx-5 mt-6 lg:mx-10">
+        <div className="border-y border-line bg-surface px-6 py-6">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-white/70">今日代购汇总</p>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-white/80">
+            <p className="journal-label text-accent">今日代购汇总</p>
+            <span className="inline-flex items-center gap-1 type-caption font-semibold text-muted">
               <Users size={13} />
               {customers.length} 位客户
             </span>
           </div>
           <div className="mt-3 flex items-end justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-white/70">{totalItems} 件商品</p>
-              <p className="mt-1 text-2xl font-semibold">{formatKRW(totalKRW)}</p>
-              <p className="mt-1 text-sm font-semibold text-white/80">{formatCNY(toRMB(totalKRW))}</p>
+              <p className="type-small font-semibold text-muted">{totalItems} 件商品</p>
+              <p className="type-h1 mt-1 text-ink">{formatKRW(totalKRW)}</p>
+              <p className="type-small mt-1 font-semibold text-muted">{formatCNY(toRMB(totalKRW))}</p>
             </div>
             <button
               type="button"
               onClick={addCustomer}
-              className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-2 text-xs font-semibold text-ink active:opacity-90"
+              className="journal-button journal-button--primary"
             >
               <Plus size={14} />
               添加客户
@@ -249,7 +249,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
           <button
             type="button"
             onClick={exportOrders}
-            className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-white/10 px-3 py-2 text-xs font-semibold text-white active:opacity-90"
+            className="journal-button journal-button--secondary mt-4 w-full"
           >
             <Download size={14} />
             导出订单
@@ -257,23 +257,23 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         </div>
       </section>
 
-      <section className="mt-5 space-y-3 px-4">
+      <section className="mx-5 mt-6 space-y-5 lg:mx-10">
         {customers.map((customer) => {
           const color = COLOR_PALETTE.find((c) => c.id === customer.colorId) || COLOR_PALETTE[0]
           const krw = customerKRW(customer)
           return (
-            <div key={customer.id} className="rounded-lg border border-line bg-white p-3.5 shadow-card">
+            <div key={customer.id} className="journal-card p-4">
               <div className="flex items-center gap-2.5">
                 <span className="h-5 w-5 shrink-0 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: color.hex }} />
                 <input
                   value={customer.customerName}
                   onChange={(e) => patchCustomer(customer.id, { customerName: e.target.value })}
-                  className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-1.5 text-sm font-semibold text-ink outline-none focus:border-blue"
+                  className="journal-input min-w-0 flex-1"
                 />
                 <button
                   type="button"
                   onClick={() => deleteCustomer(customer.id)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center border border-line text-clay"
                   aria-label="删除客户"
                 >
                   <Trash2 size={14} />
@@ -300,12 +300,12 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                 {customer.orders.map((order, i) => {
                   const product = productMap[order.productId]
                   return (
-                    <div key={`${order.productId}-${i}`} className="flex items-center gap-2 rounded-md bg-cream/60 px-2.5 py-2">
+                    <div key={`${order.productId}-${i}`} className="flex items-center gap-2 border-b border-line py-3">
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold text-ink">
+                        <p className="truncate type-small font-semibold text-ink">
                           {product ? `${product.name} (${order.productId})` : '商品已下架'}
                         </p>
-                        <p className="text-xs font-semibold text-slate">
+                        <p className="type-caption font-semibold text-muted">
                           {formatKRW(order.unitPriceKRW)} × {order.quantity}
                         </p>
                       </div>
@@ -313,16 +313,16 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                         <button
                           type="button"
                           onClick={() => setQty(customer.id, i, -1)}
-                          className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-semibold text-slate active:bg-cream"
+                          className="flex h-8 w-8 items-center justify-center border border-line bg-paper type-small font-semibold text-muted"
                         >
                           −
                         </button>
-                        <span className="w-6 text-center text-sm font-semibold text-ink">{order.quantity}</span>
+                        <span className="w-6 text-center type-small font-semibold text-ink">{order.quantity}</span>
                         <button
                           type="button"
                           onClick={() => setQty(customer.id, i, 1)}
                           disabled={remaining(customers, order.productId) <= 0}
-                          className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-white text-sm font-semibold text-slate active:bg-cream disabled:opacity-30"
+                          className="flex h-8 w-8 items-center justify-center border border-line bg-paper type-small font-semibold text-muted disabled:opacity-30"
                         >
                           +
                         </button>
@@ -330,7 +330,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                       <button
                         type="button"
                         onClick={() => removeOrder(customer.id, i)}
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+                        className="flex h-8 w-8 items-center justify-center border border-line text-clay"
                         aria-label="删除商品"
                       >
                         <Trash2 size={12} />
@@ -339,7 +339,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                   )
                 })}
                 {customer.orders.length === 0 && (
-                  <p className="rounded-md bg-cream/50 px-3 py-2 text-sm font-medium text-slate">
+                  <p className="border-b border-line py-3 type-small text-muted">
                     还没有商品，从下方选择添加
                   </p>
                 )}
@@ -347,7 +347,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
 
               <div className="mt-2.5 flex items-center gap-2">
                 <select
-                  className="min-w-0 flex-1 rounded-md border border-line bg-white px-2 py-2 text-sm font-medium text-ink outline-none focus:border-blue"
+                  className="journal-input min-w-0 flex-1"
                   value=""
                   onChange={(e) => {
                     if (e.target.value) addProduct(customer.id, e.target.value)
@@ -363,17 +363,17 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
                 <button
                   type="button"
                   onClick={() => clearCustomer(customer.id)}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-md border border-line bg-white px-2.5 py-2 text-xs font-semibold text-slate active:bg-cream"
+                  className="journal-button journal-button--quiet shrink-0"
                 >
                   <RotateCcw size={12} />
                   清空
                 </button>
               </div>
 
-              <div className="mt-2.5 flex items-center justify-between rounded-md bg-mist/60 px-3 py-2">
-                <span className="text-sm font-semibold text-slate">客户合计</span>
-                <span className="text-sm font-semibold text-ink">
-                  {formatKRW(krw)} <span className="text-xs text-slate">{formatCNY(toRMB(krw))}</span>
+              <div className="mt-3 flex items-center justify-between border-t border-line pt-3">
+                <span className="type-small font-semibold text-muted">客户合计</span>
+                <span className="type-small font-semibold text-ink">
+                  {formatKRW(krw)} <span className="type-caption text-muted">{formatCNY(toRMB(krw))}</span>
                 </span>
               </div>
             </div>
@@ -381,15 +381,15 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
         })}
       </section>
 
-      <section className="mt-6 px-4">
+      <section className="mx-5 mt-10 pb-12 lg:mx-10">
         <div className="mb-2.5 flex items-center gap-2">
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="搜索商品..."
-              className="w-full rounded-lg border border-line bg-white py-2 pl-8 pr-2 text-xs font-medium text-ink outline-none focus:border-blue"
+              className="journal-input pl-9"
             />
           </div>
         </div>
@@ -399,39 +399,40 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
               key={c}
               type="button"
               onClick={() => setCategory(c)}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-semibold ${
-                category === c ? 'border-ink bg-ink text-white' : 'border-line bg-white text-slate'
-              }`}
+              className="journal-filter"
+              data-active={category === c}
             >
               {c}
             </button>
           ))}
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2.5">
+        <div className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
           {filteredProducts.map((p) => (
-            <div key={p.id} data-product={p.id} className="relative overflow-hidden rounded-lg border border-line bg-white shadow-card">
+            <div key={p.id} data-product={p.id} className="relative">
                   {remaining(customers, p.id) <= 0 && (
-                <span className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-coral text-lg font-semibold text-white shadow-md">
+                <span className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-ink type-caption font-semibold text-paper">
                   ✕
                 </span>
               )}
-              <img src={p.image} alt={p.imageAlt} className="aspect-square w-full object-cover" loading="lazy" />
-              <div className="p-2.5">
-                <p className="text-xs font-semibold text-gold">{p.id.replace('bb-', '')}</p>
-                <p className="mt-0.5 line-clamp-2 min-h-[2.2em] text-sm font-semibold leading-snug text-ink">{p.name}</p>
-                <p className="mt-1 text-sm font-semibold text-blue">{formatKRW(p.priceKRW)}</p>
-                <p className="text-xs font-semibold text-slate">{formatCNY(toRMB(p.priceKRW))}</p>
-                <p className="mt-1 text-xs font-semibold text-slate">
+              <div className="journal-media">
+                <img src={p.image} alt={p.imageAlt} className="aspect-square w-full object-cover" loading="lazy" />
+              </div>
+              <div className="pt-3">
+                <p className="journal-label text-accent">{p.id.replace('bb-', '')}</p>
+                <p className="mt-1 line-clamp-2 min-h-[2.8em] type-small font-semibold text-ink">{p.name}</p>
+                <p className="mt-1 type-small font-semibold text-ink">{formatKRW(p.priceKRW)}</p>
+                <p className="type-caption text-muted">{formatCNY(toRMB(p.priceKRW))}</p>
+                <p className="mt-1 type-caption text-muted">
                   已购：{globalQty(p.id)} / 3 · 剩余：{Math.max(0, 3 - globalQty(p.id))}
                 </p>
                 {globalQty(p.id) >= 3 && (
-                  <p className="mt-0.5 text-xs font-semibold text-coral">已售罄</p>
+                  <p className="mt-0.5 type-caption font-semibold text-clay">已售罄</p>
                 )}
-                <div className="mt-1.5 flex flex-wrap gap-1">
+                <div className="mt-2 flex flex-wrap gap-1.5">
                   {buyersOf(p.id).map((b) => (
                     <span
                       key={b.name}
-                      className="inline-flex items-center gap-1 rounded-full bg-cream px-1.5 py-0.5 text-xs font-semibold text-slate"
+                      className="inline-flex items-center gap-1 border-b border-line pb-0.5 type-caption font-semibold text-muted"
                     >
                       <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: b.hex }} />
                       {b.name} ×{b.qty}
@@ -442,7 +443,7 @@ export default function ShoppingPage({ owner, label, onNavigate }) {
             </div>
           ))}
           {filteredProducts.length === 0 && (
-            <p className="col-span-2 rounded-lg border border-dashed border-line px-4 py-8 text-center text-xs font-medium text-slate">
+            <p className="journal-empty col-span-2 type-small md:col-span-3 lg:col-span-4">
               没有匹配的商品
             </p>
           )}

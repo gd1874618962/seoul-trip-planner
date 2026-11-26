@@ -2,36 +2,46 @@ import { useState } from 'react'
 import {
   Bookmark,
   BookmarkCheck,
+  CheckCircle2,
+  CircleAlert,
   Coffee,
   Compass,
   ExternalLink,
   MapPin,
   Navigation,
+  Route,
   ShoppingBag,
   Star,
   UtensilsCrossed,
 } from 'lucide-react'
 import PageHeader from '../components/PageHeader'
-import TripMap from '../components/TripMap'
+import TripMap, { buildDayRoutes, getDayColor } from '../components/TripMap'
 import {
   getFavoritePlaceIds,
+  getDays,
   getPoints,
   getTripMeta,
   saveFavoritePlaceIds,
 } from '../data/store'
 
 const areaColors = {
-  '武吉免登 / Pavilion / Jalan Alor': '#657E80',
-  'KLCC / 双子塔': '#7B8F82',
-  'TRX / 市中心东侧': '#A47D6C',
-  '独立广场 / 中央市场 / 唐人街': '#9A8763',
-  '十五碑 / Brickfields': '#7F7A8C',
-  '甲洞 / Kepong': '#927469',
-  'Petaling Jaya / Mid Valley': '#768A80',
-  '雪兰莪 / 巴生方向': '#857463',
-  '机场 / 返程': '#445B5E',
-  '其他 / 待确认区域': '#8A8D8B',
-  'Bukit Jalil / 演唱会场馆': '#98705F',
+  '武吉免登 / Pavilion / Jalan Alor': '#775736',
+  'KLCC / 双子塔': '#775736',
+  'TRX / 市中心东侧': '#775736',
+  '独立广场 / 中央市场 / 唐人街': '#775736',
+  '十五碑 / Brickfields': '#775736',
+  '甲洞 / Kepong': '#775736',
+  'Petaling Jaya / Mid Valley': '#775736',
+  'PJ Section 17': '#775736',
+  '独立广场 / 老城区': '#775736',
+  'Quill City Mall': '#775736',
+  'Pavilion Damansara Heights': '#775736',
+  '机场 / KLIA': '#775736',
+  '待确认区域': '#775736',
+  '雪兰莪 / 巴生方向': '#775736',
+  '机场 / 返程': '#775736',
+  '其他 / 待确认区域': '#775736',
+  'Bukit Jalil / 演唱会场馆': '#775736',
 }
 
 const typeFilters = [
@@ -41,6 +51,7 @@ const typeFilters = [
   { id: 'food', label: '美食', icon: UtensilsCrossed },
   { id: 'cafe', label: '咖啡甜品', icon: Coffee },
   { id: 'shopping', label: '购物', icon: ShoppingBag },
+  { id: 'pending', label: '待核实', icon: CircleAlert },
   { id: 'saved', label: '已收藏', icon: Bookmark },
 ]
 
@@ -53,6 +64,7 @@ function matchesType(point, type) {
   }
   if (type === 'cafe') return /咖啡|甜品/.test(point.category)
   if (type === 'shopping') return /购物|超市/.test(point.category)
+  if (type === 'pending') return point.branchPending || point.addressPending || !point.hasCoordinates
   return true
 }
 
@@ -65,16 +77,16 @@ function mapHref(point) {
 function PlaceCard({ point, expanded, onToggle, onFavorite }) {
   const hasAddress = point.officialAddress && !point.officialAddress.startsWith('待确认')
   return (
-    <article className="border-b border-ink/15">
+    <article className="border-b border-line">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full py-4 text-left active:bg-cream/40"
+        className="w-full py-4 text-left"
       >
         <div className="flex items-start gap-3">
           <span
-            className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${
-              point.hasCoordinates ? 'border-ink/35 text-ink' : 'border-dashed border-gold/60 text-gold'
+            className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border type-caption font-semibold ${
+              point.hasCoordinates ? 'border-line text-ink' : 'border-dashed border-accent/60 text-accent'
             }`}
           >
             {point.hasCoordinates ? point.markerNo : <MapPin size={12} />}
@@ -82,34 +94,42 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="text-lg font-medium leading-snug text-ink">{point.displayName}</h3>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate">
+                <h3 className="type-h3 text-ink">{point.displayName}</h3>
+                <p className="journal-label mt-1">
                   {point.area}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {point.keyRestaurant && (
-                  <span className="text-xs font-medium text-gold">
+                  <span className="type-caption font-medium text-accent">
                     重点正餐
                   </span>
                 )}
                 {point.mustVisit && !point.keyRestaurant && (
-                  <span className="text-xs font-medium text-blue">必去</span>
+                  <span className="type-caption font-medium text-accent">必去</span>
                 )}
               </div>
             </div>
-            <p className="mt-2 text-sm leading-6 text-slate">
+            <p className="type-small mt-2 text-muted">
               {point.note || point.category}
             </p>
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-normal text-slate">
+            <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 type-caption text-muted">
               <span>{point.category}</span>
-              {point.branchPending && (
-                <span className="border-l border-gold/40 pl-3 text-gold">
-                  分店 / 地址待确认
+              {point.days?.length > 0 && (
+                <span className="border-l border-line pl-3 text-ink">
+                  {point.days.map((day) => `DAY ${day}`).join(' · ')}
                 </span>
               )}
+              {(point.branchPending || point.addressPending) && (
+                <span className="border-l border-accent/40 pl-3 text-accent">
+                  {point.addressPending ? '地点待确认' : '分店 / 地址待确认'}
+                </span>
+              )}
+              {!point.hasCoordinates && (
+                <span className="border-l border-line pl-3 text-muted">暂不放置推测坐标</span>
+              )}
               {point.distanceLevel && (
-                <span className="border-l border-coral/40 pl-3 text-coral">
+                <span className="border-l border-clay/40 pl-3 text-clay">
                   {point.distanceLevel}
                 </span>
               )}
@@ -119,15 +139,15 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
       </button>
 
       {expanded && (
-        <div className="ml-11 border-l border-ink/15 pb-4 pl-4">
-          <p className="flex items-start gap-1.5 text-sm leading-6 text-slate">
-            <MapPin size={12} className="mt-0.5 shrink-0 text-sage" />
+        <div className="ml-10 border-l border-line pb-4 pl-4">
+          <p className="flex items-start gap-1.5 type-small text-muted">
+            <MapPin size={12} className="mt-0.5 shrink-0 text-accent" />
             {hasAddress ? point.officialAddress : '地址或分店尚未确认，请先通过地图搜索核实。'}
           </p>
           {point.recommended?.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
               {point.recommended.map((item) => (
-                <span key={item} className="text-xs text-blue">
+                <span key={item} className="type-caption text-accent">
                   {item}
                 </span>
               ))}
@@ -138,7 +158,7 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
               href={mapHref(point)}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex flex-1 items-center justify-center gap-1.5 bg-ink px-3 py-2.5 text-sm font-medium text-paper active:opacity-90"
+              className="journal-button journal-button--primary flex-1"
             >
               <Navigation size={12} />
               搜索 / 导航
@@ -146,10 +166,10 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
             <button
               type="button"
               onClick={onFavorite}
-              className={`inline-flex items-center justify-center gap-1.5 border px-3 py-2.5 text-sm font-medium ${
+              className={`journal-button journal-button--secondary ${
                 point.isFavorite
-                  ? 'border-gold/40 text-gold'
-                  : 'border-ink/20 text-slate'
+                  ? 'border-accent/40 text-accent'
+                  : 'text-muted'
               }`}
             >
               {point.isFavorite ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
@@ -169,6 +189,7 @@ export default function KualaLumpurPlaces() {
   const [focusId, setFocusId] = useState('')
   const [expandedId, setExpandedId] = useState('')
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoritePlaceIds())
+  const [mapMode, setMapMode] = useState('route')
 
   const points = [...getPoints()].sort(
     (a, b) => Number(a.areaOrder || 99) - Number(b.areaOrder || 99) || a.displayName.localeCompare(b.displayName),
@@ -192,6 +213,27 @@ export default function KualaLumpurPlaces() {
     .filter((point) => point.hasCoordinates)
     .map((point, index) => ({ ...point, markerNo: index + 1 }))
   const mappedLocationIds = new Set(mapped.map((point) => point.locationId))
+  const daysList = getDays()
+  const routePoints = []
+  const routeSeen = new Set()
+  daysList.forEach((day) => {
+    day.entries.forEach((entry) => {
+      const refs = entry.locationId
+        ? [entry.locationId]
+        : Array.isArray(entry.pointIds)
+          ? entry.pointIds.map((id) => `loc-${id}`)
+          : []
+      refs.forEach((ref) => {
+        const point = withMeta.find((item) => item.locationId === ref && item.hasCoordinates)
+        if (point && !routeSeen.has(point.locationId)) {
+          routeSeen.add(point.locationId)
+          routePoints.push({ ...point, day: day.id, markerNo: routePoints.length + 1 })
+        }
+      })
+    })
+  })
+  const dayRoutes = buildDayRoutes(routePoints, daysList)
+  const mapItems = mapMode === 'route' ? routePoints : mapped
   const cardPoints = filtered.map((point) => ({
     ...point,
     markerNo: mapped.find((entry) => entry.locationId === point.locationId)?.markerNo,
@@ -223,67 +265,119 @@ export default function KualaLumpurPlaces() {
       <PageHeader
         eyebrow="Kuala Lumpur / Place Index"
         title="地点图谱"
-        subtitle="按区域自由组合路线，不锁定每天的餐厅和时间"
+        subtitle="已确认地点按区域整理；分店、地址或位置未核实的项目明确标记，不放置推测坐标"
       />
 
-      <div className="px-5 pb-14 pt-5 lg:px-10">
-        <section className="grid gap-6 border-b border-ink/20 pb-7 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
+      <div className="mx-5 pb-14 pt-6 lg:mx-10">
+        <section className="grid gap-8 border-b border-line pb-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end">
           <div>
-            <p className="editorial-label text-gold">
+            <p className="journal-label text-accent">
               {tripMeta.dates} · {tripMeta.people} people
             </p>
-            <h2 className="mt-3 max-w-2xl font-display text-[34px] font-semibold leading-[1.1] text-ink lg:text-[44px]">
+            <h2 className="type-h1 mt-3 max-w-2xl text-ink">
               先看位置，再定路线
             </h2>
-            <p className="mt-4 max-w-xl text-[15px] leading-7 text-slate">
-              地点按真实区域归组。城际移动优先 Grab / 出租车，不默认远距离地点步行可达。
+            <p className="type-small mt-4 max-w-xl text-muted">
+              必打卡地点与每日餐厅均已纳入地点索引。市内移动以 Grab 为主，远距离地点不默认步行可达。
             </p>
+            <div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-2 border-t border-line pt-4">
+              {(tripMeta.mustVisitChecklist || []).map((item) => (
+                <div key={item.id} className="flex items-start gap-2">
+                  <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-accent" strokeWidth={1.5} />
+                  <span className="type-caption text-ink">
+                    {item.name}
+                    <span className="block text-muted">{item.note}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="grid grid-cols-3 border-y border-ink/20">
             <div>
-              <p className="numeric py-3 text-center font-display text-[28px] font-semibold leading-none text-ink lg:text-left">{points.length}</p>
-              <p className="pb-3 text-center text-xs text-slate lg:text-left">地点</p>
+              <p className="numeric py-3 text-center type-h1 text-ink lg:text-left">{points.length}</p>
+              <p className="pb-3 text-center type-caption text-muted lg:text-left">地点</p>
             </div>
             <div className="border-l border-ink/15 pl-3">
-              <p className="numeric py-3 text-center font-display text-[28px] font-semibold leading-none text-ink lg:text-left">{mapped.length}</p>
-              <p className="pb-3 text-center text-xs text-slate lg:text-left">地图已定位</p>
+              <p className="numeric py-3 text-center type-h1 text-ink lg:text-left">{mapped.length}</p>
+              <p className="pb-3 text-center type-caption text-muted lg:text-left">地图已定位</p>
             </div>
             <div className="border-l border-ink/15 pl-3">
-              <p className="numeric py-3 text-center font-display text-[28px] font-semibold leading-none text-gold lg:text-left">{keyCount}</p>
-              <p className="pb-3 text-center text-xs text-slate lg:text-left">重点正餐</p>
+              <p className="numeric py-3 text-center type-h1 text-accent lg:text-left">{keyCount}</p>
+              <p className="pb-3 text-center type-caption text-muted lg:text-left">重点正餐</p>
             </div>
           </div>
         </section>
 
-        <section className="mt-6 grid gap-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(350px,0.85fr)] lg:items-start">
+        <section className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(350px,0.85fr)] lg:items-start">
           <div className="lg:sticky lg:top-[82px]">
-            <div className="mb-3 flex items-end justify-between border-b border-ink/20 pb-3">
-              <p className="font-display text-[24px] font-semibold leading-none text-ink">地理分布</p>
-              <span className="editorial-label text-slate">{mapped.length} pins</span>
+            <div className="mb-3 flex items-end justify-between border-b border-line pb-3">
+              <p className="type-h2 text-ink">地理分布</p>
+              <span className="journal-label">{mapped.length} pins</span>
             </div>
             <TripMap
-              items={mapped}
+              items={mapItems}
               focusId={focusId}
-              showRoutes={false}
+              showRoutes={mapMode === 'route'}
               onSelectPoint={(locationId) => {
                 setFocusId(locationId)
                 setExpandedId(locationId)
               }}
               heightClass="h-[330px] lg:h-[600px]"
             />
+            <div className="mt-3 flex items-center gap-2 border-y border-line py-2">
+              <button
+                type="button"
+                onClick={() => setMapMode('route')}
+                className="journal-filter"
+                data-active={mapMode === 'route'}
+              >
+                <Route size={11} />
+                按日路线
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapMode('places')}
+                className="journal-filter"
+                data-active={mapMode === 'places'}
+              >
+                <MapPin size={11} />
+                全部地点
+              </button>
+              <span className="ml-auto type-caption text-muted">
+                {mapMode === 'route' ? `${routePoints.length} 个途经点` : `${mapped.length} 个定位点`}
+              </span>
+            </div>
+            {mapMode === 'route' && (
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2">
+                {daysList.map((day) => {
+                  const route = dayRoutes.find((item) => item.day === day.id)
+                  return (
+                    <span key={day.id} className="inline-flex items-center gap-1.5 type-caption text-muted">
+                      <span className="h-0.5 w-5" style={{ backgroundColor: getDayColor(day.id) }} />
+                      <span className="font-semibold text-ink">{day.label}</span>
+                      <span>{route ? `${route.route.length} 站` : '无路线'}</span>
+                    </span>
+                  )
+                })}
+              </div>
+            )}
             <div className="mt-3 flex items-start justify-between gap-4">
-              <p className="max-w-xl text-xs leading-relaxed text-slate">
-                金色光圈表示重点正餐。{unlocatedCount} 个地点因分店或地址待确认，暂不放置推测坐标。
+              <p className="max-w-xl type-caption text-muted">
+                {mapMode === 'route'
+                  ? '不同颜色代表不同日期，箭头表示行进方向，地点编号与当天行程顺序一致。'
+                  : `金色光圈表示重点正餐。${unlocatedCount} 个地点因分店或地址待确认，暂不放置推测坐标。`}
               </p>
-              <span className="shrink-0 text-xs font-semibold text-blue">{mapped.length} PIN</span>
+              <span className="shrink-0 journal-label text-accent">
+                {mapMode === 'route' ? dayRoutes.length : mapped.length} {mapMode === 'route' ? 'ROUTES' : 'PIN'}
+              </span>
             </div>
           </div>
 
           <div className="min-w-0">
-            <section className="border-y border-ink/20 py-4">
+            <section className="border-y border-line py-4">
               <div className="flex items-center justify-between gap-4">
-                <p className="editorial-label text-gold">Area</p>
-                <p className="text-xs text-slate">按地理区域浏览</p>
+                <p className="journal-label text-accent">Area</p>
+                <p className="type-caption text-muted">按地理区域浏览</p>
               </div>
               <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
                 <button
@@ -292,9 +386,8 @@ export default function KualaLumpurPlaces() {
                     setAreaFilter('all')
                     setFocusId('')
                   }}
-                  className={`shrink-0 border px-3 py-2 text-sm font-medium ${
-                    areaFilter === 'all' ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate'
-                  }`}
+                  className="journal-filter"
+                  data-active={areaFilter === 'all'}
                 >
                   全部区域
                 </button>
@@ -306,9 +399,8 @@ export default function KualaLumpurPlaces() {
                       setAreaFilter(area)
                       setFocusId('')
                     }}
-                    className={`shrink-0 border px-3 py-2 text-sm font-medium ${
-                      areaFilter === area ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate'
-                    }`}
+                    className="journal-filter"
+                    data-active={areaFilter === area}
                   >
                     {area}
                   </button>
@@ -325,11 +417,8 @@ export default function KualaLumpurPlaces() {
                         setTypeFilter(filter.id)
                         setFocusId('')
                       }}
-                      className={`inline-flex shrink-0 items-center gap-1 border px-2.5 py-2 text-xs font-medium ${
-                        typeFilter === filter.id
-                          ? 'border-gold text-gold'
-                          : 'border-ink/15 text-slate'
-                      }`}
+                      className="journal-filter"
+                      data-active={typeFilter === filter.id}
                     >
                       {Icon && <Icon size={10} />}
                       {filter.label}
@@ -342,14 +431,14 @@ export default function KualaLumpurPlaces() {
             <div className="lg:max-h-[720px] lg:overflow-y-auto lg:pr-3">
               {grouped.map((group) => (
                 <section key={group.area} className="pt-6">
-                  <div className="flex items-end justify-between gap-3 border-b border-ink/20 pb-3">
+                  <div className="flex items-end justify-between gap-3 border-b border-line pb-3">
                     <div>
-                      <p className="editorial-label text-gold">Area</p>
-                      <h3 className="mt-1 font-display text-[24px] font-semibold leading-tight text-ink">
+                      <p className="journal-label text-accent">Area</p>
+                      <h3 className="type-h2 mt-1 text-ink">
                         {group.area}
                       </h3>
                     </div>
-                    <span className="shrink-0 text-xs text-slate">{group.points.length} 个地点</span>
+                    <span className="shrink-0 type-caption text-muted">{group.points.length} 个地点</span>
                   </div>
                   <div>
                     {group.points.map((point) => (
@@ -365,10 +454,10 @@ export default function KualaLumpurPlaces() {
                 </section>
               ))}
               {grouped.length === 0 && (
-                <div className="border-b border-ink/15 py-12 text-center">
-                  <MapPin size={20} className="mx-auto text-gold" />
-                  <p className="mt-3 font-display text-lg text-ink">当前筛选没有地点</p>
-                  <p className="mt-1 text-xs text-slate">切换区域或类型后再试。</p>
+                <div className="border-b border-line py-12 text-center">
+                  <MapPin size={20} className="mx-auto text-accent" />
+                  <p className="type-h3 mt-3 text-ink">当前筛选没有地点</p>
+                  <p className="type-caption mt-1 text-muted">切换区域或类型后再试。</p>
                 </div>
               )}
             </div>
@@ -378,7 +467,7 @@ export default function KualaLumpurPlaces() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Kuala Lumpur attractions restaurants')}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between border-y border-ink/20 py-3 text-sm font-medium text-slate active:text-ink"
+                className="flex items-center justify-between border-y border-line py-3 type-small font-medium text-muted"
               >
                 在 Google Maps 查看吉隆坡全城
                 <ExternalLink size={11} />

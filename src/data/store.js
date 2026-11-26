@@ -1,5 +1,13 @@
 import * as seoulDefaults from './trip.js'
 import { kualaLumpurTrip } from './kualaLumpur.js'
+import { cityTrips } from './cityTrips.js'
+import {
+  createCustomTripDataset,
+  getCustomTripRecords,
+  isCustomTripDataset,
+  removeCustomTripDataset,
+  saveCustomTripDataset,
+} from './tripRegistry.js'
 import {
   fetchTripRow,
   isCloudConfigured,
@@ -25,7 +33,7 @@ const STATE_URL = '/api/state'
 
 export const SUPPORTED_TRIP_IDS = [SEOUL_TRIP_ID, KUALA_LUMPUR_TRIP_ID]
 
-const DEFAULT_TRIPS = {
+const BUILTIN_TRIPS = {
   [SEOUL_TRIP_ID]: {
     tripMeta: seoulDefaults.tripMeta,
     flights: seoulDefaults.flights,
@@ -38,6 +46,13 @@ const DEFAULT_TRIPS = {
     budget: seoulDefaults.budget,
   },
   [KUALA_LUMPUR_TRIP_ID]: kualaLumpurTrip,
+}
+
+function getAllTrips() {
+  const customTrips = Object.fromEntries(
+    getCustomTripRecords().map((record) => [record.tripId, record.dataset]),
+  )
+  return { ...BUILTIN_TRIPS, ...customTrips }
 }
 
 let remoteState = null
@@ -87,10 +102,11 @@ export function onSyncStatus(cb) {
 }
 
 export function getActiveTripId() {
-  if (activeTripId && DEFAULT_TRIPS[activeTripId]) return activeTripId
+  const trips = getAllTrips()
+  if (activeTripId && trips[activeTripId]) return activeTripId
   try {
     const stored = localStorage.getItem(ACTIVE_TRIP_KEY)
-    if (stored && DEFAULT_TRIPS[stored]) {
+    if (stored && trips[stored]) {
       activeTripId = stored
       return stored
     }
@@ -102,7 +118,7 @@ export function getActiveTripId() {
 }
 
 export function setActiveTripId(tripId) {
-  if (!DEFAULT_TRIPS[tripId]) return false
+  if (!getAllTrips()[tripId]) return false
   activeTripId = tripId
   try {
     localStorage.setItem(ACTIVE_TRIP_KEY, tripId)
@@ -118,7 +134,7 @@ export function setActiveTripId(tripId) {
 }
 
 export async function switchActiveTrip(tripId) {
-  if (!DEFAULT_TRIPS[tripId]) return false
+  if (!getAllTrips()[tripId]) return false
   if (tripId === getActiveTripId()) return true
   if (cloudTimer) {
     clearTimeout(cloudTimer)
@@ -129,7 +145,8 @@ export async function switchActiveTrip(tripId) {
 }
 
 function getDataset(tripId = getActiveTripId()) {
-  return DEFAULT_TRIPS[tripId] || DEFAULT_TRIPS[SEOUL_TRIP_ID]
+  const trips = getAllTrips()
+  return trips[tripId] || trips[SEOUL_TRIP_ID]
 }
 
 export function getTripId() {
@@ -406,7 +423,7 @@ export async function pushAllToCloud() {
     setTripSyncStatus(tripId, 'success')
     return true
   } catch (error) {
-    setTripSyncStatus(tripId, 'error', '云同步失败，当前使用本地缓存')
+    setTripSyncStatus(tripId, 'error', '云同步失败：请检查 Supabase 表、匿名访问策略或网络')
     return false
   }
 }
@@ -445,8 +462,7 @@ export async function initCloudSync() {
   try {
     const row = await fetchTripRow(tripId)
     if (!row) {
-      setTripSyncStatus(tripId, 'success')
-      return true
+      return pushAllToCloud()
     }
     const currentCloudMeta = readCloudMeta(tripId)
     const remoteTime = Date.parse(row.updated_at || '') || 0
@@ -466,7 +482,7 @@ export async function initCloudSync() {
     setTripSyncStatus(tripId, 'success')
     return true
   } catch (error) {
-    setTripSyncStatus(tripId, 'error', '云同步失败，当前使用本地缓存')
+    setTripSyncStatus(tripId, 'error', '云同步失败：请检查 Supabase 表、匿名访问策略或网络')
     return false
   }
 }
@@ -497,7 +513,7 @@ export async function pollCloud() {
     }
     return false
   } catch (error) {
-    setTripSyncStatus(tripId, 'error', '云同步失败，当前使用本地缓存')
+    setTripSyncStatus(tripId, 'error', '云同步失败：请检查 Supabase 表、匿名访问策略或网络')
     return false
   }
 }
@@ -508,17 +524,19 @@ export function getTimelineOverrides() {
 
 export function migrateItineraryOnce() {
   try {
-    const version = getTripMeta().itineraryVersion
+    const dataset = getDataset()
+    const version = dataset.tripMeta.itineraryVersion
     if (!version) return
     const migrationKey = getTripStorageKey(ITINERARY_MIGRATION_KEY)
     if (localStorage.getItem(migrationKey) === version) return
     const overrides = getTimelineOverrides()
-    const next = { ...overrides, 1: [], 2: [] }
-    next.__itineraryVersion = {
-      ...(next.__itineraryVersion || {}),
-      1: version,
-      2: version,
-    }
+    const next = { ...overrides }
+    const nextVersions = { ...(next.__itineraryVersion || {}) }
+    dataset.days.forEach((day) => {
+      next[day.id] = []
+      nextVersions[day.id] = version
+    })
+    next.__itineraryVersion = nextVersions
     saveTimelineOverrides(next)
     localStorage.setItem(migrationKey, version)
   } catch {
@@ -534,10 +552,11 @@ export function saveTimelineOverrides(value) {
 export function getDays(overrides = getTimelineOverrides()) {
   const dataset = getDataset()
   const hotelMap = getHotelMap()
+  const currentVersion = dataset.tripMeta.itineraryVersion
+  const transportRules = dataset.tripMeta.transportRules || TRANSPORT_RULES
   return dataset.days.map((d) => {
-    const currentVersion = getTripMeta().itineraryVersion
     const storedVersion = overrides.__itineraryVersion?.[d.id]
-    const staleDay = (d.id === 1 || d.id === 2) && storedVersion !== currentVersion
+    const staleDay = storedVersion !== currentVersion
     const raw = staleDay
       ? []
       : overrides[d.id]
@@ -561,7 +580,7 @@ export function getDays(overrides = getTimelineOverrides()) {
         enriched.transportCostEstimate = `约 ${enriched.costKRW.toLocaleString()} KRW`
       }
       if (enriched.transportMode && !enriched.transportEta) {
-        const rule = TRANSPORT_RULES[enriched.transportMode]
+        const rule = transportRules[enriched.transportMode]
         if (rule) {
           enriched.transportEta = `约 ${rule.minutes} 分钟`
           if (!enriched.transportCostEstimate) enriched.transportCostEstimate = rule.cost
@@ -572,19 +591,15 @@ export function getDays(overrides = getTimelineOverrides()) {
     entries.forEach((entry, index) => {
       if (index === 0) return
       const start = parseStartMinutes(entry.time)
-      const rule = TRANSPORT_RULES[entries[index - 1].transportMode]
+      const rule = transportRules[entries[index - 1].transportMode]
       if (start != null && rule && start - rule.minutes >= 0) {
         entry.suggestedDeparture = fmtMinutes(start - rule.minutes)
       }
     })
-    entries.sort((a, b) => {
-      const aStart = parseStartMinutes(a.time)
-      const bStart = parseStartMinutes(b.time)
-      if (aStart == null && bStart == null) return 0
-      if (aStart == null) return 1
-      if (bStart == null) return -1
-      return aStart - bStart
-    })
+    const hasUntimedEntry = entries.some((entry) => parseStartMinutes(entry.time) == null)
+    if (!hasUntimedEntry) {
+      entries.sort((a, b) => parseStartMinutes(a.time) - parseStartMinutes(b.time))
+    }
     return { ...d, tripId: getTripId(), entries }
   })
 }
@@ -616,14 +631,79 @@ export function getTripMeta() {
 }
 
 export function getTripMetaForTrip(tripId) {
-  const dataset = getDataset(tripId)
-  if (!DEFAULT_TRIPS[tripId]) return getTripMeta()
+  const dataset = getAllTrips()[tripId]
+  if (!dataset) return null
   const saved = read(getTripStorageKey(TRIP_KEY, tripId)) || {}
   return {
     ...dataset.tripMeta,
     ...(saved.meta || {}),
     tripId,
   }
+}
+
+export function getTripCatalog() {
+  const builtIn = cityTrips.map((city) => {
+    const meta = getTripMetaForTrip(city.tripId)
+    return {
+      ...city,
+      ...meta,
+      city: meta.city || city.city,
+      cityCn: meta.cityCn || city.cityCn,
+      country: meta.countryCn || city.country,
+      dates: meta.dates || city.dates,
+      status: meta.status || city.status,
+      theme: meta.theme || city.theme,
+      coverImage: meta.coverImage || city.cover,
+      isCustom: false,
+    }
+  })
+  const custom = getCustomTripRecords().map((record) => {
+    const meta = getTripMetaForTrip(record.tripId)
+    return {
+      ...meta,
+      tripId: record.tripId,
+      country: meta.countryCn || meta.country || '待填写',
+      coverImage: meta.coverImage || '',
+      isCustom: true,
+      createdAt: record.createdAt,
+    }
+  })
+  return [...custom, ...builtIn]
+}
+
+export function createTripPlan(input) {
+  const dataset = createCustomTripDataset(input || {})
+  saveCustomTripDataset(dataset)
+  return dataset.tripId
+}
+
+export function isCustomTrip(tripId = getTripId()) {
+  return isCustomTripDataset(tripId)
+}
+
+export function deleteTripPlan(tripId) {
+  if (!isCustomTripDataset(tripId)) return false
+  const scopedKeys = [
+    TIMELINE_KEY,
+    REMINDER_KEY,
+    BUDGET_KEY,
+    LEDGER_KEY,
+    TRIP_KEY,
+    RESTAURANT_KEY,
+    PLACE_FAVORITES_KEY,
+    CLOUD_META_KEY,
+    ITINERARY_MIGRATION_KEY,
+    SHOPPING_DAISY_KEY,
+    SHOPPING_WUTONG_KEY,
+  ]
+  removeCustomTripDataset(tripId)
+  try {
+    scopedKeys.forEach((key) => localStorage.removeItem(getLegacyOrScopedKey(key, tripId)))
+  } catch {
+    /* ignore */
+  }
+  if (activeTripId === tripId) setActiveTripId(SEOUL_TRIP_ID)
+  return true
 }
 
 export function getFlights() {
@@ -651,7 +731,8 @@ export function getTravelers() {
 export function getPoints() {
   const tripId = getTripId()
   const hotelMap = getHotelMap()
-  return getDataset(tripId).points.map((point) => {
+  const defaults = getDataset(tripId).points
+  return (Array.isArray(defaults) ? defaults : []).map((point) => {
     const hotel = point.locationId ? hotelMap[point.locationId] : null
     const base = hotel
       ? { ...point, name: hotel.name || point.name, address: hotel.address || point.address }
@@ -664,6 +745,74 @@ export function getPoints() {
       coordinates: { lat: base.lat, lng: base.lng },
     }
   })
+}
+
+export function createShareSnapshot() {
+  const meta = getTripMeta()
+  const {
+    budgetPerPerson,
+    spentFlights,
+    spentShowStay,
+    remainingBudget,
+    age,
+    ...publicMeta
+  } = meta
+  const days = getDays().map((day) => ({
+    ...day,
+    entries: day.entries.map((entry) => {
+      const {
+        cost,
+        costKRW,
+        costCNY,
+        transportCost,
+        transportCostEstimate,
+        ...publicEntry
+      } = entry
+      return publicEntry
+    }),
+  }))
+  const points = getPoints()
+  const knownLocationIds = new Set(points.map((point) => point.locationId))
+  const entryPoints = days.flatMap((day) =>
+    day.entries
+      .filter((entry) => entry.lat != null && entry.lng != null && !knownLocationIds.has(entry.locationId))
+      .map((entry) => ({
+        id: `shared-${entry.id}`,
+        locationId: entry.locationId || `shared-${entry.id}`,
+        day: day.id,
+        name: entry.title,
+        displayName: entry.title,
+        category: entry.type || '地点',
+        address: entry.address || '',
+        officialAddress: entry.address || '',
+        lat: Number(entry.lat),
+        lng: Number(entry.lng),
+      })),
+  )
+  return {
+    schema: 1,
+    createdAt: new Date().toISOString(),
+    access: 'public-link',
+    trip: {
+      meta: publicMeta,
+      flights: getFlights(),
+      hotels: getHotels().map(({ price, perPerson, ...hotel }) => hotel),
+      days,
+      points: [...points, ...entryPoints],
+      restaurants: getRestaurants().map(({ price, priceRange, ...restaurant }) => restaurant),
+      reminders: getReminders(),
+    },
+  }
+}
+
+export function getFoodGuide() {
+  const guide = getDataset().foodGuide
+  return {
+    meals: Array.isArray(guide?.meals) ? guide.meals : [],
+    pendingMeals: Array.isArray(guide?.pendingMeals) ? guide.pendingMeals : [],
+    snacks: Array.isArray(guide?.snacks) ? guide.snacks : [],
+    coffee: Array.isArray(guide?.coffee) ? guide.coffee : [],
+  }
 }
 
 export function getFavoritePlaceIds() {
@@ -851,7 +1000,7 @@ export function importAllState(json) {
   const parsed = JSON.parse(json)
   const data = parsed && typeof parsed === 'object' ? parsed.data || parsed : {}
   const requestedTripId = parsed?.tripId
-  const tripId = DEFAULT_TRIPS[requestedTripId] ? requestedTripId : getTripId()
+  const tripId = getAllTrips()[requestedTripId] ? requestedTripId : getTripId()
   setActiveTripId(tripId)
   TRIP_DATA_BASE_KEYS.forEach((baseKey) => {
     const targetKey = getTripStorageKey(baseKey, tripId)

@@ -70,5 +70,5 @@ export default function NaverMap({ items, routes }) {
     document.body.appendChild(script)
   }, [clientId, items, routes])
 
-  return <div ref={elRef} className="h-[380px] w-full rounded-lg bg-[#E9F1F5]" />
+  return <div ref={elRef} className="journal-map-default w-full rounded-lg bg-surface" />
 }

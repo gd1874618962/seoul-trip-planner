@@ -4,6 +4,7 @@ $node = 'C:\Users\PC\.cache\codex-runtimes\codex-primary-runtime\dependencies\no
 $env:PATH = 'C:\Users\PC\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;' + $env:PATH
 $dist = Join-Path $root 'dist'
 $deploy = Join-Path $root 'deploy'
+$gitNoProxy = @('-c', 'http.proxy=', '-c', 'https.proxy=')
 
 function Check-LastExit([string]$step) {
   if ($LASTEXITCODE -ne 0) { throw "Step failed: $step (exit $LASTEXITCODE)" }
@@ -20,14 +21,14 @@ Check-LastExit 'smoke test'
 
 Write-Host '[3/4] Sync deploy repo'
 if (-not (Test-Path -LiteralPath $deploy)) {
-  & $git clone https://github.com/gd1874618962/seoul-trip-planner.git $deploy
+  & $git @gitNoProxy clone https://github.com/gd1874618962/seoul-trip-planner.git $deploy
   Check-LastExit 'clone'
 }
 Push-Location $deploy
-& $git fetch origin 2>$null
+& $git @gitNoProxy fetch origin 2>$null
 Check-LastExit 'fetch'
-& $git reset --hard origin/main 2>$null
-Check-LastExit 'reset'
+& $git @gitNoProxy pull --ff-only origin main 2>$null
+Check-LastExit 'pull'
 Copy-Item -Path (Join-Path $dist '*') -Destination $deploy -Recurse -Force
 & $git add -A 2>$null
 Check-LastExit 'add'
@@ -35,7 +36,7 @@ Check-LastExit 'add'
 $commitExit = $LASTEXITCODE
 if ($commitExit -eq 0) {
   Write-Host '[4/4] Push GitHub Pages'
-  & $git push origin main 2>$null
+  & $git @gitNoProxy push origin main 2>$null
   Check-LastExit 'push'
 } else {
   Write-Host 'No content changes, skipping push'
@@ -47,14 +48,15 @@ $localBytes = [System.IO.File]::ReadAllBytes((Join-Path $dist 'index.html'))
 $sha = [System.Security.Cryptography.SHA256]::Create()
 $localHash = [BitConverter]::ToString($sha.ComputeHash($localBytes)).Replace('-', '')
 $url = 'https://gd1874618962.github.io/seoul-trip-planner/index.html'
-$client = New-Object System.Net.WebClient
-$client.Proxy = New-Object System.Net.WebProxy('http://127.0.0.1:7890')
+$handler = New-Object System.Net.Http.HttpClientHandler
+$handler.UseProxy = $false
+$client = New-Object System.Net.Http.HttpClient($handler)
 $ok = $false
 $maxAttempts = 30
 for ($i = 1; $i -le $maxAttempts; $i++) {
   Start-Sleep -Seconds 10
   try {
-    $remoteBytes = $client.DownloadData($url)
+    $remoteBytes = $client.GetByteArrayAsync($url).GetAwaiter().GetResult()
     $remoteHash = [BitConverter]::ToString($sha.ComputeHash($remoteBytes)).Replace('-', '')
     Write-Host "[wait $i/$maxAttempts] http=200 size=$($remoteBytes.Length) hash=$remoteHash"
     if ($remoteHash -eq $localHash) {
@@ -67,6 +69,7 @@ for ($i = 1; $i -le $maxAttempts; $i++) {
   }
 }
 $client.Dispose()
+$handler.Dispose()
 if (-not $ok) {
   Write-Host 'Deployment may still be in progress. Please check Pages status manually.'
   Write-Host "URL: $url"

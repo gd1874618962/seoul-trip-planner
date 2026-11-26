@@ -6,12 +6,15 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DIST = path.join(__dirname, 'dist')
 const STATE_FILE = path.join(__dirname, 'sync-state.json')
+const MOUNT_PATH = '/seoul-trip-planner'
+const PORT = Number(process.env.PORT) || 5173
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
   '.css': 'text/css',
   '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.png': 'image/png',
@@ -40,6 +43,8 @@ function send(res, status, body, type) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost')
+  const mounted =
+    url.pathname === MOUNT_PATH || url.pathname.startsWith(`${MOUNT_PATH}/`)
 
   if (url.pathname === '/api/state' && req.method === 'GET') {
     return send(res, 200, JSON.stringify(readState()))
@@ -62,7 +67,10 @@ const server = http.createServer((req, res) => {
     return
   }
 
-  let filePath = path.normalize(path.join(DIST, decodeURIComponent(url.pathname)))
+  const requestedPath = mounted
+    ? url.pathname.slice(MOUNT_PATH.length) || '/'
+    : url.pathname
+  let filePath = path.normalize(path.join(DIST, decodeURIComponent(requestedPath)))
   if (!filePath.startsWith(DIST)) return send(res, 403, 'Forbidden', 'text/plain')
   if (filePath === DIST || filePath.endsWith(path.sep)) filePath = path.join(DIST, 'index.html')
 
@@ -85,6 +93,6 @@ const server = http.createServer((req, res) => {
   })
 })
 
-server.listen(5173, '0.0.0.0', () => {
-  console.log('Seoul Trip Planner server: http://0.0.0.0:5173')
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Seoul Trip Planner server: http://0.0.0.0:${PORT}`)
 })

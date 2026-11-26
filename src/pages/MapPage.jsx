@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ExternalLink, MapPin } from 'lucide-react'
 import { getDays, getPoints, getTripMeta } from '../data/store'
-import TripMap, { dayColors } from '../components/TripMap'
+import TripMap, { buildDayRoutes, getDayColor } from '../components/TripMap'
 import PageHeader from '../components/PageHeader'
 import KualaLumpurPlaces from './KualaLumpurPlaces'
 
@@ -50,6 +50,7 @@ function SeoulMapPage() {
   })
   const points = ordered.map((p, i) => ({ ...p, markerNo: i + 1 }))
   const filtered = filter === 'all' ? points : points.filter((p) => p.day === filter)
+  const routes = buildDayRoutes(points, daysList)
   const filters = [
     { id: 'all', label: '全部' },
     ...daysList.map((day) => ({ id: day.id, label: day.label })),
@@ -63,8 +64,8 @@ function SeoulMapPage() {
         subtitle="点击标记查看详情，或直接打开外部地图导航"
       />
 
-      <div className="px-5 pb-16 pt-5 lg:px-10">
-        <section className="editorial-rule flex flex-col justify-between gap-3 pt-4 md:flex-row md:items-center">
+      <div className="mx-5 pb-16 pt-6 lg:mx-10">
+        <section className="flex flex-col justify-between gap-3 border-b border-line pb-4 md:flex-row md:items-center">
           <div className="no-scrollbar flex gap-2 overflow-x-auto">
             {filters.map((f) => {
               const active = filter === f.id
@@ -73,50 +74,53 @@ function SeoulMapPage() {
                   key={f.id}
                   type="button"
                   onClick={() => setFilter(f.id)}
-                  className={`shrink-0 border px-3 py-2 text-xs font-semibold ${
-                    active ? 'border-ink bg-ink text-paper' : 'border-ink/20 text-slate active:bg-cream'
-                  }`}
+                  className="journal-filter"
+                  data-active={active}
                 >
                   {f.label}
                 </button>
               )
             })}
           </div>
-          <p className="shrink-0 text-xs text-slate">{filtered.length} 个地点</p>
+          <p className="shrink-0 type-caption text-muted">{filtered.length} 个地点</p>
         </section>
 
-        <div className="mt-5 grid gap-7 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:items-start">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)] lg:items-start">
           <div className="lg:sticky lg:top-[82px]">
             <TripMap items={filtered} heightClass="h-[320px] lg:h-[600px]" />
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              {daysList.map((day) => (
-                <span key={day.id} className="inline-flex items-center gap-1.5 text-xs text-slate">
-                  <span className="h-px w-4" style={{ backgroundColor: dayColors[day.id] }} />
-                  {day.label}
-                </span>
-              ))}
+              {daysList.map((day) => {
+                const route = routes.find((item) => item.day === day.id)
+                return (
+                  <span key={day.id} className="inline-flex items-center gap-1.5 type-caption text-muted">
+                    <span className="h-0.5 w-5" style={{ backgroundColor: getDayColor(day.id) }} />
+                    <span className="font-semibold text-ink">{day.label}</span>
+                    <span>{route ? `${route.route.length} 站 · 数字为顺序` : '无路线'}</span>
+                  </span>
+                )
+              })}
             </div>
           </div>
 
           <section className="min-w-0">
-            <div className="flex items-end justify-between border-b border-ink/20 pb-3">
-              <h2 className="font-display text-[24px] font-semibold leading-none text-ink">点位列表</h2>
-              <span className="editorial-label text-slate">Map index</span>
+            <div className="flex items-end justify-between border-b border-line pb-3">
+              <h2 className="type-h1 text-ink">点位列表</h2>
+              <span className="journal-label">Map index</span>
             </div>
             <div>
               {filtered.map((p) => (
-                <div key={p.id} className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-start gap-3 border-b border-ink/15 py-4">
-                  <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-ink/30 text-xs font-semibold text-ink">
+                <div key={p.id} className="grid grid-cols-[32px_minmax(0,1fr)_auto] items-start gap-3 border-b border-line py-4">
+                  <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-line type-caption font-semibold text-ink">
                     {p.markerNo}
                   </span>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-base font-medium text-ink">{p.displayName}</p>
-                      <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.12em] text-gold">
+                      <p className="truncate type-body font-medium text-ink">{p.displayName}</p>
+                      <span className="shrink-0 journal-label text-accent">
                         Day {p.day}
                       </span>
                     </div>
-                    <p className="mt-1 flex items-start gap-1 text-sm leading-6 text-slate">
+                    <p className="mt-1 flex items-start gap-1 type-small text-muted">
                       <MapPin size={10} className="mt-0.5 shrink-0" />
                       <span className="line-clamp-2">{p.officialAddress}</span>
                     </p>
@@ -129,7 +133,7 @@ function SeoulMapPage() {
                     }
                     target="_blank"
                     rel="noreferrer"
-                    className="flex shrink-0 items-center gap-1 border-b border-ink/30 pb-0.5 text-xs font-semibold text-ink"
+                    className="journal-button journal-button--quiet shrink-0"
                   >
                     导航
                     <ExternalLink size={10} />

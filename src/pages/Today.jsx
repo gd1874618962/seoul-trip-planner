@@ -44,7 +44,7 @@ function TransportLine({ entry }) {
   return (
     <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5">
       {parts.map((p, i) => (
-        <span key={i} className="inline-flex items-center gap-1 text-sm font-semibold text-slate">
+        <span key={i} className="inline-flex items-center gap-1 type-small font-semibold text-muted">
           {p}
         </span>
       ))}
@@ -79,40 +79,36 @@ export default function Today({ onNavigate }) {
   }
 
   const big = (entry) => (
-    <div
-      className={`rounded-lg border bg-white p-4 shadow-card ${
-        entry.status === 'completed' ? 'border-line opacity-70' : 'border-blue/20'
-      }`}
-    >
+    <div className={`border-y border-line py-5 ${entry.status === 'completed' ? 'opacity-60' : ''}`}>
       <div className="flex items-start justify-between gap-2">
-        <span className="text-2xl font-semibold text-blue">{entry.time}</span>
+        <span className="type-h2 text-accent">{entry.time}</span>
         {entry.status === 'completed' ? (
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-sage">
+          <span className="inline-flex items-center gap-1 type-caption font-semibold text-muted">
             <CheckCircle2 size={14} />
             已完成
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 rounded-full bg-cream px-2 py-1 text-xs font-semibold text-coral">
+          <span className="journal-label text-accent">
             {entry === active ? '正在进行' : '下一项'}
           </span>
         )}
       </div>
       <h3
-        className={`mt-1.5 text-lg font-semibold leading-snug ${
-          entry.status === 'completed' ? 'text-slate/60 line-through' : 'text-ink'
+        className={`type-h2 mt-2 ${
+          entry.status === 'completed' ? 'text-muted line-through' : 'text-ink'
         }`}
       >
         {entry.title}
       </h3>
       {entry.address && (
-        <p className="mt-1.5 flex items-start gap-1.5 text-sm font-medium leading-relaxed text-slate">
-          <MapPin size={14} className="mt-0.5 shrink-0 text-sage" />
+        <p className="type-small mt-2 flex items-start gap-1.5 text-muted">
+          <MapPin size={13} className="mt-0.5 shrink-0 text-accent" />
           {entry.address}
         </p>
       )}
       <TransportLine entry={entry} />
       {entry.suggestedDeparture && entry.status !== 'completed' && (
-        <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-mist px-2.5 py-1 text-sm font-semibold text-blue">
+        <p className="type-caption mt-2 inline-flex items-center gap-1 font-semibold text-accent">
           <Clock size={13} />
           建议出发 {entry.suggestedDeparture}
         </p>
@@ -121,7 +117,7 @@ export default function Today({ onNavigate }) {
         <button
           type="button"
           onClick={() => complete(entry)}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white active:opacity-90"
+          className="journal-button journal-button--primary mt-4"
         >
           <Check size={15} />
           完成
@@ -134,11 +130,11 @@ export default function Today({ onNavigate }) {
     <div key={tick}>
       <PageHeader eyebrow="Today" title="今日行程" subtitle={`${day.date} ${day.weekday} · ${day.theme}`} />
 
-      <div className="mx-4 mt-3 flex items-center justify-between gap-2">
+      <div className="mx-5 mt-5 flex items-center justify-between gap-2 lg:mx-10">
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
+          className="journal-button journal-button--secondary"
         >
           <ArrowLeft size={14} />
           返回
@@ -146,7 +142,7 @@ export default function Today({ onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('timeline')}
-          className="inline-flex items-center gap-1.5 rounded-md bg-mist px-3 py-2 text-xs font-semibold text-blue active:opacity-90"
+          className="journal-button journal-button--secondary"
         >
           <CalendarDays size={14} />
           编辑
@@ -154,22 +150,22 @@ export default function Today({ onNavigate }) {
       </div>
 
       {next && (
-        <section className="mt-4 px-4">
-          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.14em] text-slate">下一步</p>
+        <section className="mx-5 mt-5 lg:mx-10">
+          <p className="journal-label mb-2">下一步</p>
           {big(next)}
         </section>
       )}
 
-      <section className="mt-5 space-y-3 px-4">
+      <section className="mx-5 mt-6 space-y-0 pb-12 lg:mx-10">
         {entries.length === 0 && (
-          <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
-            <CalendarDays size={22} className="mx-auto text-gold" />
-            <p className="mt-2 text-sm font-semibold text-ink">{tripMeta.cityCn}行程待规划</p>
-            <p className="mt-1 text-sm font-medium text-slate">当前旅行已独立载入，之后添加的地点会在这里按时间执行。</p>
+          <div className="journal-empty">
+            <CalendarDays size={22} className="mx-auto text-accent" />
+            <p className="type-small mt-3 font-semibold text-ink">{tripMeta.cityCn}行程待规划</p>
+            <p className="type-small mt-1 text-muted">当前旅行已独立载入，之后添加的地点会在这里按时间执行。</p>
             <button
               type="button"
               onClick={() => onNavigate('timeline')}
-              className="mt-3 inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-sm font-semibold text-white"
+              className="journal-button journal-button--primary mt-4"
             >
               <CalendarDays size={13} />
               打开行程页

@@ -71,7 +71,7 @@ for (const label of pages) {
 report.seoulPages = pageResults
 
 await clickTab('首页')
-await page.getByText('切换城市', { exact: true }).click()
+await page.getByRole('button', { name: '切换旅行', exact: true }).click()
 await page.waitForTimeout(200)
 await openCity('吉隆坡')
 await bodyHas('KUALA LUMPUR')
@@ -103,7 +103,7 @@ report.storageIsolation = {
   separateKeys: scopedKeys.klTrip !== scopedKeys.seoulTrip,
 }
 
-await page.getByText('切换城市', { exact: true }).click()
+await page.getByRole('button', { name: '切换旅行', exact: true }).click()
 await page.waitForTimeout(200)
 await openCity('首尔')
 await bodyHas('SEOUL TEST HOTEL')
@@ -112,7 +112,7 @@ report.switchBackToSeoul = {
   klAddressAbsent: !(await page.locator('body').innerText()).includes('VERIFY KL HOTEL ADDRESS'),
 }
 
-await page.getByText('切换城市', { exact: true }).click()
+await page.getByRole('button', { name: '切换旅行', exact: true }).click()
 await page.waitForTimeout(200)
 await openCity('吉隆坡')
 await page.reload({ waitUntil: 'domcontentloaded' })
@@ -188,7 +188,7 @@ await cloudPage.waitForTimeout(250)
 await cloudPage.locator('label').filter({ hasText: /^地址/ }).first().locator('input').fill('CLOUD ISOLATION ADDRESS')
 await cloudPage.getByText('保存全部修改', { exact: true }).click()
 await cloudPage.waitForTimeout(120)
-await cloudPage.getByText('切换城市', { exact: true }).click()
+await cloudPage.getByRole('button', { name: '切换旅行', exact: true }).click()
 await cloudPage.waitForTimeout(120)
 await cloudPage.locator('main button').filter({ hasText: '首尔' }).first().click()
 await cloudPage.waitForTimeout(2200)

@@ -22,18 +22,18 @@ import {
   getTripId,
   getTravelers,
   getTripMeta,
+  initCloudSync,
   pushAllToCloud,
   saveTripEdits,
 } from '../data/store'
 import PageHeader from '../components/PageHeader'
 
-const inputCls =
-  'w-full rounded-md border border-line bg-white px-2.5 py-2 text-xs font-medium text-ink outline-none focus:border-blue'
+const inputCls = 'journal-input'
 
 function Field({ label, value, onChange, type = 'text', placeholder, readOnly = false, textarea = false }) {
   return (
     <label className="block min-w-0">
-      <span className="mb-1 block text-xs font-semibold text-slate">{label}</span>
+      <span className="mb-1 block type-caption font-semibold text-muted">{label}</span>
       {textarea ? (
         <textarea
           rows={3}
@@ -45,7 +45,7 @@ function Field({ label, value, onChange, type = 'text', placeholder, readOnly = 
       ) : (
         <input
           type={type}
-          className={`${inputCls} ${readOnly ? 'bg-cream/60 text-slate' : ''}`}
+          className={`${inputCls} ${readOnly ? 'bg-surface text-muted' : ''}`}
           value={value ?? ''}
           placeholder={placeholder}
           readOnly={readOnly}
@@ -151,8 +151,9 @@ export default function EditTrip({ onNavigate }) {
     setCloudStatus('连接中...')
     const result = await testCloudConnection()
     if (result.ok) {
-      setCloudStatus('已连接')
-      pushAllToCloud().catch(() => {})
+      const synced = await initCloudSync()
+      setCloudStatus(synced ? '已连接并同步' : '已连接')
+      if (!synced) pushAllToCloud().catch(() => {})
     } else {
       setCloudStatus(`连接失败：${result.reason}`)
     }
@@ -171,22 +172,22 @@ export default function EditTrip({ onNavigate }) {
     <div>
       <PageHeader eyebrow="Trip Editor" title="基础信息编辑中心" subtitle="改一次，首页/地图/行程/提醒同步更新" />
 
-      <div className="mx-4 mt-3 flex items-center justify-between gap-2">
+      <div className="mx-5 mt-5 flex items-center justify-between gap-2 lg:mx-10">
         <button
           type="button"
           onClick={() => onNavigate('home')}
-          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
+          className="journal-button journal-button--secondary"
         >
           <ArrowLeft size={14} />
           返回首页
         </button>
-        <span className="text-sm font-medium text-slate">保存后立即生效</span>
+        <span className="type-caption text-muted">保存后立即生效</span>
       </div>
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="text-[15px] font-semibold text-ink">基本信息</h2>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+      <section className="mx-5 mt-6 lg:mx-10">
+        <div className="border-t border-line pt-6">
+          <h2 className="type-h1 text-ink">基本信息</h2>
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <Field label="旅行ID（固定）" value={meta.tripId || getTripId()} readOnly onChange={() => {}} />
             <Field label="旅行名称" value={meta.title} placeholder="Seoul Trip Planner 2026" onChange={(v) => patchMeta('title', v)} />
             <Field label="城市（中文）" value={meta.cityCn} placeholder="吉隆坡" onChange={(v) => patchMeta('cityCn', v)} />
@@ -203,18 +204,26 @@ export default function EditTrip({ onNavigate }) {
           </div>
           <Field label="主题" value={meta.theme} onChange={(v) => patchMeta('theme', v)} />
           <div className="mt-2">
+            <Field
+              label="封面图片链接"
+              value={meta.coverImage || ''}
+              placeholder="可填写图片网址，或在创建计划时从相册选择"
+              onChange={(v) => patchMeta('coverImage', v)}
+            />
+          </div>
+          <div className="mt-2">
             <Field label="旅行备注" value={meta.notes} placeholder="记录待确认事项" textarea onChange={(v) => patchMeta('notes', v)} />
           </div>
         </div>
       </section>
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
-            <Music4 size={15} className="text-coral" />
+      <section className="mx-5 mt-8 lg:mx-10">
+        <div className="border-t border-line pt-6">
+          <h2 className="type-h1 flex items-center gap-1.5 text-ink">
+            <Music4 size={15} className="text-accent" strokeWidth={1.5} />
             演唱会
           </h2>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-3">
             <Field label="演唱会名称" value={meta.concert?.name} placeholder="演唱会名称" onChange={(v) => patchConcert('name', v)} />
             <Field label="日期" type="date" value={meta.concert?.date} onChange={(v) => patchConcert('date', v)} />
             <Field label="入场时间" type="time" value={meta.concert?.entryTime} onChange={(v) => patchConcert('entryTime', v)} />
@@ -226,21 +235,21 @@ export default function EditTrip({ onNavigate }) {
         </div>
       </section>
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
+      <section className="mx-5 mt-8 lg:mx-10">
+        <div className="border-t border-line pt-6">
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
-              <Plane size={15} className="text-blue" />
+            <h2 className="type-h1 flex items-center gap-1.5 text-ink">
+              <Plane size={15} className="text-accent" strokeWidth={1.5} />
               航班
             </h2>
-            <span className="text-sm font-semibold text-slate">可增删航班段</span>
+            <span className="type-caption text-muted">可增删航班段</span>
           </div>
           {['outbound', 'return'].map((side) => (
             <div key={side} className="mt-3">
-              <p className="text-xs font-semibold text-slate">{side === 'outbound' ? '去程' : '回程'}</p>
-              <div className="mt-2 space-y-2.5">
+              <p className="journal-label">{side === 'outbound' ? '去程' : '回程'}</p>
+              <div className="mt-3 space-y-3">
                 {flightData[side].map((flight, index) => (
-                  <div key={`${side}-${index}`} className="rounded-md border border-line bg-cream/50 p-2.5">
+                  <div key={`${side}-${index}`} className="border border-line bg-surface p-3">
                     <div className="grid grid-cols-2 gap-2">
                       <Field label="日期" value={flight.date} placeholder="8.20 晚" onChange={(v) => patchFlight(side, index, 'date', v)} />
                       <Field label="航班号" value={flight.flight} placeholder="MU6984" onChange={(v) => patchFlight(side, index, 'flight', v)} />
@@ -250,7 +259,7 @@ export default function EditTrip({ onNavigate }) {
                       <button
                         type="button"
                         onClick={() => removeFlight(side, index)}
-                        className="mt-4 flex h-8 w-8 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+                        className="mt-4 flex h-8 w-8 items-center justify-center border border-line text-clay"
                         aria-label="删除航班"
                       >
                         <Trash2 size={13} />
@@ -262,7 +271,7 @@ export default function EditTrip({ onNavigate }) {
                 <button
                   type="button"
                   onClick={() => addFlight(side)}
-                  className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-sm font-semibold text-blue active:opacity-90"
+                  className="journal-button journal-button--quiet"
                 >
                   <Plus size={13} />
                   添加航班段
@@ -273,25 +282,25 @@ export default function EditTrip({ onNavigate }) {
         </div>
       </section>
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
-            <BedDouble size={15} className="text-gold" />
+      <section className="mx-5 mt-8 lg:mx-10">
+        <div className="border-t border-line pt-6">
+          <h2 className="type-h1 flex items-center gap-1.5 text-ink">
+            <BedDouble size={15} className="text-accent" strokeWidth={1.5} />
             酒店
           </h2>
-          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-slate">
+          <p className="type-caption mt-1 flex items-center gap-1 text-muted">
             <FileText size={11} />
             留空的航班、酒店与时间会原样保留，方便后续补充
           </p>
           <div className="mt-3 space-y-4">
             {hotelData.map((hotel, index) => (
-              <div key={hotel.locationId || index} className="rounded-md border border-line bg-cream/50 p-2.5">
+              <div key={hotel.locationId || index} className="border border-line bg-surface p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate">第 {index + 1} 晚 · {hotel.night || '日期待填写'}</p>
+                  <p className="type-caption font-semibold text-muted">第 {index + 1} 晚 · {hotel.night || '日期待填写'}</p>
                   <button
                     type="button"
                     onClick={() => removeHotel(index)}
-                    className="flex h-7 w-7 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+                    className="flex h-8 w-8 items-center justify-center border border-line text-clay"
                     aria-label="删除酒店"
                   >
                     <Trash2 size={12} />
@@ -331,7 +340,7 @@ export default function EditTrip({ onNavigate }) {
             <button
               type="button"
               onClick={addHotel}
-              className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-sm font-semibold text-blue active:opacity-90"
+              className="journal-button journal-button--quiet"
             >
               <Plus size={13} />
               添加酒店
@@ -340,16 +349,16 @@ export default function EditTrip({ onNavigate }) {
         </div>
       </section>
 
-      <section className="mt-4 px-4">
-        <div className="rounded-lg border border-line bg-white p-4 shadow-card">
-          <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-ink">
-            <Users size={15} className="text-sage" />
+      <section className="mx-5 mt-8 lg:mx-10">
+        <div className="border-t border-line pt-6">
+          <h2 className="type-h1 flex items-center gap-1.5 text-ink">
+            <Users size={15} className="text-accent" strokeWidth={1.5} />
             旅行成员
           </h2>
           <div className="mt-3 space-y-3">
             {travelerData.map((traveler, index) => (
-              <div key={traveler.id} className="rounded-md border border-line bg-cream/50 p-2.5">
-                <p className="text-sm font-semibold text-slate">成员 {index + 1}</p>
+              <div key={traveler.id} className="border border-line bg-surface p-3">
+                <p className="type-caption font-semibold text-muted">成员 {index + 1}</p>
                 <div className="mt-2 grid grid-cols-2 gap-2">
                   <Field label="姓名" value={traveler.name} placeholder="姓名" onChange={(v) => patchTraveler(index, 'name', v)} />
                   <Field label="备注" value={traveler.note || ''} placeholder="27 岁" onChange={(v) => patchTraveler(index, 'note', v)} />
@@ -360,16 +369,19 @@ export default function EditTrip({ onNavigate }) {
         </div>
       </section>
 
-      <section className="mt-4 px-4">
-        <div className="border-y border-line bg-cream/30 p-4">
-          <h2 className="text-[15px] font-semibold text-ink">云同步（Supabase）</h2>
-          <p className="mt-1 text-sm font-medium leading-relaxed text-slate">
-            填写 Supabase 项目地址和 anon key 后，修改会自动上传；其他设备刷新后同步。
+      <section className="mx-5 mt-8 lg:mx-10">
+        <div className="border-y border-line py-6">
+          <h2 className="type-h1 text-ink">云同步（Supabase）</h2>
+          <p className="type-small mt-2 text-muted">
+            公网部署时建议在构建环境注入 Project URL 和 publishable / anon key；也可以在两台设备上填写同一组配置。
+            anon key 是浏览器公开密钥，不是注册密码，数据权限仍需由 Supabase RLS 控制。
           </p>
           <div className="mt-3 space-y-2">
             <Field label="Project URL" value={cloudConfig.url} placeholder="https://xxxx.supabase.co" onChange={(v) => setCloudConfig({ ...cloudConfig, url: v })} />
             <label className="block min-w-0">
-              <span className="mb-1 block text-xs font-semibold text-slate">Anon Key</span>
+              <span className="mb-1 block type-caption font-semibold text-muted">
+                Publishable / Anon Key（不是账户密码）
+              </span>
               <input
                 type="password"
                 className={inputCls}
@@ -379,7 +391,7 @@ export default function EditTrip({ onNavigate }) {
               />
             </label>
             <label className="block min-w-0">
-              <span className="mb-1 block text-xs font-semibold text-slate">Naver Maps Client ID（可选，填了地图切换为 Naver）</span>
+              <span className="mb-1 block type-caption font-semibold text-muted">Naver Maps Client ID（可选，填了地图切换为 Naver）</span>
               <input
                 className={inputCls}
                 value={naverId}
@@ -392,22 +404,22 @@ export default function EditTrip({ onNavigate }) {
             <button
               type="button"
               onClick={connectCloud}
-              className="inline-flex items-center gap-1 rounded-md bg-blue px-3 py-2 text-xs font-semibold text-white active:opacity-90"
+              className="journal-button journal-button--primary"
             >
               <Check size={14} />
-              保存并连接
+              保存并立即同步
             </button>
-            <span className="text-sm font-semibold text-slate">{cloudStatus}</span>
+            <span className="type-caption font-semibold text-muted">{cloudStatus}</span>
           </div>
         </div>
       </section>
 
-      <section className="mt-5 px-4">
+      <section className="mx-5 mt-8 pb-12 lg:mx-10">
         <div className="flex gap-2">
           <button
             type="button"
             onClick={save}
-            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md bg-ink py-3 text-sm font-semibold text-white active:opacity-90"
+            className="journal-button journal-button--primary flex-1"
           >
             <Check size={16} />
             保存全部修改
@@ -415,7 +427,7 @@ export default function EditTrip({ onNavigate }) {
           <button
             type="button"
             onClick={reset}
-            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-4 py-3 text-xs font-semibold text-slate active:bg-cream"
+            className="journal-button journal-button--secondary"
           >
             <RotateCcw size={15} />
             恢复默认

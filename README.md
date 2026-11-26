@@ -1,6 +1,6 @@
-# Seoul Trip Planner / Multi-City Travel Planner
+# 小韩之旅 / Multi-Trip Travel PWA
 
-移动端优先的多城市旅行攻略 Web App。目前包含首尔 2026 和吉隆坡 2027 两个独立旅行实例。
+移动端优先的旅行攻略 PWA。支持 iPhone Safari、Android Chrome、添加到主屏幕、离线查看、多份旅行计划、单份只读分享，以及可选 Supabase 云同步。现有首尔 2026 和吉隆坡 2027 攻略完整保留。
 
 ## 技术栈
 
@@ -8,7 +8,9 @@
 - Leaflet 地图 + Naver 地图导航跳转
 - 多城市数据层：`src/data/store.js` 根据 `tripId` 选择默认数据与独立 localStorage 命名空间
 - 默认数据：首尔 `src/data/trip.js`，吉隆坡 `src/data/kualaLumpur.js`
-- 城市目录：`src/data/cityTrips.js`
+- 旅行目录：默认数据 + 浏览器内的自定义旅行注册表
+- PWA：manifest、service worker、主屏幕图标和 Apple 启动图
+- 分享：URL 片段中的压缩只读快照
 
 ## 本地启动
 
@@ -25,17 +27,25 @@ npm run dev
 npm run build
 ```
 
-产物输出到 `dist/index.html`（单文件版 + `images/`）。
+产物输出到 `dist/`，应用主体为单文件 `index.html`，同时包含 PWA 图标、启动图、图片和分享/离线资源。
+
+公网云同步建议在构建前配置：
+
+```text
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-publishable-or-anon-key
+```
 
 ## 测试
 
 ```bash
-node scripts/verify49.mjs
+npm run audit:design
+npm run verify:guide
+npm run verify:pwa
+npm run verify:cloud
 ```
 
-`verify49.mjs` 覆盖吉隆坡地点图谱、区域/类型筛选、地图联动、收藏和 7 个旅行页面；`verify48.mjs` 覆盖城市切换与云端数据隔离。
-
-其他历史验证脚本位于 `scripts/verify*.mjs`。
+验收前需启动本地预览服务。`verify:cloud` 使用模拟 Supabase 后端验证“电脑修改 → 手机拉取”；真实公网同步仍要求 Supabase 表、RLS 和网络配置正确。
 
 ## 部署（GitHub Pages）
 
@@ -44,6 +54,10 @@ powershell -ExecutionPolicy Bypass -File deploy.ps1
 ```
 
 流程：构建 → 冒烟测试 → 同步部署仓库 → 推送 main → 等待 Pages 部署。
+
+PWA 必须通过 HTTPS 访问。GitHub Pages 默认提供 HTTPS；局域网 `http://192.168...` 地址不能安装到手机主屏幕。
+
+完整的 PWA、分享链接公开边界、手机安装和后续权限升级方案见 [`PWA_SHARING.md`](./PWA_SHARING.md)。
 
 源码同步：
 

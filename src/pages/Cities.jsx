@@ -1,6 +1,8 @@
-import { ArrowUpRight, CalendarDays, MapPin, Plus } from 'lucide-react'
-import { cityTrips } from '../data/cityTrips'
-import { getTripMetaForTrip } from '../data/store'
+import { useState } from 'react'
+import { ArrowUpRight, Plus, Trash2 } from 'lucide-react'
+import InstallPrompt from '../components/InstallPrompt'
+import TripCreator from '../components/TripCreator'
+import { deleteTripPlan, getTripCatalog } from '../data/store'
 
 function CityCover({ trip }) {
   if (trip.coverImage) {
@@ -14,112 +16,133 @@ function CityCover({ trip }) {
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#B9C7BF] px-6 py-7 text-ink">
-      <div className="absolute inset-x-6 top-1/2 border-t border-ink/20" />
-      <div className="absolute -right-14 top-10 h-52 w-52 rounded-full border border-ink/20" />
-      <div className="absolute -right-2 top-22 h-36 w-36 rounded-full border border-ink/15" />
-      <p className="editorial-label absolute left-6 top-6">3.1390 N / 101.6869 E</p>
-      <p className="absolute bottom-7 left-6 max-w-[85%] font-display text-[36px] font-semibold leading-[0.95] text-ink/80 sm:text-[44px]">
-        KUALA<br />LUMPUR
-      </p>
+    <div className="flex h-full w-full flex-col justify-between bg-surface p-6 text-ink">
+      <p className="journal-label text-accent">Destination</p>
+      <div>
+        <p className="type-display-xl max-w-[7ch] text-ink">{trip.city}</p>
+        <p className="type-small mt-4 text-muted">{trip.country} · {trip.theme}</p>
+      </div>
     </div>
   )
 }
 
 export default function Cities({ onSelectTrip }) {
-  const trips = cityTrips.map((city) => {
-    const meta = getTripMetaForTrip(city.tripId)
-    return {
-      ...city,
-      city: meta.city || city.city,
-      cityCn: meta.cityCn || city.cityCn,
-      country: meta.countryCn || city.country,
-      dates: meta.dates || city.dates,
-      status: meta.status || city.status,
-      theme: meta.theme || city.theme,
-      coverImage: meta.coverImage || city.cover,
+  const [trips, setTrips] = useState(() => getTripCatalog())
+  const [creating, setCreating] = useState(false)
+
+  const removeTrip = (tripId) => {
+    if (!window.confirm('确定删除这份旅行计划吗？只有自定义计划可以删除，现有默认攻略不会受影响。')) {
+      return
     }
-  })
+    deleteTripPlan(tripId)
+    setTrips(getTripCatalog())
+  }
 
   return (
     <div className="min-h-screen bg-paper">
-      <div className="mx-auto min-h-screen w-full max-w-[1280px] px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+      <div className="journal-shell">
         <header>
-          <div className="flex items-center justify-between border-b border-ink/20 pb-4">
-            <p className="editorial-label text-ink">Field notes / Travel archive</p>
-            <p className="text-xs font-medium text-slate">2026-2027</p>
-          </div>
-          <div className="grid gap-8 pb-9 pt-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end lg:pb-12 lg:pt-16">
-            <div>
-              <p className="editorial-label text-gold">Personal travel index</p>
-              <h1 className="mt-4 max-w-3xl font-display text-[42px] font-semibold leading-[1.02] text-ink sm:text-[48px]">
-                我的旅行
-              </h1>
+          <div className="flex items-center justify-between border-b border-line pb-4">
+            <p className="journal-label text-ink">Your travel collection</p>
+            <div className="flex items-center gap-3">
+              <InstallPrompt />
+              <p className="hidden journal-label sm:block">{trips.length} journeys</p>
             </div>
-            <div className="border-t border-ink/20 pt-4 lg:border-l lg:border-t-0 lg:pl-8">
-              <p className="max-w-sm text-[15px] leading-7 text-slate">
+          </div>
+
+          <div className="grid gap-8 pb-12 pt-12 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end lg:pb-16 lg:pt-16">
+            <div>
+              <p className="journal-label text-accent">Personal travel index</p>
+              <h1 className="type-display-xl mt-4 max-w-[9ch] text-ink">My Travel Journal</h1>
+              <p className="type-h2 mt-3 text-muted">我的旅行手册</p>
+            </div>
+            <div className="border-t border-line pt-4 lg:border-l lg:border-t-0 lg:pl-8">
+              <p className="type-small max-w-sm text-muted">
                 收藏每一座去过的城市，也为下一次出发留好位置。旅行资料、地点与现场记录都从这里开始。
               </p>
-              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink">
-                {trips.length} journeys archived
-              </p>
+              <p className="journal-label mt-5 text-ink">{trips.length} journeys archived</p>
             </div>
           </div>
         </header>
 
-        <main className="grid gap-10 pb-12 pt-8 lg:grid-cols-2 lg:gap-8 lg:pt-10">
+        <main className="grid gap-12 pb-16 pt-4 lg:grid-cols-2 lg:gap-8">
           {trips.map((trip, index) => (
-            <button
+            <article
               key={trip.tripId}
-              type="button"
-              onClick={() => onSelectTrip(trip.tripId)}
-              className="group block min-w-0 text-left"
+              className="group min-w-0"
             >
-              <div className="flex items-center justify-between border-b border-ink/20 pb-3">
-                <span className="font-display text-lg text-ink">{String(index + 1).padStart(2, '0')}</span>
-                <span className="editorial-label text-slate">{trip.status}</span>
+              <div className="flex items-center justify-between border-b border-line pb-3">
+                <span className="journal-label text-accent">
+                  {String(index + 1).padStart(2, '0')} / {trip.isCustom ? 'Personal plan' : 'City'}
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className="journal-label">{trip.status}</span>
+                  {trip.isCustom && (
+                    <button
+                      type="button"
+                      onClick={() => removeTrip(trip.tripId)}
+                      className="flex h-8 w-8 items-center justify-center text-muted hover:text-clay"
+                      aria-label={`删除${trip.title || trip.cityCn}`}
+                      title="删除自定义旅行"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className={`mt-4 overflow-hidden bg-sand ${index === 0 ? 'aspect-[4/3] lg:aspect-[5/4]' : 'aspect-[4/3] lg:aspect-[5/4]'}`}>
-                <CityCover trip={trip} />
-              </div>
-              <div className="pt-5">
-                <div className="flex items-end justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="editorial-label text-gold">{trip.country}</p>
-                    <h2 className="mt-2 font-display text-[28px] font-semibold leading-none text-ink sm:text-[32px]">{trip.cityCn}</h2>
-                    <p className="mt-1 text-sm text-slate">{trip.city}</p>
+
+              <button
+                type="button"
+                onClick={() => onSelectTrip(trip.tripId)}
+                className="block w-full text-left"
+              >
+                <div className="journal-media mt-4 aspect-[4/3]">
+                  <CityCover trip={trip} />
+                </div>
+
+                <div className="pt-5">
+                  <div className="flex items-end justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="journal-label text-accent">{trip.country}</p>
+                      <h2 className="type-h1 mt-2 text-ink">{trip.cityCn || trip.title}</h2>
+                      <p className="type-small mt-1 text-muted">{trip.city || trip.title}</p>
+                    </div>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line text-ink transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
+                      <ArrowUpRight size={16} />
+                    </span>
                   </div>
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-ink/30 text-ink transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5">
-                    <ArrowUpRight size={17} />
-                  </span>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+                    <span className="type-small font-medium text-ink">{trip.dates}</span>
+                    <span className="type-small text-muted">{trip.theme}</span>
+                  </div>
                 </div>
-                <div className="mt-5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-2 border-t border-ink/15 pt-3 text-sm">
-                  <span className="flex items-center gap-1.5 font-semibold text-ink">
-                    <CalendarDays size={13} className="text-gold" />
-                    {trip.dates}
-                  </span>
-                  <span className="flex min-w-0 items-center justify-end gap-1.5 truncate text-slate">
-                    <MapPin size={12} className="shrink-0" />
-                    <span className="truncate">{trip.theme}</span>
-                  </span>
-                </div>
-              </div>
-            </button>
+              </button>
+            </article>
           ))}
         </main>
 
         <button
           type="button"
-          onClick={() => window.alert('新增旅行城市入口已预留，下一阶段可继续接入新城市。')}
-          className="flex w-full items-center justify-between border-y border-ink/20 py-5 text-left text-sm font-semibold text-slate transition-colors hover:text-ink"
+          onClick={() => setCreating(true)}
+          className="flex w-full items-center justify-between border-y border-line py-5 text-left type-small font-semibold text-muted transition-colors hover:text-ink"
         >
           <span className="flex items-center gap-2">
             <Plus size={16} />
-            新增旅行城市
+            创建新的旅行计划
           </span>
-          <span className="editorial-label">Coming next</span>
+          <span className="journal-label">Local first</span>
         </button>
       </div>
+
+      {creating && (
+        <TripCreator
+          onClose={() => setCreating(false)}
+          onCreated={(tripId) => {
+            setCreating(false)
+            onSelectTrip(tripId)
+          }}
+        />
+      )}
     </div>
   )
 }

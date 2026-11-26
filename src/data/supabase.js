@@ -35,7 +35,11 @@ async function request(config, path, options = {}) {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
   }
-  const res = await fetch(`${config.url.replace(/\/$/, '')}${path}`, { ...options, headers })
+  const res = await fetch(`${config.url.replace(/\/$/, '')}${path}`, {
+    cache: 'no-store',
+    ...options,
+    headers,
+  })
   if (!res.ok) throw new Error(`supabase ${res.status} ${path}`)
   return res.status === 204 ? null : res.json()
 }

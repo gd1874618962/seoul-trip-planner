@@ -6,10 +6,21 @@ import { getDays, getTripMeta } from '../data/store'
 import NaverMap, { getNaverClientId } from './NaverMap'
 
 export const dayColors = {
-  1: '#657E80',
-  2: '#7B8F82',
-  3: '#A47D6C',
-  4: '#445B5E',
+  1: '#B6573F',
+  2: '#2F716D',
+  3: '#A57A24',
+  4: '#6C5685',
+  5: '#5E7A3D',
+  6: '#A34E70',
+  7: '#5E6C91',
+}
+
+const fallbackDayColors = Object.values(dayColors)
+
+export function getDayColor(day) {
+  const number = Number(day)
+  if (!Number.isFinite(number)) return dayColors[1]
+  return dayColors[number] || fallbackDayColors[(Math.max(1, number) - 1) % fallbackDayColors.length]
 }
 
 function makeIcon(num, color, highlighted = false, selected = false) {
@@ -20,6 +31,70 @@ function makeIcon(num, color, highlighted = false, selected = false) {
     iconSize: selected ? [34, 38] : [26, 30],
     iconAnchor: selected ? [17, 34] : [13, 28],
     popupAnchor: [0, -30],
+  })
+}
+
+function makeArrowIcon(color, angle) {
+  return L.divIcon({
+    className: 'trip-route-arrow-wrap',
+    html: `<div class="trip-route-arrow" style="--route-color:${color};--route-angle:${angle}deg"></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  })
+}
+
+export function buildDayRoutes(items, days = getDays()) {
+  return days
+    .map((day) => {
+      const refs = []
+      day.entries.forEach((entry) => {
+        if (entry.locationId) refs.push(entry.locationId)
+        else if (Array.isArray(entry.pointIds)) entry.pointIds.forEach((id) => refs.push(`loc-${id}`))
+      })
+      const route = refs
+        .map(
+          (ref) =>
+            items.find((point) => point.locationId === ref) ||
+            items.find((point) => point.id === ref || point.id === Number(ref)),
+        )
+        .filter(
+          (point, index, all) =>
+            point && (index === 0 || all[index - 1]?.locationId !== point.locationId),
+        )
+      return { day: Number(day.id), label: day.label, date: day.date, route }
+    })
+    .filter((group) => group.route.length > 1)
+}
+
+function routeAngle(a, b) {
+  const dx = Number(b.lng) - Number(a.lng)
+  const dy = Number(a.lat) - Number(b.lat)
+  return (Math.atan2(dy, dx) * 180) / Math.PI
+}
+
+function RouteArrows({ route, color }) {
+  return route.slice(1).map((destination, index) => {
+    const origin = route[index]
+    if (
+      origin.lat == null ||
+      origin.lng == null ||
+      destination.lat == null ||
+      destination.lng == null
+    ) {
+      return null
+    }
+    return (
+      <Marker
+        key={`arrow-${destination.locationId || destination.id}-${index}`}
+        position={[
+          (Number(origin.lat) + Number(destination.lat)) / 2,
+          (Number(origin.lng) + Number(destination.lng)) / 2,
+        ]}
+        icon={makeArrowIcon(color, routeAngle(origin, destination))}
+        interactive={false}
+        keyboard={false}
+      />
+    )
   })
 }
 
@@ -51,51 +126,24 @@ export default function TripMap({
   showRoutes = true,
   onSelectPoint,
   heightClass = 'h-[380px]',
+  days: daysProp,
+  tripMeta: tripMetaProp,
 }) {
-  const tripMeta = getTripMeta()
-  const routeByDay = {}
-  getDays().forEach((day) => {
-    const refs = []
-    day.entries.forEach((entry) => {
-      if (entry.locationId) refs.push(entry.locationId)
-      else if (Array.isArray(entry.pointIds)) entry.pointIds.forEach((id) => refs.push(`loc-${id}`))
-    })
-    routeByDay[day.id] = refs
-  })
-  const byDay = Object.entries(routeByDay)
-    .map(([day, refs]) => ({
-      day: Number(day),
-      route: refs
-        .map(
-          (ref) =>
-            items.find((p) => p.locationId === ref) ||
-            items.find((p) => p.id === ref || p.id === Number(ref)),
-        )
-        .filter((p, i, arr) => p && (i === 0 || arr[i - 1]?.locationId !== p.locationId)),
-    }))
-    .filter((group) => group.route.length > 1)
-
-  const transportRoutes = []
-  getDays().forEach((day) => {
-    day.entries.forEach((entry) => {
-      const t = entry.transport
-      if (t?.origin?.lat != null && t?.destination?.lat != null) {
-        transportRoutes.push([t.origin, t.destination])
-      }
-    })
-  })
+  const tripMeta = tripMetaProp || getTripMeta()
+  const tripDays = daysProp || getDays()
+  const byDay = buildDayRoutes(items, tripDays)
 
   if (showRoutes && getNaverClientId() && tripMeta.tripId === 'seoul-2026') {
     return (
       <NaverMap
         items={items}
-        routes={byDay.map((group) => ({ ...group, color: dayColors[group.day] }))}
+        routes={byDay.map((group) => ({ ...group, color: getDayColor(group.day) }))}
       />
     )
   }
 
   return (
-    <div className="overflow-hidden border border-ink/20 bg-mist">
+    <div className="journal-media border border-line bg-surface">
       <MapContainer
         center={[tripMeta.mapCenter?.lat || 37.5665, tripMeta.mapCenter?.lng || 126.978]}
         zoom={11}
@@ -109,22 +157,15 @@ export default function TripMap({
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <FitBounds items={items} />
         <FocusPoint items={items} focusId={focusId} />
-        {showRoutes && transportRoutes.map(([a, b], i) => (
-          <Polyline
-            key={`transport-${i}`}
-            positions={[
-              [a.lat, a.lng],
-              [b.lat, b.lng],
-            ]}
-            pathOptions={{ color: '#D97B5F', weight: 2, opacity: 0.75, dashArray: '2 6' }}
-          />
-        ))}
         {showRoutes && byDay.map(({ day, route }) => (
           <Polyline
             key={day}
             positions={route.map((p) => [p.lat, p.lng])}
-            pathOptions={{ color: dayColors[day], weight: 2, opacity: 0.55, dashArray: '1 6' }}
+            pathOptions={{ color: getDayColor(day), weight: 3, opacity: 0.82 }}
           />
+        ))}
+        {showRoutes && byDay.map(({ day, route }) => (
+          <RouteArrows key={`arrows-${day}`} route={route} color={getDayColor(day)} />
         ))}
         {items.map((p) => (
           <Marker
@@ -132,16 +173,16 @@ export default function TripMap({
             position={[p.lat, p.lng]}
             icon={makeIcon(
               p.markerNo || (typeof p.id === 'number' ? p.id : '★'),
-              p.markerColor || dayColors[p.day],
+              p.markerColor || getDayColor(p.day),
               p.keyRestaurant,
               p.locationId === focusId,
             )}
             eventHandlers={{ click: () => onSelectPoint?.(p.locationId) }}
           >
             <Popup>
-              <div className="min-w-[160px] text-sm">
+              <div className="min-w-[160px] type-small">
                 <p className="font-semibold text-ink">{p.displayName || p.name}</p>
-                <p className="mt-0.5 text-sm text-slate">{p.officialAddress || p.address}</p>
+                <p className="mt-0.5 type-small text-muted">{p.officialAddress || p.address}</p>
                 <a
                   href={
                     tripMeta.tripId === 'seoul-2026'
@@ -150,7 +191,7 @@ export default function TripMap({
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-2 inline-flex bg-ink px-2.5 py-1 text-sm font-semibold text-paper"
+                  className="journal-button journal-button--primary mt-2"
                 >
                   在地图打开
                 </a>

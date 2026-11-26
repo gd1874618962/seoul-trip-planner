@@ -143,7 +143,7 @@ for (const label of ['首页', '行程', '地图', '餐厅', '预算', '提醒',
 }
 report.allPages = pageResults
 
-await page.getByText('切换城市', { exact: true }).click()
+await page.getByRole('button', { name: '切换旅行', exact: true }).click()
 await page.waitForTimeout(200)
 await page.locator('main button').filter({ hasText: '首尔' }).first().click()
 await page.waitForTimeout(250)

@@ -14,6 +14,8 @@ import EditTrip from './pages/EditTrip'
 import Today from './pages/Today'
 import ShoppingHub from './pages/ShoppingHub'
 import ShoppingPage from './pages/ShoppingPage'
+import SharedTrip from './pages/SharedTrip'
+import { decodeShareSnapshot, getShareTokenFromLocation } from './data/share'
 import {
   getActiveTripId,
   getTripMeta,
@@ -36,11 +38,48 @@ export const tabs = [
 ]
 
 export default function App() {
+  const [sharedPlan, setSharedPlan] = useState(() =>
+    getShareTokenFromLocation() ? { status: 'loading', snapshot: null, error: '' } : null,
+  )
   const [page, setPage] = useState('cities')
   const [activeTripId, setActiveTripIdState] = useState(() => getActiveTripId())
   const [tick, setTick] = useState(0)
 
   useEffect(() => {
+    let generation = 0
+    const loadShare = () => {
+      const currentGeneration = ++generation
+      const token = getShareTokenFromLocation()
+      if (!token) {
+        setSharedPlan(null)
+        return
+      }
+      setSharedPlan({ status: 'loading', snapshot: null, error: '' })
+      decodeShareSnapshot(token)
+        .then((snapshot) => {
+          if (currentGeneration !== generation) return
+          document.title = `${snapshot.trip.meta.title || '旅行计划'} · 小韩之旅`
+          setSharedPlan({ status: 'ready', snapshot, error: '' })
+        })
+        .catch(() => {
+          if (currentGeneration !== generation) return
+          setSharedPlan({
+            status: 'error',
+            snapshot: null,
+            error: '分享链接不完整，或当前浏览器版本不支持解压。请让分享者重新发送完整链接。',
+          })
+        })
+    }
+    loadShare()
+    window.addEventListener('hashchange', loadShare)
+    return () => {
+      generation += 1
+      window.removeEventListener('hashchange', loadShare)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (getShareTokenFromLocation()) return undefined
     let cancelled = false
     Promise.all([initRemoteSync(), initCloudSync()]).finally(() => {
       if (cancelled) return
@@ -73,6 +112,35 @@ export default function App() {
     setTick((v) => v + 1)
   }
 
+  if (sharedPlan) {
+    if (sharedPlan.status === 'loading') {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-paper px-6">
+          <div className="text-center">
+            <p className="journal-label text-accent">Shared travel plan</p>
+            <p className="type-h2 mt-3 text-ink">正在打开旅行计划</p>
+            <p className="type-small mt-2 text-muted">正在读取只读分享快照…</p>
+          </div>
+        </div>
+      )
+    }
+    if (sharedPlan.status === 'error') {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-paper px-6">
+          <div className="max-w-md text-center">
+            <p className="journal-label text-accent">Share link</p>
+            <p className="type-h1 mt-3 text-ink">无法打开分享</p>
+            <p className="type-small mt-3 text-muted">{sharedPlan.error}</p>
+            <a href="./" className="journal-button journal-button--primary mt-6">
+              打开完整应用
+            </a>
+          </div>
+        </div>
+      )
+    }
+    return <SharedTrip snapshot={sharedPlan.snapshot} />
+  }
+
   if (page === 'cities') {
     return <Cities onSelectTrip={selectTrip} />
   }
@@ -81,16 +149,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <div className="mx-auto min-h-screen w-full max-w-[1480px] bg-paper lg:grid lg:grid-cols-[232px_minmax(0,1fr)]">
+      <div className="mx-auto min-h-screen w-full max-w-[1440px] bg-paper lg:grid lg:grid-cols-[224px_minmax(0,1fr)]">
         <BottomNav
           current={page}
           trip={trip}
           onNavigate={navigate}
           onSwitch={() => navigate('cities')}
         />
-        <div className="min-w-0 pb-24 lg:pb-0">
+        <div className="app-content min-w-0">
           <TripSwitcher trip={trip} onSwitch={() => navigate('cities')} />
-          <main key={`${activeTripId}-${tick}-${page}`} className="mx-auto w-full max-w-[1280px]">
+          <main key={`${activeTripId}-${tick}-${page}`} className="mx-auto w-full max-w-[1180px]">
             {page === 'home' && <HomePage onNavigate={navigate} />}
             {page === 'timeline' && <Timeline />}
             {page === 'map' && <MapPage />}

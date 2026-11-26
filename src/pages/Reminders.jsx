@@ -84,22 +84,22 @@ function ReminderCard({
   }
 
   return (
-    <section className="border-b border-line py-5">
+    <section className="border-b border-line py-6">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line text-slate">
-            <Icon size={18} />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line text-accent">
+            <Icon size={15} strokeWidth={1.5} />
           </span>
           {editing ? (
             <input
               value={group.title}
               onChange={(e) => onChange({ title: e.target.value })}
-              className="w-40 rounded-md border border-line bg-white px-2 py-1.5 text-sm font-semibold text-ink outline-none focus:border-blue"
+              className="journal-input w-48"
             />
           ) : (
             <div>
-              <h2 className="text-xl font-semibold text-ink">{group.title}</h2>
-              <p className="text-xs font-semibold text-slate">
+              <h2 className="type-h2 text-ink">{group.title}</h2>
+              <p className="type-caption font-semibold text-muted">
                 {done} / {group.items.length} 已完成
               </p>
             </div>
@@ -110,7 +110,7 @@ function ReminderCard({
             <button
               type="button"
               onClick={onDelete}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+              className="flex h-8 w-8 items-center justify-center border border-line text-clay"
               aria-label="删除整个提醒块"
             >
               <Trash2 size={14} />
@@ -119,7 +119,7 @@ function ReminderCard({
               type="button"
               onClick={onMoveUp}
               disabled={isFirst}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-line bg-white text-slate disabled:opacity-30 active:bg-cream"
+              className="flex h-8 w-8 items-center justify-center border border-line bg-paper text-muted disabled:opacity-30"
               aria-label="整组上移"
             >
               <ArrowUp size={14} />
@@ -128,7 +128,7 @@ function ReminderCard({
               type="button"
               onClick={onMoveDown}
               disabled={isLast}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-line bg-white text-slate disabled:opacity-30 active:bg-cream"
+              className="flex h-8 w-8 items-center justify-center border border-line bg-paper text-muted disabled:opacity-30"
               aria-label="整组下移"
             >
               <ArrowDown size={14} />
@@ -136,16 +136,16 @@ function ReminderCard({
           </div>
         )}
         {!editing && (
-          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-cream">
+          <div className="h-px w-16 overflow-hidden bg-line">
             <div
-              className="h-full rounded-full bg-blue transition-all"
+              className="h-full bg-accent transition-all"
               style={{ width: `${group.items.length ? (done / group.items.length) * 100 : 0}%` }}
             />
           </div>
         )}
       </div>
 
-      <div className="mt-3.5 space-y-1">
+      <div className="mt-4">
         {group.items.map((item, index) =>
           editing ? (
             <div key={`${group.id}-${index}`} className="flex items-center gap-1.5">
@@ -156,14 +156,14 @@ function ReminderCard({
                   next[index] = e.target.value
                   onChange({ items: next })
                 }}
-                className="min-w-0 flex-1 rounded-md border border-line bg-white px-2.5 py-2 text-sm font-medium text-ink outline-none focus:border-blue"
+                className="journal-input min-w-0 flex-1"
               />
               <div className="flex shrink-0 items-center gap-1">
                 <button
                   type="button"
                   onClick={() => moveItem(index, -1)}
                   disabled={index === 0}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-line bg-white text-slate disabled:opacity-30 active:bg-cream"
+                  className="flex h-8 w-8 items-center justify-center border border-line bg-paper text-muted disabled:opacity-30"
                   aria-label="上移"
                 >
                   <ArrowUp size={14} />
@@ -172,7 +172,7 @@ function ReminderCard({
                   type="button"
                   onClick={() => moveItem(index, 1)}
                   disabled={index === group.items.length - 1}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-line bg-white text-slate disabled:opacity-30 active:bg-cream"
+                  className="flex h-8 w-8 items-center justify-center border border-line bg-paper text-muted disabled:opacity-30"
                   aria-label="下移"
                 >
                   <ArrowDown size={14} />
@@ -180,7 +180,7 @@ function ReminderCard({
                 <button
                   type="button"
                   onClick={() => onChange({ items: group.items.filter((_, i) => i !== index) })}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-line text-coral active:bg-cream"
+                  className="flex h-8 w-8 items-center justify-center border border-line text-clay"
                   aria-label="删除这条提醒"
                 >
                   <Trash2 size={14} />
@@ -192,16 +192,16 @@ function ReminderCard({
               key={`${group.id}-${index}`}
               type="button"
               onClick={() => toggle(index)}
-              className="flex w-full items-start gap-3 rounded-md px-1 py-2.5 text-left active:bg-cream/60"
+              className="flex w-full items-start gap-3 border-b border-line py-3 text-left last:border-b-0"
             >
               <span
                 className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition ${
-                  checks[index] ? 'border-blue bg-blue text-white' : 'border-sand bg-white text-transparent'
+                  checks[index] ? 'border-accent bg-accent text-paper' : 'border-line bg-paper text-transparent'
                 }`}
               >
                 <Check size={12} strokeWidth={3} />
               </span>
-              <span className={`flex-1 text-sm font-medium leading-relaxed ${checks[index] ? 'text-slate/60 line-through' : 'text-ink'}`}>
+              <span className={`type-small flex-1 ${checks[index] ? 'text-muted/60 line-through' : 'text-ink'}`}>
                 {item}
               </span>
             </button>
@@ -214,7 +214,7 @@ function ReminderCard({
           <button
             type="button"
             onClick={() => onChange({ items: [...group.items, '新提醒'] })}
-            className="inline-flex items-center gap-1 rounded-md bg-mist px-2.5 py-1.5 text-sm font-semibold text-blue active:opacity-90"
+            className="journal-button journal-button--quiet"
           >
             <Plus size={13} />
             添加一条
@@ -222,7 +222,7 @@ function ReminderCard({
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex items-center gap-1 rounded-md border border-line px-2.5 py-1.5 text-sm font-semibold text-slate active:bg-cream"
+            className="journal-button journal-button--quiet"
           >
             <RotateCcw size={13} />
             恢复默认
@@ -299,13 +299,13 @@ export default function Reminders() {
     <div>
       <PageHeader eyebrow="Checklist" title="旅行提醒" subtitle="逐项打勾，出发前过一遍" />
 
-      <div className="flex items-center justify-between gap-2 px-5 pt-4 lg:px-10">
+      <div className="mx-5 flex items-center justify-between gap-2 pt-5 lg:mx-10">
         {editing ? (
           <>
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-2 text-xs font-semibold text-white active:opacity-90"
+              className="journal-button journal-button--primary"
             >
               <Check size={14} />
               完成编辑
@@ -313,7 +313,7 @@ export default function Reminders() {
             <button
               type="button"
               onClick={resetAll}
-              className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate active:bg-cream"
+              className="journal-button journal-button--secondary"
             >
               <RotateCcw size={14} />
               全部恢复默认
@@ -323,23 +323,23 @@ export default function Reminders() {
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-mist px-3 py-2 text-xs font-semibold text-blue active:opacity-90"
+            className="journal-button journal-button--secondary"
           >
             <Pencil size={14} />
             编辑提醒
           </button>
         )}
-        <span className="text-sm font-medium text-slate">
+        <span className="type-caption text-muted">
           {editing ? '改完自动保存到本机' : '勾选状态会保存在本机'}
         </span>
       </div>
 
-      <section className="mt-4 px-5 pb-12 lg:px-10">
+      <section className="mx-5 mt-5 pb-12 lg:mx-10">
         {groups.length === 0 && !editing && (
-          <div className="rounded-lg border border-dashed border-line bg-cream/50 px-4 py-8 text-center">
-            <ClipboardList size={22} className="mx-auto text-gold" />
-            <p className="mt-2 text-sm font-semibold text-ink">还没有提醒清单</p>
-            <p className="mt-1 text-sm font-medium text-slate">进入编辑模式后可以新增机场、演唱会和行李提醒。</p>
+          <div className="journal-empty">
+            <ClipboardList size={22} className="mx-auto text-accent" />
+            <p className="type-small mt-3 font-semibold text-ink">还没有提醒清单</p>
+            <p className="type-small mt-1 text-muted">进入编辑模式后可以新增机场、演唱会和行李提醒。</p>
           </div>
         )}
         {groups.map((group, index) => (
@@ -360,7 +360,7 @@ export default function Reminders() {
           <button
             type="button"
             onClick={addGroup}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue/40 bg-mist/50 py-3 text-xs font-semibold text-blue active:bg-mist"
+            className="journal-button journal-button--secondary mt-4 w-full"
           >
             <Plus size={15} />
             新增提醒块

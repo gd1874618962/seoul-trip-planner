@@ -17,6 +17,12 @@ await page.goto('file:///C:/Users/PC/Documents/丽笙酒店/seoul-trip-planner/d
 })
 await page.waitForTimeout(1800)
 
+const tripButton = page.locator('main button').filter({ hasText: '吉隆坡' }).first()
+if (await tripButton.count()) {
+  await tripButton.click()
+  await page.waitForTimeout(600)
+}
+
 const report = await page.evaluate(() => ({
   title: document.title,
   h1: document.querySelector('h1')?.textContent?.trim() || '',
@@ -25,9 +31,8 @@ const report = await page.evaluate(() => ({
   brokenImages: [...document.images].filter((img) => img.naturalWidth === 0).map((img) => img.getAttribute('src')),
 }))
 
-const nav = page.locator('nav button')
 for (const label of ['行程', '地图', '餐厅', '预算', '提醒']) {
-  await nav.filter({ hasText: label }).click()
+  await page.locator(`nav button[aria-label="${label}"]`).click()
   await page.waitForTimeout(label === '地图' ? 2000 : 500)
 }
 report.errors = errors

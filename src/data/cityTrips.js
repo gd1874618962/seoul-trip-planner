@@ -21,6 +21,6 @@ export const cityTrips = [
     dates: '2027.01.08 - 01.11',
     status: '规划中',
     theme: '城市游玩 · 演唱会',
-    cover: '',
+    cover: `${assetBase}images/kuala-lumpur-hero.jpg`,
   },
 ]
