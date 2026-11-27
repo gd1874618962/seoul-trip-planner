@@ -37,6 +37,7 @@ import {
 } from '../data/store'
 import PageHeader from '../components/PageHeader'
 import { generateTransportRoute } from '../services/transportService'
+import KualaLumpurItinerary from './KualaLumpurItinerary'
 
 const typeMeta = {
   抵达: { icon: Plane },
@@ -338,7 +339,7 @@ function reflowEntries(list) {
   return out
 }
 
-export default function Timeline() {
+function SeoulTimeline() {
   const [activeDay, setActiveDay] = useState(1)
   const [editing, setEditing] = useState(false)
   const [overrides, setOverrides] = useState(() => getTimelineOverrides())
@@ -811,4 +812,10 @@ export default function Timeline() {
       </section>
     </div>
   )
+}
+
+export default function Timeline() {
+  return getTripMeta().tripId === 'kuala-lumpur-2027-01'
+    ? <KualaLumpurItinerary />
+    : <SeoulTimeline />
 }

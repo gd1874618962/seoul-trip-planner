@@ -557,14 +557,14 @@ export function getDays(overrides = getTimelineOverrides()) {
   return dataset.days.map((d) => {
     const storedVersion = overrides.__itineraryVersion?.[d.id]
     const staleDay = storedVersion !== currentVersion
-    const raw = staleDay
+    const savedEntries = staleDay || !Array.isArray(overrides[d.id])
       ? []
-      : overrides[d.id]
-        ? [...overrides[d.id]].filter(
-            (entry) => !isDeprecatedEntry(entry),
-          )
-        : []
-    const seen = new Set(raw.map((entry) => entry.id))
+      : overrides[d.id].filter((entry) => !isDeprecatedEntry(entry))
+    const savedIds = new Set(savedEntries.map((entry) => entry.id).filter(Boolean))
+    const raw = savedEntries
+      .filter((entry) => !entry.__hidden)
+      .map(({ __hidden, ...entry }) => entry)
+    const seen = new Set(savedIds)
     d.entries.forEach((defaultEntry) => {
       if (!seen.has(defaultEntry.id)) raw.push({ ...defaultEntry })
     })

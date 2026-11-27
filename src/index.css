@@ -470,6 +470,41 @@
   z-index: 20;
 }
 
+.trip-marker-cluster {
+  width: 28px;
+  height: 28px;
+  font-size: 0.75rem;
+  box-shadow: 0 0 0 4px rgb(var(--color-paper) / 0.85);
+}
+
+.trip-marker-cluster::after {
+  display: none;
+}
+
+.kl-drag-handle {
+  touch-action: none;
+  cursor: grab;
+}
+
+.kl-drag-handle:active {
+  cursor: grabbing;
+}
+
+.kl-itinerary-row,
+.kl-pending-row {
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.kl-itinerary-row:hover,
+.kl-pending-row:hover {
+  background: rgb(var(--color-surface) / 0.72);
+}
+
+.kl-drop-active {
+  background: rgb(var(--color-surface) / 0.84);
+  box-shadow: inset 0 0 0 1px rgb(var(--color-accent) / 0.45);
+}
+
 .trip-route-arrow {
   width: 18px;
   height: 18px;

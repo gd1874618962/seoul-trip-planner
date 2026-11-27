@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "preview:mobile": "node scripts/start-preview.mjs",
     "verify:guide": "node scripts/verify50.mjs",
+    "verify:kualaLumpur": "node scripts/verify-kualaLumpur-planner.mjs",
     "verify:pwa": "node scripts/verify-pwa-share.mjs",
     "verify:cloud": "node scripts/verify-cloud-sync.mjs",
     "audit:design": "node scripts/audit-design.mjs"

@@ -158,7 +158,7 @@ export default function App() {
         />
         <div className="app-content min-w-0">
           <TripSwitcher trip={trip} onSwitch={() => navigate('cities')} />
-          <main key={`${activeTripId}-${tick}-${page}`} className="mx-auto w-full max-w-[1180px]">
+          <main key={`${activeTripId}-${page}`} className="mx-auto w-full max-w-[1180px]">
             {page === 'home' && <HomePage onNavigate={navigate} />}
             {page === 'timeline' && <Timeline />}
             {page === 'map' && <MapPage />}

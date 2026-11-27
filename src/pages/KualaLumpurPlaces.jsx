@@ -23,26 +23,10 @@ import {
   getTripMeta,
   saveFavoritePlaceIds,
 } from '../data/store'
-
-const areaColors = {
-  '武吉免登 / Pavilion / Jalan Alor': '#775736',
-  'KLCC / 双子塔': '#775736',
-  'TRX / 市中心东侧': '#775736',
-  '独立广场 / 中央市场 / 唐人街': '#775736',
-  '十五碑 / Brickfields': '#775736',
-  '甲洞 / Kepong': '#775736',
-  'Petaling Jaya / Mid Valley': '#775736',
-  'PJ Section 17': '#775736',
-  '独立广场 / 老城区': '#775736',
-  'Quill City Mall': '#775736',
-  'Pavilion Damansara Heights': '#775736',
-  '机场 / KLIA': '#775736',
-  '待确认区域': '#775736',
-  '雪兰莪 / 巴生方向': '#775736',
-  '机场 / 返程': '#775736',
-  '其他 / 待确认区域': '#775736',
-  'Bukit Jalil / 演唱会场馆': '#775736',
-}
+import {
+  getKualaLumpurPlaceMeta,
+  hasKualaLumpurCoordinates,
+} from '../utils/kualaLumpurPlanner'
 
 const typeFilters = [
   { id: 'all', label: '全部' },
@@ -64,7 +48,9 @@ function matchesType(point, type) {
   }
   if (type === 'cafe') return /咖啡|甜品/.test(point.category)
   if (type === 'shopping') return /购物|超市/.test(point.category)
-  if (type === 'pending') return point.branchPending || point.addressPending || !point.hasCoordinates
+  if (type === 'pending') {
+    return point.branchPending || point.addressPending || !point.hasCoordinates
+  }
   return true
 }
 
@@ -123,6 +109,11 @@ function PlaceCard({ point, expanded, onToggle, onFavorite }) {
               {(point.branchPending || point.addressPending) && (
                 <span className="border-l border-accent/40 pl-3 text-accent">
                   {point.addressPending ? '地点待确认' : '分店 / 地址待确认'}
+                </span>
+              )}
+              {point.status && (
+                <span className="border-l border-line pl-3 font-medium text-ink">
+                  {point.status === 'scheduled' ? '已安排' : point.status === 'unverified' ? '待核实' : '备选'}
                 </span>
               )}
               {!point.hasCoordinates && (
@@ -189,7 +180,7 @@ export default function KualaLumpurPlaces() {
   const [focusId, setFocusId] = useState('')
   const [expandedId, setExpandedId] = useState('')
   const [favoriteIds, setFavoriteIds] = useState(() => getFavoritePlaceIds())
-  const [mapMode, setMapMode] = useState('route')
+  const [mapMode, setMapMode] = useState('places')
 
   const points = [...getPoints()].sort(
     (a, b) => Number(a.areaOrder || 99) - Number(b.areaOrder || 99) || a.displayName.localeCompare(b.displayName),
@@ -200,8 +191,8 @@ export default function KualaLumpurPlaces() {
 
   const withMeta = points.map((point) => ({
     ...point,
-    hasCoordinates: point.lat != null && point.lng != null && Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lng)),
-    markerColor: areaColors[point.area] || '#536E6F',
+    hasCoordinates: hasKualaLumpurCoordinates(point),
+    markerColor: getKualaLumpurPlaceMeta(point).color,
     isFavorite: favoriteIds.includes(point.locationId),
   }))
   const filtered = withMeta.filter(
@@ -318,6 +309,7 @@ export default function KualaLumpurPlaces() {
               items={mapItems}
               focusId={focusId}
               showRoutes={mapMode === 'route'}
+              clusterByPosition={mapMode === 'places'}
               onSelectPoint={(locationId) => {
                 setFocusId(locationId)
                 setExpandedId(locationId)

@@ -127,22 +127,9 @@ timeline.day4 = expectText(day4, [
   'KLIA2 T2',
   '19:35',
 ])
+timeline.pendingVisible = (await mainText()).includes('待安排地点')
+timeline.mapLinked = (await page.locator('.leaflet-marker-icon').count()) > 0
 report.timeline = timeline
-
-await page.getByRole('button').filter({ hasText: 'DAY 1' }).first().click()
-await page.waitForTimeout(150)
-await page.getByRole('button', { name: '编辑行程' }).click()
-await page.waitForTimeout(150)
-await page.getByRole('button', { name: '标记完成' }).first().click()
-await page.getByRole('button', { name: '完成编辑' }).click()
-await page.waitForTimeout(500)
-await page.reload({ waitUntil: 'domcontentloaded' })
-await page.waitForTimeout(400)
-await page.locator('main button').filter({ hasText: '吉隆坡' }).first().click()
-await page.waitForTimeout(250)
-await page.locator('nav button[aria-label="行程"]').click()
-await page.waitForTimeout(200)
-report.completionState = (await mainText()).includes('1/12')
 
 await page.locator('nav button[aria-label="餐厅"]').click()
 await page.waitForTimeout(250)
@@ -184,7 +171,7 @@ report.map = expectText(map, [
   '分店 / 地址待确认',
 ])
 report.map.noOverflow = await noOverflow()
-await page.getByRole('button', { name: '待核实' }).click()
+await page.getByRole('button', { name: '待核实', exact: true }).click()
 await page.waitForTimeout(200)
 report.map.pendingFilter = (await mainText()).includes('地点待确认')
 
